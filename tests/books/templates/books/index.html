@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ CONTENT_SETTINGS.TITLE }}</title>
+</head>
+<body>
+    <table>
+        <tr>
+            <th>Title</th>
+            <th>Price</th>
+        </tr>
+        {% for book in CONTENT_SETTINGS.BOOKS %}
+        <tr>
+            <td>{{ book.name }}</td>
+            <td>{{ book.price }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

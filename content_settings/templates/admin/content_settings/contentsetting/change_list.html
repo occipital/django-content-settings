@@ -1,0 +1,161 @@
+{% extends 'admin/change_list.html' %}
+{% load content_settings_admin %}
+
+{% block extrastyle %}
+  {{ block.super }}
+<style>
+.user_tag_hidden {
+    display: none;
+}
+.user_tag {
+    cursor: pointer;
+    font-size: 18px;
+}
+</style>
+{% endblock %}
+
+{% block result_list %}
+<div id="toolbar"><div id="tags_toolbar">
+    {% include  "admin/content_settings/contentsetting/context_tags.html" %}
+</div></div>
+
+{{block.super}}
+{% endblock%}
+
+
+
+{% block footer %}{{ block.super }}
+{% content_settings_user_tags as user_tags %}
+{{user_tags|json_script:"USER_TAGS"}}
+<script>
+    // array of array with 2 elements setting and tag
+    const USER_TAGS = JSON.parse(document.getElementById('USER_TAGS').textContent);
+
+    function has_setting_tagged(setting, tag) {
+        return USER_TAGS.some(function(item) {
+            return item[0] === setting && item[1] === tag;
+        })
+    }
+
+    (function($) {
+        const PREVIEW_URL = "{% url 'admin:preview_setting' %}";
+        const ADD_TAG_URL = "{% url 'admin:add_tag' %}";
+        const REMOVE_TAG_URL = "{% url 'admin:remove_tag' %}";
+        const TAGS_URL = "{% url 'admin:context_tags' %}";
+
+        function reloadTags() {
+            // loads ajax response from TAGS_URL into toolbar, using quiery string from current url
+            $.ajax({
+                "method": "GET",
+                "crossDomain": true,
+                "xhrFields": {
+                    "withCredentials": true
+                },
+                "url": TAGS_URL + window.location.search,
+                "success": function(value) {
+                    $('#tags_toolbar').html(value);
+                }
+            })
+        }
+
+        $('.user_tag').each(function(){
+            var setting = $(this).data('name');
+            var tag = $(this).data('tag');
+            if (
+                (
+                    has_setting_tagged(setting, tag) && $(this).hasClass('user_tag_selected')
+                ) || (
+                    !has_setting_tagged(setting, tag) && !$(this).hasClass('user_tag_selected')
+                )
+            ) {
+                $(this).removeClass('user_tag_hidden');
+            }
+        });
+
+        $('.user_tag').click(function(){
+            var setting = $(this).data('name');
+            var tag = $(this).data('tag');
+            var selected = $(this).hasClass('user_tag_selected');
+            $(this).toggleClass('user_tag_hidden');
+            $(this).siblings('.user_tag').toggleClass('user_tag_hidden');
+            $.ajax({
+                "method": "POST",
+                "crossDomain": true,
+                "xhrFields": {
+                    "withCredentials": true
+                },
+                "url": selected ? REMOVE_TAG_URL : ADD_TAG_URL,
+                "data": {
+                    "name": setting, "tag": tag,
+                    "csrfmiddlewaretoken": $('[name=csrfmiddlewaretoken]').val(),
+                },
+                "success": function() {reloadTags()},
+                "error": function() {}
+            })
+        });
+
+        var currentInput;
+        var currentValue;
+        var currentInterval;
+        var currentAjax;
+        var currentName;
+
+        $('.field-value textarea,.field-value input').focus(function(){
+            $(".value_preview").remove();
+            $(this).after('<div style="margin-top: 10px" class="value_preview">Preview Loading...</div>');
+            if (currentInterval) {
+                clearInterval(currentInterval);
+            }
+            if (currentAjax) {
+                currentAjax.abort();
+            }
+
+            currentInput = $(this);
+            currentValue = $(this).val();
+            currentName = $(this).parent('.field-value').siblings('.field-name').children('a').text();
+
+            var refreshPreview = function() {
+                const newValue = currentInput.val();
+                const data = {
+                    "name": currentName, "value": newValue,
+                    "csrfmiddlewaretoken": $('[name=csrfmiddlewaretoken]').val(),
+                };
+
+                $('#result_list tr').each(function(){
+                    var name = $(this).find('.field-name a').text();
+                    if (name !== currentName) {
+                        data['o_' + name] = $(this).find('.field-value textarea,.field-value input').val();
+                    }
+                });
+
+                currentAjax = $.ajax({
+                    "method": "POST",
+                    "crossDomain": true,
+                    "xhrFields": {
+                        "withCredentials": true
+                    },
+                    "url": PREVIEW_URL,
+                    "data": data,
+                    "success": function(value) {
+                        if (value.html) {
+                            $('.value_preview').html(value.html);
+                        } else if (value.error) {
+                            $('.value_preview').html('<pre style="color:red">' + value.error + '</pre>');
+                        }
+                        currentValue = newValue;
+                        currentAjax = undefined;
+                    }
+                })
+            }
+            refreshPreview();
+
+            currentInterval = setInterval(function(){
+                if (currentAjax || currentInput.val() === currentValue) {
+                    return;
+                }
+                refreshPreview();
+            }, 1000);
+        })
+    })(django.jQuery)
+</script>
+{% endblock %}

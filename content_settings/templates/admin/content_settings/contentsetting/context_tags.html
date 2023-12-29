@@ -1,0 +1,7 @@
+{% for data in selected_tags %}
+    <b>{{data.tag|safe}} <a href="{{data.url}}">x</a></b>
+{% endfor %}
+
+{% for data in available_tags %}
+    <a href="{{data.url}}">{{data.tag|safe}}</a><sup>{{data.total}}</sup>
+{% endfor %}

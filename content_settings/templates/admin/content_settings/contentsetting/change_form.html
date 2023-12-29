@@ -1,0 +1,41 @@
+{% extends 'admin/change_form.html' %}
+
+{% block footer %}{{ block.super }}
+<script>
+    (function($) {
+        const objName = "{{original.name}}";
+        const PREVIEW_URL = "{% url 'admin:preview_setting' %}";
+        const $id = $('#id_value');
+        const $value = $('.field-py_data div.readonly').first();
+        const $label = $('.field-py_data label');
+        var syncedValue = $id.val();
+        setInterval(function(){
+            if (syncedValue == $id.val()) { return }
+            const newValue = $id.val();
+            $.ajax({
+                "method": "POST",
+                "crossDomain": true,
+                "xhrFields": {
+                    "withCredentials": true
+                },
+                "url": PREVIEW_URL,
+                "data": {
+                    "name": objName, "value": newValue,
+                    "csrfmiddlewaretoken": $('[name=csrfmiddlewaretoken]').val(),
+                },
+                "success": function(value) {
+                    if (value.html) {
+                        $value.html(value.html);
+                    } else if (value.error) {
+                        $value.html('<pre style="color:red">' + value.error + '</pre>');
+                    }
+                    syncedValue = newValue;
+                }
+            })
+        }, 1000)
+        $('.reset_default').click(function(){
+            $id.val($(this).data('value'));
+        })
+    })(django.jQuery)
+</script>
+{% endblock %}

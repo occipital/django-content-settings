@@ -1,0 +1,136 @@
+![Django Content Settings](img/title_6.png)
+
+# Getting Started
+
+## Installation and Initial Setup
+
+### Step 1: Install the Module
+
+To begin using `django-content-settings`, first install it using pip:
+
+```bash
+pip install django-content-settings
+```
+
+### Step 2: Update `settings.py` in Your Django Project
+
+After installation, you need to add `content_settings` to the `INSTALLED_APPS` list in your Django project's `settings.py` file. The updated `INSTALLED_APPS` might look like this:
+
+```python
+INSTALLED_APPS = (
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.sites",
+    "django.contrib.staticfiles",
+    "django.contrib.messages",
+    "content_settings",
+    "books",
+)
+```
+
+### Step 3: Configure Templates Context Processor
+
+For using variables in templates, add `content_settings.context_processors.content_settings` to the `context_processors` in the `TEMPLATES` configuration. Your `TEMPLATES` setting should now look like this:
+
+```python
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "debug": True,  # Enable template errors
+            "context_processors": [
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.request",
+                "content_settings.context_processors.content_settings",
+            ],
+        },
+    },
+]
+```
+
+### Step 4: Access Variables in Templates
+
+Now, you can use the variables in templates like this:
+
+```html
+<b>{{ CONTENT_SETTINGS.MY_VAR }}</b>
+```
+
+### Step 5: API Access Configuration
+
+To access variables through the API, update `urls.py` with the following line:
+
+```python
+path("content-settings/", include("content_settings.urls")),
+```
+
+Your `urls.py` may look like this now:
+
+```python
+from django.urls import path, include
+from django.contrib import admin
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("content-settings/", include("content_settings.urls")),
+]
+```
+
+After this configuration, run your project along with the necessary migrations.
+
+## Creating Your First Variable
+
+### Step 1: Define the Variable
+
+Create a file named `content_settings.py` in any of your working apps, for example, `books/content_settings.py`. Add the following content:
+
+```python
+from content_settings.types.basic import SimpleString
+
+TITLE = SimpleString(
+    "Book Store",
+    help="The title of the book store",
+)
+```
+
+### Step 2: Run Migrations
+
+Execute migrations to add this value to the database, allowing you to edit it subsequently.
+
+```bash
+python manage.py migrate
+```
+
+### Understanding the Code
+
+- `TITLE`: The name of the variable you will use in your code and admin panel.
+- `SimpleString`: The type of variable, in this case, a simple string.
+- `"Book Store"`: The default value for this variable.
+- `"The title of the book store"`: A description displayed in the admin panel.
+
+## Usage in Code and Templates
+
+### In Python Code
+
+To use the variable in Python code, such as in views:
+
+```python
+from content_settings.conf import content_settings
+content_settings.TITLE
+```
+
+### In Templates
+
+In Django templates, access it like this:
+
+```html
+<head>
+<title>{{ CONTENT_SETTINGS.TITLE }}</title>
+</head>
+```
+
+And that's it! You're now ready to use `django-content-settings` in your Django project, effectively managing editable variables through the admin panel and API.

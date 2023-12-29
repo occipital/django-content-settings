@@ -1,0 +1,17 @@
+{% load content_settings_extras %}
+
+<html>
+    <head>
+        <title>{{CONTENT_SETTINGS.TITLE}}</title>
+    </head>
+    <body>
+        <header>
+            <h1>Book List</h1>
+        </header>
+            {% for book in object_list %}
+                {% content_settings_call "BOOK_RICH_DESCRIPTION" book _safe=True%}
+            {% empty %}
+                <li>No books found.</li>
+            {% endfor %}
+    </body>
+</html>
