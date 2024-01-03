@@ -70,7 +70,7 @@ def set_new_value(name, new_value, version=None):
 
     prev_value = DATA.ALL_RAW_VALUES.get(name)
 
-    if version is not None and ALL[name].version == version and prev_value != new_value:
+    if version is None or ALL[name].version == version and prev_value != new_value:
         DATA.ALL_RAW_VALUES[name] = new_value
         DATA.ALL_VALUES[name] = ALL[name].to_python(new_value)
 

@@ -32,3 +32,7 @@ CACHE_TIMEOUT = get_setting("CACHE_TIMEOUT", 60 * 60 * 24)
 CACHE_SPLITER = get_setting("CACHE_SPLITER", "::")
 
 VALUES_ONLY_FROM_DB = get_setting("VALUES_ONLY_FROM_DB", False)
+
+CONTEXT = get_setting("CONTEXT", {})
+
+CONTEXT_PROCESSORS = get_setting("CONTEXT_PROCESSORS", [])

@@ -8,6 +8,8 @@ nav:
   - Permissions: permissions.md
   - Available Settings: settings.md
   - How Caching is Organized: caching.md
+  - Cookbook: cookbook.md
   - Frequently Asked Questions: faq.md
+  - Changelog: changelog.md
 theme: readthedocs
 repo_url: https://github.com/occipital/django-content-settings/

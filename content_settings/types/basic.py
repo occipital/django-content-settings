@@ -1,5 +1,6 @@
 from inspect import isclass
 from pprint import pformat
+from functools import cached_property
 
 from django.core.exceptions import ValidationError
 
@@ -18,7 +19,7 @@ class SimpleString(BaseSetting):
     widget = forms.TextInput
     widget_attrs = None
     fetch_permission = None
-    update_permission = None  # TODO: permission for update/reset/delete setting
+    update_permission = None
     help_format = None
     help = None
     value_required = False
@@ -29,36 +30,64 @@ class SimpleString(BaseSetting):
     empty_is_none = False
 
     def __init__(self, default="", **kwargs):
-        kwargs = self.update_kwargs_context(kwargs)
-        for k, v in kwargs.items():
-            if not self.can_assign(k):
-                raise ValueError("Attribute {} not found".format(k))
-            setattr(self, k, v)
+        for k in kwargs.keys():
+            assert self.can_assign(k), "Attribute {} not found".format(k)
+        assert isinstance(default, str), "Default should be str"
 
         self.default = default
-        self.field = self.get_field()
+        kwargs = self.update_defaults_context(kwargs)
+        self.init_assign_kwargs(kwargs)
 
-        if self.tags:
-            self.tags = {self.tags} if isinstance(self.tags, str) else set(self.tags)
-
-        assert isinstance(self.default, str), "Default should be str"
         assert isinstance(self.version, str), "Version should be str"
         assert (
             CACHE_SPLITER not in self.version
         ), f"Version should not contain CACHE_SPLITER:{CACHE_SPLITER}"
 
+    def init_assign_kwargs(self, kwargs):
+        for k, v in kwargs.items():
+            if not self.can_assign(k):
+                raise ValueError("Attribute {} not found".format(k))
+            if hasattr(self, "init__{}".format(k)):
+                getattr(self, "init__{}".format(k))(v)
+            else:
+                setattr(self, k, v)
+
+    def init__tags(self, tags):
+        if not tags:
+            return self.tags
+
+        if isinstance(tags, str):
+            tags = {tags}
+        else:
+            tags = set(tags)
+
+        self.tags = tags if self.tags is None else self.tags | tags
+
+    @cached_property
+    def field(self):
+        return self.get_field()
+
     def can_assign(self, name):
         return hasattr(self, name)
 
-    def update_kwargs_context(self, kwargs):
+    def update_defaults_context(self, kwargs):
+        # initiate default values
         context_defaults = {
             name: value
             for name, value in context_defaults_kwargs().items()
             if self.can_assign(name)
         }
+
+        # update actual values
         return {
-            **context_defaults,
-            **kwargs,
+            name: value
+            for name, value in context_defaults_kwargs(
+                {
+                    **context_defaults,
+                    **kwargs,
+                }
+            ).items()
+            if self.can_assign(name)
         }
 
     def get_help_format(self):

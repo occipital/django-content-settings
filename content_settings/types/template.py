@@ -86,6 +86,8 @@ class SimpleCallTemplate(CallToPythonMixin, SimpleText):
 
 
 class DjangoTemplate(SimpleCallTemplate):
+    tags = {"template"}
+
     def prepare_python_call(self, value):
         from django.template import Template
 
@@ -128,6 +130,7 @@ class DjangoModelTemplate(DjangoTemplate):
 
 class SimpleEval(SimpleCallTemplate):
     help_format = "Python code that returns a value"
+    tags = {"eval"}
 
     def prepare_python_call(self, value):
         return {"template": compile(value, "<string>", "eval")}

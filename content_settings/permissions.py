@@ -11,7 +11,11 @@ def authenticated(user):
 
 
 def staff(user):
-    return user.is_authenticated and user.is_staff
+    return user.is_active and user.is_staff
+
+
+def superuser(user):
+    return user.is_active and user.is_superuser
 
 
 def has_perm(perm):

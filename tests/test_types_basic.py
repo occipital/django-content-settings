@@ -119,3 +119,32 @@ def test_call():
     var = SimpleFormat()
 
     assert var.to_python("Hello, {name}!")("John") == "Hello, John!"
+
+
+def test_assert_unknown_attribute():
+    with pytest.raises(AssertionError):
+        var = SimpleFormat(unknown="value")
+
+
+def test_assert_default_not_string():
+    with pytest.raises(AssertionError):
+        var = SimpleFormat(123)
+
+
+def test_assert_version_not_string():
+    with pytest.raises(AssertionError):
+        var = SimpleFormat("123", version=2)
+
+
+def test_assert_version_not_supported():
+    from content_settings.settings import CACHE_SPLITER
+
+    with pytest.raises(AssertionError):
+        var = SimpleFormat("123", version=f"2{CACHE_SPLITER}1")
+
+
+"""
+TODO:
+* unkonwn attribute should raise error
+* test other assert errors in init
+"""

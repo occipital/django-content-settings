@@ -94,6 +94,17 @@ def test_eval():
     assert var.to_python("first*2 + second")(2) == 6
 
 
+def test_eval_validation_error():
+    var = SimpleEval(
+        template_args_default={"total": 100},
+        validators=(call_validator(0), call_validator(10)),
+    )
+
+    var.validate_value("10 * total")
+    with pytest.raises(ValidationError):
+        var.validate_value("10/total")
+
+
 def test_books_list(webtest_user):
     Book.objects.create(title="Kateryna", description="lorem ipsum")
     Book.objects.create(title="The Will", description="dolor sit amet")

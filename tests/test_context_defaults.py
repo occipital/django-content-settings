@@ -5,6 +5,10 @@ from content_settings.context_managers import (
     context_defaults,
     set_add,
     set_remove,
+    add_tags,
+    remove_tags,
+    str_prepend,
+    help_format,
 )
 from content_settings.permissions import any, none
 
@@ -81,3 +85,70 @@ def test_tags_set_remove():
             assert SimpleString().tags == {"main"}
 
         assert SimpleString().tags == {"main", "second"}
+
+
+def test_set_add_tags_overwrite():
+    with context_defaults(set_add(tags={"main"})):
+        assert SimpleString().tags == {"main"}
+        assert SimpleString(tags={"second"}).tags == {"second"}
+
+
+def test_set_add_tags_init():
+    with context_defaults(set_add(tags={"main"}, _init=True)):
+        assert SimpleString().tags == {"main"}
+        assert SimpleString(tags={"second"}).tags == {"second", "main"}
+
+
+def test_add_tags():
+    with context_defaults(add_tags({"main"})):
+        assert SimpleString().tags == {"main"}
+        assert SimpleString(tags={"second"}).tags == {"second", "main"}
+
+
+def test_add_tags():
+    with context_defaults(add_tags({"main"})):
+        assert SimpleString().tags == {"main"}
+        with context_defaults(add_tags({"second"})):
+            assert SimpleString().tags == {"second", "main"}
+        assert SimpleString(tags={"second"}).tags == {"second", "main"}
+
+
+def test_class_tags_cannot_be_removed():
+    class TaggedString(SimpleString):
+        tags = {"str"}
+
+    with context_defaults(tags={"main"}):
+        assert TaggedString().tags == {"main", "str"}
+
+    with context_defaults(add_tags({"main"})):
+        assert TaggedString().tags == {"main", "str"}
+
+    with context_defaults(remove_tags({"str"})):
+        assert TaggedString().tags == {"str"}
+
+
+def test_help_as_default():
+    with context_defaults(help="help"):
+        assert SimpleString().help == "help"
+        assert SimpleString(help="my help").help == "my help"
+
+
+def test_help_prepend():
+    with context_defaults(help="help"):
+        with context_defaults(str_prepend(help="Important: ")):
+            assert SimpleString().help == "Important: help"
+            assert SimpleString(help="my help").help == "my help"
+
+
+def test_help_prepend_init():
+    with context_defaults(help="help"):
+        with context_defaults(str_prepend(help="Important: ", _init=True)):
+            assert SimpleString().help == "Important: help"
+            assert SimpleString(help="my help").help == "Important: my help"
+
+
+def test_help_format():
+    with context_defaults(help="help"):
+        with context_defaults(help_format("Important: {}")):
+            assert SimpleString().help == "Important: help"
+            assert SimpleString(help="my help").help == "Important: my help"

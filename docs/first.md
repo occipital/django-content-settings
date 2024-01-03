@@ -25,14 +25,14 @@ INSTALLED_APPS = (
     "django.contrib.sites",
     "django.contrib.staticfiles",
     "django.contrib.messages",
-    "content_settings",
+    "content_settings", # <-- update
     "books",
 )
 ```
 
 ### Step 3: Configure Templates Context Processor
 
-For using variables in templates, add `content_settings.context_processors.content_settings` to the `context_processors` in the `TEMPLATES` configuration. Your `TEMPLATES` setting should now look like this:
+For using variables in templates, add `content_settings.context_processors.content_settings` to the `context_processors` in the `TEMPLATES` configuration. Your `TEMPLATES` setting might look like this:
 
 ```python
 TEMPLATES = [
@@ -40,12 +40,11 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "APP_DIRS": True,
         "OPTIONS": {
-            "debug": True,  # Enable template errors
             "context_processors": [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.request",
-                "content_settings.context_processors.content_settings",
+                "content_settings.context_processors.content_settings", # <-- update
             ],
         },
     },
@@ -76,7 +75,7 @@ from django.contrib import admin
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("content-settings/", include("content_settings.urls")),
+    path("content-settings/", include("content_settings.urls")), # <-- update
 ]
 ```
 

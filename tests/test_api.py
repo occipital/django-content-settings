@@ -4,6 +4,7 @@ from django.test import Client
 from django.contrib.auth import get_user_model
 
 from content_settings.models import ContentSetting
+from content_settings.context_managers import content_settings_context
 
 pytestmark = [pytest.mark.django_db(transaction=True)]
 
@@ -102,3 +103,24 @@ def test_fetch_permissions(client, name, status_code):
 
     resp = client.get(f"/content-settings/fetch/{name}/")
     assert resp.status_code == status_code
+
+
+@content_settings_context(TITLE="New Book Store")
+def test_get_simple_text_updated():
+    client = get_anonymous_client()
+    resp = client.get("/content-settings/fetch/title/")
+    assert resp.status_code == 200
+    assert resp.json() == {"TITLE": "New Book Store"}
+
+
+def test_get_simple_text_updated_twice():
+    client = get_anonymous_client()
+    with content_settings_context(TITLE="New Book Store"):
+        resp = client.get("/content-settings/fetch/title/")
+        assert resp.status_code == 200
+        assert resp.json() == {"TITLE": "New Book Store"}
+
+    with content_settings_context(TITLE="SUPER New Book Store"):
+        resp = client.get("/content-settings/fetch/title/")
+        assert resp.status_code == 200
+        assert resp.json() == {"TITLE": "SUPER New Book Store"}

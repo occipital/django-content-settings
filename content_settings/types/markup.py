@@ -6,6 +6,7 @@ from .basic import SimpleText
 class SimpleYAML(SimpleText):
     help_format = "Simple <a href='https://en.wikipedia.org/wiki/YAML' target='_blank'>YAML format</a>"
     yaml_loader = None
+    tags = {"yaml"}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -40,6 +41,7 @@ class SimpleYAML(SimpleText):
 class SimpleJSON(SimpleText):
     help_format = "Simple <a href='https://en.wikipedia.org/wiki/JSON' target='_blank'>JSON format</a>"
     decoder_cls = None
+    tags = {"json"}
 
     def get_decoder_cls(self):
         return self.decoder_cls
@@ -60,6 +62,7 @@ class SimpleCSV(SimpleText):
     help_format = "Simple <a href='https://en.wikipedia.org/wiki/Comma-separated_values' target='_blank'>CSV format</a>"
     csv_dialect = "unix"
     fields = None
+    tags = {"csv"}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

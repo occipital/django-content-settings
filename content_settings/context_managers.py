@@ -1,11 +1,21 @@
 from contextlib import contextmanager, ContextDecorator
+from .settings import CONTEXT, CONTEXT_PROCESSORS
 
-CONTEXT_DEFAULTS_STACK = []
-CONTEXT_DEFAULTS_PROCESSORS_STACK = []
+CONTEXT_DEFAULTS_STACK = [CONTEXT]
+CONTEXT_DEFAULTS_PROCESSORS_STACK = [CONTEXT_PROCESSORS]
 
 
 class process:
+    """
+    the flag _init determines whether the processor should be applied for default values
+    of initial (processed after default values)
+    """
+
+    init = False
+
     def __init__(self, **kwargs):
+        if "_init" in kwargs:
+            self.init = kwargs.pop("_init")
         self.kwargs = kwargs
 
     def process(self, kwargs):
@@ -33,6 +43,47 @@ class set_remove(process_set):
         return start - change
 
 
+class add_tags(set_add):
+    def __init__(self, tags):
+        super().__init__(tags=tags, _init=True)
+
+
+class remove_tags(set_remove):
+    def __init__(self, tags):
+        super().__init__(tags=tags, _init=True)
+
+
+class process_str(process):
+    def process(self, kwargs):
+        return {
+            name: self.process_one(
+                kwargs.get(name, ""),
+                "" if value is None else str(value),
+            )
+            for name, value in self.kwargs.items()
+        }
+
+
+class str_append(process_str):
+    def process_one(self, start, change):
+        return start + change
+
+
+class str_prepend(process_str):
+    def process_one(self, start, change):
+        return change + start
+
+
+class str_format(process_str):
+    def process_one(self, start, change):
+        return change.format(start)
+
+
+class help_format(str_format):
+    def __init__(self, text):
+        super().__init__(help=text, _init=True)
+
+
 @contextmanager
 def context_defaults(*args, **kwargs):
     CONTEXT_DEFAULTS_STACK.append(kwargs)
@@ -44,18 +95,24 @@ def context_defaults(*args, **kwargs):
         CONTEXT_DEFAULTS_PROCESSORS_STACK.pop()
 
 
-def context_defaults_kwargs():
-    kwargs = {}
+def context_defaults_kwargs(kwargs=None):
+    init = True
+    if kwargs is None:
+        kwargs = {}
+        init = False
 
     for processors, new_kwargs in zip(
         CONTEXT_DEFAULTS_PROCESSORS_STACK, CONTEXT_DEFAULTS_STACK
     ):
         for processor in processors:
+            if processor.init != init:
+                continue
             for name, value in processor.process(kwargs).items():
                 kwargs[name] = value
 
-        for name, value in new_kwargs.items():
-            kwargs[name] = value
+        if not init:
+            for name, value in new_kwargs.items():
+                kwargs[name] = value
 
     return kwargs
 

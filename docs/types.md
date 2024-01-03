@@ -236,11 +236,46 @@ with context_defaults(tags=['main']):
     AUTHOR = SimpleString("Kind")
     with context_defaults(set_add(tags=["new"]))
         TITLE = SimpleString("Books")
+        EDITOR = SimpleString("Editor", tags=["editor"])
 
     SUB_TITLE = SimpleString("Comics")
 ```
 
-in the example above `AUTHOR` and `SUB_TITLE` have only one tag `main`, but `TITLE` has two tags `main` and `new`
+in the example above `AUTHOR` and `SUB_TITLE` have only one tag `main`, but `TITLE` has two tags `main` and `new`. But the `EDITOR` will have only one tag `editor`. Because context_default changes default values.
+
+If you want to update initial values instead of default, you should set init attribute for context-process functions such as `set_add`
+
+```python
+from content_settings.types.basic import SimpleString
+from content_settings.context_managers import context_defaults, set_add
+
+with context_defaults(tags=['main']):
+    AUTHOR = SimpleString("Kind")
+    with context_defaults(set_add(tags=["new"], _init=True)) # update
+        TITLE = SimpleString("Books")
+        EDITOR = SimpleString("Editor", tags=["editor"])
+
+    SUB_TITLE = SimpleString("Comics")
+```
+
+now everything remains the same except `EDITOR` var, which has all three tags `main`, `new`, and `editor`
+
+shortcut for `set_add(tags=["new"], _init=True)` is `add_tags` which accepts str or iterable
+
+```python
+from content_settings.types.basic import SimpleString
+from content_settings.context_managers import context_defaults, add_tags
+
+with context_defaults(tags=['main']):
+    AUTHOR = SimpleString("Kind")
+    with context_defaults(add_tags("new")) # update
+        TITLE = SimpleString("Books")
+        EDITOR = SimpleString("Editor", tags=["editor"])
+
+    SUB_TITLE = SimpleString("Comics")
+```
+
+the updated example works the same as the example before
 
 ---
 

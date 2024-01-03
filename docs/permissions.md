@@ -24,6 +24,10 @@ Allows access only to authenticated users.
 
 Restricts access to staff users.
 
+#### `superuser`
+
+Restricts access to staff users.
+
 #### `has_perm(perm)`
 
 Allows access to users with a specific permission.

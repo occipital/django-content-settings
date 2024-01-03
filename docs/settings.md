@@ -51,6 +51,21 @@ Allows the addition of custom tags that users can assign to variables. This is a
 
 The values for variables should only be taken from DB. In case of any value is missing in DB - it will raise AssertionError
 
+### `CONTENT_SETTINGS_CONTEXT_PROCESSORS` and `CONTENT_SETTINGS_CONTEXT`
+
+Those are args and kwargs for global `context_defaults`. By settings one of those values you like grouping all of the under global `with context_defaults(*CONTENT_SETTINGS_CONTEXT_PROCESSORS, **CONTENT_SETTINGS_CONTEXT)`
+
+For example if you want only superuser to update any settings by default
+
+```python
+
+from content_settings.permissions import superuser
+
+CONTENT_SETTINGS_CONTEXT = {
+    "update_permission": superuser
+}
+```
+
 ---
 
 These customizable settings in the `django-content-settings` module enhance the flexibility and functionality of content management within Django applications. By adjusting these settings, developers can optimize the behavior of the module to better suit the specific needs of their projects.
