@@ -71,12 +71,14 @@ class PostListView(ListView):
     paginate_by = content_settings.lazy__POSTS_PER_PAGE # <-- update
 ```
 
+_I know that you can simply overwrite `get_paginate_by` function, I've just use it to show an idea_
+
 
 ### How to test setting change?
 
 Use `content_settings_context` from `content_settings.context_managers`.
 
-You can use it as text decorator:
+You can use it as test decorator:
 
 ```python
 @content_settings_context(TITLE="New Book Store")
