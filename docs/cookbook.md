@@ -103,3 +103,32 @@ def test_get_simple_text_updated_twice():
         assert resp.status_code == 200
         assert resp.json() == {"TITLE": "SUPER New Book Store"}
 ```
+
+### I have an endless running command and I want to keep all of the settings updated within that script
+
+In order to do so you need manually check updates inside of the endless loop. Use `check_update` function from `content_settings.caching` module for that.
+
+```python
+from django.core.management.base import BaseCommand
+from content_settings.caching import check_update
+
+class Command(BaseCommand):
+    def handle(self, *args, **options):
+        while True:
+            check_update()
+
+            # your stuff
+```
+
+### I want to have all of the celery tasks updated with a celery task
+
+You should use the same function `check_update` function from `content_settings.caching` module, as it was described before, but add it to the `task_prerun` signal handler
+
+```python
+from celery.signals import task_prerun
+from content_settings.caching import check_update
+
+@task_prerun.connect
+def check_update_for_celery(*args, **kwargs):
+    check_update()
+```
