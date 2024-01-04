@@ -120,7 +120,7 @@ class Command(BaseCommand):
             # your stuff
 ```
 
-### I want to have all of the celery tasks updated with a celery task
+### I want to have all of the celery tasks updated with a celery/huey/other task
 
 You should use the same function `check_update` function from `content_settings.caching` module, as it was described before, but add it to the `task_prerun` signal handler
 
@@ -131,4 +131,47 @@ from content_settings.caching import check_update
 @task_prerun.connect
 def check_update_for_celery(*args, **kwargs):
     check_update()
+```
+
+Huey also has `@huey.pre_execute()` decorator you can use in the same way as `@task_prerun.connect`
+
+### Changin variable should trigger a procedure, for example data sync.
+
+You can add `post_save` handled for `models.ContentSetting` and check which variable was changed.
+
+The important thing to notice here is that `content_settings.VARIABLE` woudn't have a new value in that handler, as the new value appears in the system only after `caching.check_update()` - for django views it is in the beginnging of the next request.
+
+In order to get a new value you can have a couple use cases.
+
+Case #1 - manually conver raw data into object.
+
+```python
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from content_settings.models import ContentSetting
+
+@receiver(post_save, sender=ContentSetting)
+def process_variable_update(instance, created, **kwargs):
+    if instance.name != 'VARIABLE':
+        continue
+    val = content_settings.type__VARIABLE.to_python(instance.value)
+
+    # process value
+```
+
+Case #2 - use `content_settings_context` from `context_managers`. One was created to tests and it is used in admin-panel for preview variables which use other variables in change view, but you can use it in real code
+
+```python
+# same imports
+from content_settings.context_managers import content_settings_context
+
+@receiver(post_save, sender=ContentSetting)
+def process_variable_update(instance, created, **kwargs):
+    if instance.name != 'VARIABLE':
+        continue
+
+    with content_settings_context(VARIABLE=instance.value):
+        val = content_settings.VARIABLE
+
+    # process value
 ```
