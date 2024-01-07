@@ -52,14 +52,14 @@ def test_get_simple_text():
 
 def test_fetch_group_signle_value():
     client = get_anonymous_client()
-    resp = client.get("/content-settings/fetch/home/")
+    resp = client.get("/books/fetch/home/")
     assert resp.status_code == 200
     assert resp.json() == {"TITLE": "Book Store"}
 
 
 def test_fetch_group_multiple_values():
     client = get_anonymous_client()
-    resp = client.get("/content-settings/fetch/home-detail/")
+    resp = client.get("/books/fetch/home-detail/")
     assert resp.status_code == 200
     assert resp.json() == {
         "DESCRIPTION": "Book Store is the best book store in the world",
@@ -67,12 +67,22 @@ def test_fetch_group_multiple_values():
     }
 
     client = get_staff_client()
-    resp = client.get("/content-settings/fetch/home-detail/")
+    resp = client.get("/books/fetch/home-detail/")
     assert resp.status_code == 200
     assert resp.json() == {
         "DESCRIPTION": "Book Store is the best book store in the world",
         "OPEN_DATE": "2023-01-01",
         "TITLE": "Book Store",
+    }
+
+
+def test_fetch_group_suffix():
+    client = get_anonymous_client()
+    resp = client.get("/books/fetch/main/")
+    assert resp.status_code == 200
+    assert resp.json() == {
+        "TITLE": "Book Store",
+        "BOOKS__available_names": ["Kateryna", "The Poplar", "The Night of Taras"],
     }
 
 
@@ -86,9 +96,6 @@ def test_fetch_group_multiple_values():
         ["staff", "open-date", 200],
         ["staff", "OPEN-DATE", 200],
         ["staff", "OPEN_DATE", 200],
-        ["anonymous", "home-detail", 200],
-        ["authenticated", "home-detail", 200],
-        ["staff", "home-detail", 200],
     ],
 )
 def test_fetch_permissions(client, name, status_code):
@@ -124,3 +131,11 @@ def test_get_simple_text_updated_twice():
         resp = client.get("/content-settings/fetch/title/")
         assert resp.status_code == 200
         assert resp.json() == {"TITLE": "SUPER New Book Store"}
+
+
+def test_fetch_suffix():
+    client = get_anonymous_client()
+    resp = client.get("/content-settings/fetch/books/suffix/available-names/")
+    assert resp.json() == {
+        "BOOKS__available_names": ["Kateryna", "The Poplar", "The Night of Taras"]
+    }

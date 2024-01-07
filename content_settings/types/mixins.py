@@ -152,7 +152,7 @@ class GiveCallMixin:
     def get_validators(self):
         return (call_validator(),)
 
-    def give(self, value):
+    def give(self, value, suffix=None):
         return value()
 
 
@@ -160,5 +160,14 @@ class MakeCallMixin:
     def give_python_to_admin(self, value, name):
         return self.give_python(value)()
 
-    def give(self, value):
+    def give(self, value, suffix=None):
         return lambda: value
+
+
+class DictSuffixesMixin:
+    suffixes = {}
+
+    def give(self, value, suffix=None):
+        if suffix is None:
+            return value
+        return self.suffixes[suffix](value)

@@ -107,5 +107,5 @@ class TypedStringsList(SimpleStringsList):
         yield "Each line is "
         yield from self.line_type.get_help_format()
 
-    def give(self, value):
+    def give(self, value, suffix=None):
         return [self.line_type.give(v) for v in value]

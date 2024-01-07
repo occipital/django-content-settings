@@ -6,6 +6,7 @@ from django import forms
 
 from content_settings.context_managers import context_defaults_kwargs
 from content_settings.settings import CACHE_SPLITER
+from content_settings.types.lazy import LazyObject
 from content_settings.types import (
     PREVIEW_ALL,
     PREVIEW_HTML,
@@ -29,10 +30,10 @@ class SimpleString(BaseSetting):
     value_required = False
     version = ""
     tags = None
-    fetch_groups = None
     validators = ()
     empty_is_none = False
     admin_preview_as = PREVIEW_TEXT
+    suffixes = ()
 
     def __init__(self, default="", **kwargs):
         for k in kwargs.keys():
@@ -74,6 +75,12 @@ class SimpleString(BaseSetting):
     @cached_property
     def field(self):
         return self.get_field()
+
+    def get_suffixes(self):
+        return self.suffixes
+
+    def can_suffix(self, suffix):
+        return suffix is None or suffix in self.get_suffixes()
 
     def can_assign(self, name):
         return hasattr(self, name)
@@ -173,11 +180,14 @@ class SimpleString(BaseSetting):
             .replace('"', "&quot;")
         )
 
-    def give(self, value):
+    def lazy_give(self, l_func, suffix=None):
+        return LazyObject(l_func)
+
+    def give(self, value, suffix=None):
         return value
 
-    def give_python(self, value):
-        return self.give(self.to_python(value))
+    def give_python(self, value, suffix=None):
+        return self.give(self.to_python(value), suffix)
 
 
 class SimpleText(SimpleString):

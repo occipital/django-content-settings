@@ -38,7 +38,6 @@ You can learn more about fields and widgets in [official Django Forms documentat
 Note: Validators are not used when converting text from the database to the variable object.
 
 - **update_permission** and **fetch_permission**: Access rights for changing the variable in the admin panel (detailed in a separate article).
-- **fetch_groups**: Grouping multiple variables in one API request (detailed in the API section).
 - **admin_preview_as** (default: PREVIEW_TEXT): when you change values in Django Admin text field you see preview of the converted object. This attribute shows how the preview will look like. It has the followig options and all of them can be found in constants `content_settings.PREVIEW_*`:
     - `PREVIEW_TEXT` - the value will be shown as plain text inside of pre html element
     - `PREVIEW_HTML` - the value will be shown as it is without esceping

@@ -110,7 +110,7 @@ class SimpleCSV(SimpleText):
             return None
         return list(val)
 
-    def give(self, value):
+    def give(self, value, suffix=None):
         if not value:
             return value
         return [

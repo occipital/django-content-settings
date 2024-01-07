@@ -77,12 +77,12 @@ def set_new_value(name, new_value, version=None):
     return prev_value
 
 
-def get_value(name):
+def get_value(name, suffix=None):
     assert DATA.POPULATED
 
     from .conf import ALL
 
-    return ALL[name].give(DATA.ALL_VALUES[name])
+    return ALL[name].give(DATA.ALL_VALUES[name], suffix)
 
 
 def is_populated():  # better name?
