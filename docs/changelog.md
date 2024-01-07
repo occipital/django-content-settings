@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.4 - suffix and `fetch_groups` deprication
+
+* `lazy_give` new function for giving a lazy object of the type. `LazyObject` has moved to own module `types.lazy`
+* deprication of `fetch_groups` attribute and `views.FetchSettingsView` as a replacement
+* uppercase for variable name is mandatory
+* `call` suffix for `GiveCallMixin`. you can call no-args types like `content_settings.VAN_NAME__call("value")`
+* DictSuffixesMixin - use dict for suffixes, where values are lambdas
+* `suffix` is URLs for getting value from suffix
+* new URL  `fetch/<str:name>/suffix/<str:suffix>/`
+* test covarage: 89%
+
+
 ## 0.3 - "give" control and admin preview refactoring
 
 * `give` and `give_python` - new base method allows Type to control how the cached value will be given to the code. See the [Cookbook](cookbook.md) for usecases

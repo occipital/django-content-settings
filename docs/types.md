@@ -51,7 +51,7 @@ Note: Validators are not used when converting text from the database to the vari
 - **SimpleDecimal**: A SimpleString that converts to a Decimal.
 - **SimpleBool**: A SimpleString that converts to a boolean. 0 or empty is False, 1 is True.
 
-### List Types (`content_settings.types.array`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/array.py))*
+## List Types (`content_settings.types.array`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/array.py))*
 
 These types convert text to an array.
 
@@ -82,7 +82,7 @@ class IntList(TypedStringsList):
 NUMBERS = IntList()
 ```
 
-### Date and Time Types (`content_settings.types.datetime`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/datetime.py))*
+## Date and Time Types (`content_settings.types.datetime`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/datetime.py))*
 
 - **DateTimeString**: Converts a string to a datetime object.
     - **input_formats**: List of accepted formats (default: Django's `DATETIME_INPUT_FORMATS`).
@@ -90,14 +90,14 @@ NUMBERS = IntList()
 - **TimeString**: Only converts to a time.
 - **SimpleTimedelta**: Converts a string like "1d 3h" to a timedelta object.
 
-### Markups (`content_settings.types.markups`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/markup.py))*
+## Markups (`content_settings.types.markups`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/markup.py))*
 
 - **SimpleYAML**: YAML text format to object (requires [pyyaml](https://pypi.org/project/PyYAML/) to be installed).
 - **SimpleJSON**: JSON text format to object.
 - **SimpleCSV**: CSV text format to object.
     - **fields (required)** - a list of fieldnames, or dict name->type
 
-### Templates (`content_settings.types.template`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py))*
+## Templates (`content_settings.types.template`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py))*
 
 Module introduces advanced variable types designed for template rendering and Python code evaluation using `CallToPythonMixin` for using setting variables as functions.
 
@@ -201,7 +201,7 @@ if you want create a callable setting, such a `DjangoTemplate` or `SimpleEval`, 
 </html>
 ```
 
-### Mixins *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py))*
+## Mixins *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py))*
 
 Through mixin classes, additional functionality (such as additional validators) can be incorporated into your variable types.
 
@@ -215,7 +215,7 @@ ROWS_PER_PAGE = mix(PositiveValidationMixin, SimpleInt)("10", help="how many row
 MAX_PRICE = mix(PositiveValidationMixin, SimpleDecimal)("9.99", help="maximum allowed price in the store")
 ```
 
-### context_defaults *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/context_managers.py))*
+## context_defaults *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/context_managers.py))*
 
 This feature allows for creating a context in which default values can be modified for variables created within that context.
 

@@ -8,6 +8,6 @@ urlpatterns = [
     path(
         "fetch/<str:name>/suffix/<str:suffix>/",
         fetch_one_setting,
-        name="fetch_one_setting",
+        name="fetch_suffix_one_setting",
     ),
 ]
