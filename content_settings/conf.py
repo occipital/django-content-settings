@@ -1,60 +1,15 @@
 from importlib import import_module
-import operator
-
-from collections import defaultdict
 
 
-from django.conf import settings
 from django.apps import apps
 
 from .types.basic import BaseSetting
 from .caching import get_value
 
-LAZY_ATTRIBUTE_PREFIX = "lazy__"
-CLS_ATTRIBUTE_PREFIX = "type__"
+LAZY_ATTRIBUTE_PREFIX = "lazy"
+CLS_ATTRIBUTE_PREFIX = "type"
 
 ALL = {}
-FETCH_GROUPS = defaultdict(set)
-
-
-class LazyObject:
-    def __init__(self, factory):
-        # Assign using __dict__ to avoid the setattr method.
-        self.__dict__["_factory"] = factory
-
-    def new_method_proxy(func):
-        """
-        Util function to help us route functions
-        to the nested object.
-        """
-
-        def inner(self, *args):
-            return func(self._factory(), *args)
-
-        return inner
-
-    def __call__(self, *args, **kwargs):
-        return self._factory()(*args, **kwargs)
-
-    __getattr__ = new_method_proxy(getattr)
-    __bytes__ = new_method_proxy(bytes)
-    __str__ = new_method_proxy(str)
-    __bool__ = new_method_proxy(bool)
-    __dir__ = new_method_proxy(dir)
-    __hash__ = new_method_proxy(hash)
-    __class__ = property(new_method_proxy(operator.attrgetter("__class__")))
-    __eq__ = new_method_proxy(operator.eq)
-    __lt__ = new_method_proxy(operator.lt)
-    __le__ = new_method_proxy(operator.le)
-    __gt__ = new_method_proxy(operator.gt)
-    __ge__ = new_method_proxy(operator.ge)
-    __ne__ = new_method_proxy(operator.ne)
-    __mod__ = new_method_proxy(operator.mod)
-    __hash__ = new_method_proxy(hash)
-    __getitem__ = new_method_proxy(operator.getitem)
-    __iter__ = new_method_proxy(iter)
-    __len__ = new_method_proxy(len)
-    __contains__ = new_method_proxy(operator.contains)
 
 
 for app_config in apps.app_configs.values():
@@ -71,32 +26,59 @@ for app_config in apps.app_configs.values():
             if attr in ALL:
                 raise ValueError("Overwriting content setting {}".format(attr))
 
-            if val.fetch_groups is not None:
-                fetch_groups = val.fetch_groups
-                if isinstance(fetch_groups, str):
-                    fetch_groups = [fetch_groups]
-                for fetch_groups in fetch_groups:
-                    FETCH_GROUPS[fetch_groups.upper().replace("-", "_")].add(attr)
+            if "__" in attr:
+                raise ValueError("content setting {} can not contain '__'".format(attr))
+
+            if not attr.isupper():
+                raise ValueError("content setting {} should be uppercase".format(attr))
 
             ALL[attr] = val
 
 
+def split_attr(value):
+    """
+    splits the name of the attr on 3 parts: prefix, name, suffix
+
+    * prefix can only be LAZY_ATTRIBUTE_PREFIX or CLS_ATTRIBUTE_PREFIX
+    * name should be uppercase
+    * suffix can be any string, but not uppercase
+    """
+    prefix = None
+    parts = value.split("__")
+
+    if parts[0] in (LAZY_ATTRIBUTE_PREFIX, CLS_ATTRIBUTE_PREFIX):
+        prefix = parts.pop(0)
+
+    assert len(parts), f"Invalid attribute name: {value}; can not be only prefix"
+
+    name = parts.pop(0)
+    assert name.isupper(), f"Invalid attribute name: {value}; name should be uppercase"
+
+    while parts:
+        if not parts[0].isupper():
+            break
+
+        name += "__" + parts.pop(0)
+
+    if len(parts):
+        return prefix, name, "__".join(parts).lower()
+
+    return prefix, name, None
+
+
 class _Settings:
-    def __getattr__(self, name):
-        if name.startswith(CLS_ATTRIBUTE_PREFIX):
-            return ALL[name[len(CLS_ATTRIBUTE_PREFIX) :]]
+    def __getattr__(self, value):
+        prefix, name, suffix = split_attr(value)
+        if prefix == CLS_ATTRIBUTE_PREFIX:
+            return ALL[name]
+        elif prefix == LAZY_ATTRIBUTE_PREFIX:
+            return ALL[name].lazy_give(lambda: get_value(name, suffix), suffix)
+        else:
+            return get_value(name, suffix)
 
-        if name.startswith(LAZY_ATTRIBUTE_PREFIX):
-            name = name[len(LAZY_ATTRIBUTE_PREFIX) :]
-            return LazyObject(lambda: get_value(name))
-        return get_value(name)
-
-    def __contains__(self, name):
-        if name.startswith(LAZY_ATTRIBUTE_PREFIX):
-            name = name[len(LAZY_ATTRIBUTE_PREFIX) :]
-        if name.startswith(CLS_ATTRIBUTE_PREFIX):
-            name = name[len(CLS_ATTRIBUTE_PREFIX) :]
-        return name in ALL
+    def __contains__(self, value):
+        _, name, suffix = split_attr(value)
+        return name in ALL and ALL[name].can_suffix(suffix)
 
 
 def set_initial_values_for_db(apply=False):

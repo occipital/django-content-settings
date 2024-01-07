@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from content_settings.types.template import (
     DjangoTemplate,
     SimpleEval,
+    SimpleEvalNoArgs,
     required,
 )
 from content_settings.types.validators import call_validator
@@ -154,3 +155,21 @@ def test_book_reach_preview(webtest_admin):
     assert resp.json == {
         "error": "Could not parse the remainder: ' with' from 'book.title with'"
     }
+
+
+def test_eval_noarg_validate():
+    var = SimpleEvalNoArgs()
+
+    var.validate_value("SETTINGS.STATIC_URL + 'test.png'")
+
+    with pytest.raises(ValidationError):
+        var.validate_value("SETTINGS.STATIC_url + 'test.png'")
+
+
+def test_eval_noargs_call():
+    var = SimpleEvalNoArgs(template_args_default={"base_url": None})
+
+    value = "(base_url or SETTINGS.STATIC_URL) + 'test.png'"
+    assert var.give_python(value) == "/static/test.png"
+    assert var.give_python(value, "call")("/my/") == "/my/test.png"
+    assert var.give_python(value, "call")(base_url="/my/") == "/my/test.png"

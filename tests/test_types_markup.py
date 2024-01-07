@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from content_settings.types.basic import (
     SimpleString,
     SimpleDecimal,
+    SimpleBool,
 )
 from content_settings.types.markup import (
     SimpleJSON,
@@ -13,6 +14,7 @@ from content_settings.types.markup import (
     SimpleYAML,
 )
 from content_settings.types.template import DjangoTemplateNoArgs
+from content_settings.types.mixins import mix, DictSuffixesMixin
 
 
 pytestmark = [pytest.mark.django_db]
@@ -74,6 +76,34 @@ def test_csv_typed():
     assert var.give_python(CSV_TEXT) == [
         {"name": "Kateryna", "price": Decimal("1.2")},
         {"name": "The Will", "price": Decimal("200")},
+    ]
+
+
+def test_csv_typed_suffix():
+    var = mix(DictSuffixesMixin, SimpleCSV)(
+        fields={
+            "name": SimpleString(),
+            "available": SimpleBool(),
+            "price": SimpleDecimal(),
+        },
+        suffixes={"available": lambda all: [v for v in all if v.get("available")]},
+    )
+
+    TEXT = """
+abs,1,10
+second,0,5.55
+green,1,0
+"""
+
+    assert var.give_python(TEXT) == [
+        {"name": "abs", "available": True, "price": Decimal("10")},
+        {"name": "second", "available": False, "price": Decimal("5.55")},
+        {"name": "green", "available": True, "price": Decimal("0")},
+    ]
+
+    assert var.give_python(TEXT, "available") == [
+        {"name": "abs", "available": True, "price": Decimal("10")},
+        {"name": "green", "available": True, "price": Decimal("0")},
     ]
 
 
@@ -157,4 +187,41 @@ def test_yaml():
     assert var.give_python(text) == [
         {"name": "Kateryna", "price": 1.2},
         {"name": "The Will", "price": 200},
+    ]
+
+
+def test_attribute_suffix():
+    from content_settings.conf import content_settings
+
+    assert content_settings.BOOKS == [
+        {"name": "Kateryna", "price": Decimal("1.2"), "is_available": True},
+        {"name": "The Will", "price": Decimal("200"), "is_available": False},
+        {"name": "The Poplar", "price": Decimal("12"), "is_available": True},
+        {"name": "The Night of Taras", "price": Decimal("12"), "is_available": True},
+    ]
+
+    assert content_settings.BOOKS__available_names == [
+        "Kateryna",
+        "The Poplar",
+        "The Night of Taras",
+    ]
+
+
+def test_lazy_attribute_suffix():
+    from content_settings.conf import content_settings
+    from content_settings.types.lazy import LazyObject
+
+    assert isinstance(content_settings.lazy__BOOKS, LazyObject)
+    assert list(content_settings.lazy__BOOKS) == [
+        {"name": "Kateryna", "price": Decimal("1.2"), "is_available": True},
+        {"name": "The Will", "price": Decimal("200"), "is_available": False},
+        {"name": "The Poplar", "price": Decimal("12"), "is_available": True},
+        {"name": "The Night of Taras", "price": Decimal("12"), "is_available": True},
+    ]
+
+    assert isinstance(content_settings.lazy__BOOKS__available_names, LazyObject)
+    assert list(content_settings.lazy__BOOKS__available_names) == [
+        "Kateryna",
+        "The Poplar",
+        "The Night of Taras",
     ]

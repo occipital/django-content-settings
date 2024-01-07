@@ -70,7 +70,7 @@ class CallToPythonMixin:
 
     def give_python_to_admin(self, value, name):
         try:
-            value = self.give_python(value)
+            value = self.to_python(value)
         except Exception as e:
             return [(None, e)]
         ret = []
@@ -143,22 +143,35 @@ class GiveCallMixin:
 
     admin_preview_call = False
 
-    def give_python_to_admin(self, value, name):
-        value = self.give_python(value)
-        return [
-            (None, value),
-        ]
+    def get_suffixes(self):
+        return ("call",) + super().get_suffixes()
 
     def get_validators(self):
-        return (call_validator(),)
+        return (call_validator(),) + super().get_validators()
 
-    def give(self, value):
-        return value()
+    def get_preview_validators(self):
+        return (call_validator(),) + super().get_preview_validators()
+
+    def give(self, value, suffix=None):
+        if suffix is None:
+            return value()
+        if suffix == "call":
+            return value
+        return super().give(value, suffix)
 
 
 class MakeCallMixin:
     def give_python_to_admin(self, value, name):
         return self.give_python(value)()
 
-    def give(self, value):
-        return lambda: value
+    def give(self, value, suffix=None):
+        return lambda *args, **kwargs: value
+
+
+class DictSuffixesMixin:
+    suffixes = {}
+
+    def give(self, value, suffix=None):
+        if suffix is None:
+            return value
+        return self.suffixes[suffix](value)

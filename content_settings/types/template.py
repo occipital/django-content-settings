@@ -138,15 +138,6 @@ class DjangoModelTemplate(DjangoTemplate):
 
         return validators
 
-    def get_validators(self):
-        validators = super().get_validators()
-        first_validator = self.get_first_call_validator()
-
-        if first_validator is not None:
-            validators = (first_validator, *validators)
-
-        return validators
-
     def get_preview_validators(self):
         first_validator = self.get_first_call_validator()
 

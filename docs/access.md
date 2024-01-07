@@ -109,22 +109,25 @@ The result will be in JSON format:
 
 ### Fetching Multiple Variables
 
-Use the `fetch_groups` attribute to return multiple variables in a single request:
+Use the `content_settings.views.FetchSettingsView` view for fetching multiple attributes:
 
 ```python
-from content_settings.types.basic import SimpleString, SimpleText
-from content_settings import permissions
+from django.urls import path
+from content_settings.views import FetchSettingsView
 
-DESCRIPTION = SimpleText(
-    "The best book store in the world",
-    fetch_groups="home-detail",
-    fetch_permission=permissions.any,
-)
-TITLE = SimpleString(
-    "Book Store",
-    fetch_groups="home-detail",
-    fetch_permission=permissions.any,
-)
+
+urlpatterns = [
+    path("fetch/main/", FetchSettingsView.as_view(attrs=[
+        "TITLE",
+        "BOOKS__available_names",
+    ]), name="fetch_main"),
+    path("fetch/home-detail/", FetchSettingsView.as_view(attrs=[
+        "DESCRIPTION",
+        "OPEN_DATE",
+        "TITLE",
+    ]), name="fetch_home_detail"),
+]
+
 ```
 
 Fetching the group `home-detail` via API:

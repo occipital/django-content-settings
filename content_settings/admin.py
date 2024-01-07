@@ -292,13 +292,6 @@ class ContentSettingAdmin(admin.ModelAdmin):
             )
 
         urls = [get_fetch_reverse(obj.name)]
-        fetch_groups = ALL[obj.name].fetch_groups
-        if fetch_groups is not None:
-            if isinstance(fetch_groups, str):
-                fetch_groups = [fetch_groups]
-
-            urls += [get_fetch_reverse(n) for n in fetch_groups]
-
         return "\n".join(urls)
 
     def get_urls(self):

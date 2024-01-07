@@ -7,7 +7,11 @@ from content_settings.types.basic import (
     PREVIEW_HTML,
 )
 from content_settings.types.datetime import DateString
-from content_settings.types.mixins import mix, PositiveValidationMixin
+from content_settings.types.mixins import (
+    mix,
+    PositiveValidationMixin,
+    DictSuffixesMixin,
+)
 from content_settings.types.markup import SimpleCSV
 from content_settings.types.template import DjangoModelTemplate, DjangoTemplateNoArgs
 from content_settings import permissions
@@ -17,13 +21,11 @@ from .models import Book
 TITLE = SimpleString(
     "Book Store",
     fetch_permission=permissions.any,
-    fetch_groups=["home", "home-detail"],
     help="The title of the book store",
 )
 
 DESCRIPTION = DjangoTemplateNoArgs(
     "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world",
-    fetch_groups="home-detail",
     fetch_permission=permissions.any,
     help="The description of the book store",
 )
@@ -34,7 +36,6 @@ BOOKS_ON_HOME_PAGE = mix(PositiveValidationMixin, SimpleInt)(
 
 OPEN_DATE = DateString(
     "2023-01-01",
-    fetch_groups="home-detail",
     fetch_permission=permissions.staff,
     help="The date the book store will open",
 )
@@ -43,7 +44,7 @@ IS_OPEN = SimpleBool(
     "1",
 )
 
-BOOKS = SimpleCSV(
+BOOKS = mix(DictSuffixesMixin, SimpleCSV)(
     """
 Kateryna,1.2,1
 The Will,200,0
@@ -54,6 +55,11 @@ The Night of Taras,12,1
         "name": SimpleString(),
         "price": SimpleDecimal(),
         "is_available": SimpleBool(),
+    },
+    suffixes={
+        "available_names": lambda all: [
+            v.get("name") for v in all if v.get("is_available")
+        ]
     },
     fetch_permission=permissions.any,
     update_permission=permissions.has_perm("books.can_edit_todo"),
