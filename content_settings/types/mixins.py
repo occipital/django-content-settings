@@ -165,7 +165,7 @@ class MakeCallMixin:
         return self.give_python(value)()
 
     def give(self, value, suffix=None):
-        return lambda: value
+        return lambda *args, **kwargs: value
 
 
 class DictSuffixesMixin:
