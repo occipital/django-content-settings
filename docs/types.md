@@ -145,6 +145,8 @@ content_settings.TITLE_IMG
 # /static/title.png
 ```
 
+    - you can still pass input arguments `call` suffix, like `content_settings.TITLE_IMG__call`
+
 - **DjangoModelTemplate**: is a specialized class for rendering templates for individual Django model objects
     - **model_queryset**: A query set of objects that can be used as an argument. The setting only takes the first element for preview purposes in the admin panel.
     - **obj_name**: The name under which the model object is passed to the template.

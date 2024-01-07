@@ -153,7 +153,7 @@ class SimpleString(BaseSetting):
         return value
 
     def give_python_to_admin(self, value, name):
-        return self.give_python(value)
+        return self.to_python(value)
 
     def get_admin_preview_html(self, value, name):
         return self.give_python_to_admin(value, name)
