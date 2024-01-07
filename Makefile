@@ -10,7 +10,7 @@ test-cov-xml:
 test-nox:
 	poetry run nox
 
-mkdocs:
+doc:
 	poetry run mkdocs serve
 
 publish:

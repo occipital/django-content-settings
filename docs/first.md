@@ -1,5 +1,3 @@
-![Django Content Settings](img/title_6.png)
-
 # Getting Started
 
 ## Installation and Initial Setup

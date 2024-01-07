@@ -14,9 +14,8 @@ pytestmark = [pytest.mark.django_db]
 def test_simple_list():
     var = SimpleStringsList()
 
-    assert (
-        var.to_python(
-            """
+    assert var.give_python(
+        """
         When I die, then bury me
         In my beloved Ukraine,
         My tomb upon a grave mound high
@@ -26,22 +25,19 @@ def test_simple_list():
         My eyes could see, my ears could hear
         The mighty river roar.
                          """
-        )
-        == [
-            "When I die, then bury me",
-            "In my beloved Ukraine,",
-            "My tomb upon a grave mound high",
-            "Amid the spreading plain,",
-            "So that the fields, the boundless steppes,",
-            "The Dnieper's plunging shore",
-            "My eyes could see, my ears could hear",
-            "The mighty river roar.",
-        ]
-    )
+    ) == [
+        "When I die, then bury me",
+        "In my beloved Ukraine,",
+        "My tomb upon a grave mound high",
+        "Amid the spreading plain,",
+        "So that the fields, the boundless steppes,",
+        "The Dnieper's plunging shore",
+        "My eyes could see, my ears could hear",
+        "The mighty river roar.",
+    ]
 
-    assert (
-        var.to_python(
-            """
+    assert var.give_python(
+        """
         When I die, then bury me
         # In my beloved Ukraine,
         # My tomb upon a grave mound high
@@ -51,17 +47,15 @@ def test_simple_list():
         My eyes could see, my ears could hear
         The mighty river roar.
                          """
-        )
-        == [
-            "When I die, then bury me",
-            "So that the fields, the boundless steppes,",
-            "The Dnieper's plunging shore",
-            "My eyes could see, my ears could hear",
-            "The mighty river roar.",
-        ]
-    )
+    ) == [
+        "When I die, then bury me",
+        "So that the fields, the boundless steppes,",
+        "The Dnieper's plunging shore",
+        "My eyes could see, my ears could hear",
+        "The mighty river roar.",
+    ]
 
-    assert var.to_python("windows\r\nlinebreaks") == ["windows", "linebreaks"]
+    assert var.give_python("windows\r\nlinebreaks") == ["windows", "linebreaks"]
 
 
 class SimpleIntsList(TypedStringsList):
@@ -72,7 +66,7 @@ def test_typed_list():
     var = SimpleIntsList()
 
     assert (
-        var.to_python(
+        var.give_python(
             """
         1
         2

@@ -5,6 +5,8 @@ from django.core.cache import cache
 
 from content_settings.models import ContentSetting, UserTagSetting
 
+from tests.books.models import Book
+
 pytestmark = [pytest.mark.django_db(transaction=True)]
 
 
@@ -135,17 +137,75 @@ def test_context_processor(webtest_admin, webtest_user):
 
 
 def test_preview_simple(webtest_admin):
-    cs = ContentSetting.objects.get(name="TITLE")
     resp = webtest_admin.post(
         "/admin/content_settings/contentsetting/preview/",
         {
-            "name": cs.name,
+            "name": "TITLE",
             "value": "New Title",
         },
     )
 
     assert resp.status_int == 200
-    assert resp.json == {"html": "<pre>'New Title'</pre>"}
+    assert resp.json == {"html": "<pre>New Title</pre>"}
+
+
+def test_preivew_format(webtest_admin):
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/preview/",
+        {
+            "name": "OPEN_DATE",
+            "value": "2023-01-01",
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.json == {"html": "<pre>datetime.date(2023, 1, 1)</pre>"}
+
+
+def test_preivew_template_no_args(webtest_admin):
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/preview/",
+        {
+            "name": "DESCRIPTION",
+            "value": "{{CONTENT_SETTINGS.TITLE}} is the second best book store in the world",
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.json == {
+        "html": "<pre>Book Store is the second best book store in the world</pre>"
+    }
+
+
+def test_no_preivew_template(webtest_admin):
+    Book.objects.all().delete()
+
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/preview/",
+        {
+            "name": "BOOK_RICH_DESCRIPTION",
+            "value": "<b>{{book.title}}</b><br><i>{{book.description}}</i>",
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.json == {
+        "html": "No preview (add at least one validator to preview_validators)"
+    }
+
+
+def test_preivew_template(webtest_admin):
+    Book.objects.create(title="Kateryna", description="lorem ipsum")
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/preview/",
+        {
+            "name": "BOOK_RICH_DESCRIPTION",
+            "value": "<b>{{book.title}}</b><br><i>{{book.description}}</i>",
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.json == {"html": "<b>Kateryna</b><br><i>lorem ipsum</i>"}
 
 
 def test_preview_validation_error(webtest_admin):

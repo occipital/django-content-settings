@@ -8,6 +8,7 @@ from content_settings.types.template import (
     required,
 )
 from content_settings.types.validators import call_validator
+from content_settings.types import PREVIEW_HTML
 
 from tests.books.models import Book
 
@@ -21,9 +22,9 @@ def test_django_template():
     <h1>{{ title }}</h1>
     """.strip()
 
-    assert var.to_python(template)() == "<h1>Undefined</h1>"
-    assert var.to_python(template)("Book Store") == "<h1>Book Store</h1>"
-    assert var.to_python(template)("Book Store", "ignoring") == "<h1>Book Store</h1>"
+    assert var.give_python(template)() == "<h1>Undefined</h1>"
+    assert var.give_python(template)("Book Store") == "<h1>Book Store</h1>"
+    assert var.give_python(template)("Book Store", "ignoring") == "<h1>Book Store</h1>"
 
 
 def test_django_template_required():
@@ -34,7 +35,7 @@ def test_django_template_required():
     """.strip()
 
     with pytest.raises(ValidationError):
-        var.to_python(template)()
+        var.give_python(template)()
 
 
 def test_django_template_with_validator():
@@ -49,10 +50,12 @@ def test_django_template_with_validator():
         var.validate_value("<h1>{{ title ti }}</h1>")
 
 
-def test_django_template_admin_preview():
+def test_django_template_admin_preview_html():
     var = DjangoTemplate(
         template_args_default={"title": "Undefined"},
-        validators=(call_validator("Book Store"),),
+        preview_validators=(call_validator("Book Store"),),
+        admin_preview_as=PREVIEW_HTML,
+        admin_preview_call=False,
     )
 
     assert (
@@ -64,13 +67,14 @@ def test_django_template_admin_preview():
 def test_django_template_admin_preview_text():
     var = DjangoTemplate(
         template_args_default={"title": "Undefined"},
-        preview_html=False,
-        validators=(call_validator("Book Store"),),
+        preview_validators=(call_validator("Book Store"),),
+        admin_preview_as=PREVIEW_HTML,
+        admin_preview_call=False,
     )
 
     assert (
         var.get_admin_preview_value("<h1>{{ title }}</h1>", "TITLE")
-        == "<pre><h1>Book Store</h1></pre>"
+        == "<h1>Book Store</h1>"
     )
 
 
@@ -81,7 +85,7 @@ def test_django_template_admin_preview_not_found():
 
     assert (
         var.get_admin_preview_value("<h1>{{ title }}</h1>", "TITLE")
-        == "No preview validators. Add at least one call_validator"
+        == "<pre>No preview (add at least one validator to preview_validators)</pre>"
     )
 
 
@@ -90,8 +94,8 @@ def test_eval():
         template_args_default={"first": 1, "second": 2},
     )
 
-    assert var.to_python("first*2 + second")() == 4
-    assert var.to_python("first*2 + second")(2) == 6
+    assert var.give_python("first*2 + second")() == 4
+    assert var.give_python("first*2 + second")(2) == 6
 
 
 def test_eval_validation_error():

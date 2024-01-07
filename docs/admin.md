@@ -1,5 +1,3 @@
-![Django Content Settings](img/title_9.png)
-
 # Enhancements to Admin Panel
 
 ## Introduction

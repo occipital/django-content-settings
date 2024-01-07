@@ -12,6 +12,7 @@ from content_settings.types.markup import (
     SimpleCSV,
     SimpleYAML,
 )
+from content_settings.types.template import DjangoTemplateNoArgs
 
 
 pytestmark = [pytest.mark.django_db]
@@ -28,21 +29,21 @@ except ImportError:
 def test_simple_json():
     var = SimpleJSON()
 
-    assert var.to_python('{"a": 45}') == {"a": 45}
+    assert var.give_python('{"a": 45}') == {"a": 45}
 
 
 def test_simple_json_empty_is_none():
     var = SimpleJSON(empty_is_none=True)
 
-    assert var.to_python("") is None
-    assert var.to_python(" ") is None
+    assert var.give_python("") is None
+    assert var.give_python(" ") is None
 
 
 def test_simple_json_invalid():
     var = SimpleJSON()
 
     with pytest.raises(ValidationError) as error:
-        var.to_python("invalid json")
+        var.give_python("invalid json")
 
     assert error.value.messages == ["Expecting value: line 1 column 1 (char 0)"]
 
@@ -56,7 +57,7 @@ The Will,200
 def test_csv():
     var = SimpleCSV(fields=["name", "price"])
 
-    assert var.to_python(CSV_TEXT) == [
+    assert var.give_python(CSV_TEXT) == [
         {"name": "Kateryna", "price": "1.2"},
         {"name": "The Will", "price": "200"},
     ]
@@ -70,9 +71,33 @@ def test_csv_typed():
         }
     )
 
-    assert var.to_python(CSV_TEXT) == [
+    assert var.give_python(CSV_TEXT) == [
         {"name": "Kateryna", "price": Decimal("1.2")},
         {"name": "The Will", "price": Decimal("200")},
+    ]
+
+
+def test_csv_typed_template_no_args():
+    var = SimpleCSV(
+        fields={
+            "name": SimpleString(),
+            "price": SimpleDecimal(),
+            "pic": DjangoTemplateNoArgs(),
+        }
+    )
+
+    assert var.give_python(
+        """
+Kateryna,1.2,{{SETTINGS.STATIC_URL}}cover/kateryna.jpg
+The Will,200,{{SETTINGS.STATIC_URL}}cover/will.jpg
+    """
+    ) == [
+        {
+            "name": "Kateryna",
+            "price": Decimal("1.2"),
+            "pic": "/static/cover/kateryna.jpg",
+        },
+        {"name": "The Will", "price": Decimal("200"), "pic": "/static/cover/will.jpg"},
     ]
 
 
@@ -84,7 +109,7 @@ Kateryna,1.2,light
 The Will,200
     """
 
-    assert var.to_python(text) == [
+    assert var.give_python(text) == [
         {"name": "Kateryna", "price": "1.2"},
         {"name": "The Will", "price": "200"},
     ]
@@ -98,7 +123,7 @@ Kateryna,1.2
 The Will
     """
 
-    assert var.to_python(text) == [
+    assert var.give_python(text) == [
         {"name": "Kateryna", "price": "1.2"},
         {"name": "The Will"},
     ]
@@ -109,7 +134,7 @@ def test_csv_empty():
 
     text = ""
 
-    assert var.to_python(text) == []
+    assert var.give_python(text) == []
 
 
 @pytest.mark.skipif(yaml_installed, reason="yaml is installed")
@@ -129,7 +154,7 @@ def test_yaml():
   price: 200
         """
 
-    assert var.to_python(text) == [
+    assert var.give_python(text) == [
         {"name": "Kateryna", "price": 1.2},
         {"name": "The Will", "price": 200},
     ]

@@ -1,5 +1,3 @@
-![Django Content Settings](img/title_3.png)
-
 # Variable Types and Attributes
 
 ## Introduction
@@ -41,6 +39,10 @@ Note: Validators are not used when converting text from the database to the vari
 
 - **update_permission** and **fetch_permission**: Access rights for changing the variable in the admin panel (detailed in a separate article).
 - **fetch_groups**: Grouping multiple variables in one API request (detailed in the API section).
+- **admin_preview_as** (default: PREVIEW_TEXT): when you change values in Django Admin text field you see preview of the converted object. This attribute shows how the preview will look like. It has the followig options and all of them can be found in constants `content_settings.PREVIEW_*`:
+    - `PREVIEW_TEXT` - the value will be shown as plain text inside of pre html element
+    - `PREVIEW_HTML` - the value will be shown as it is without esceping
+    - `PREVIEW_PYTHON` - the value will be shown as Python object using `pformat` from `pprint`
 
 ### Other Basic Types (`content_settings.types.base`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py))*
 
@@ -102,8 +104,8 @@ Module introduces advanced variable types designed for template rendering and Py
 
 - **DjangoTemplate**: is used for rendering a Django template specified in the variable's value
     - **template_args_default**: (Optional) A dictionary that converts an array of arguments, with which the function is called, into a dictionary passed as context to the template. To set required arguments, import `required` from `content_settings.types.template` and use it as a value.
-    - **template_static_data**: (Optional) A dictionary of additional values that can be passed to the template but are not passed as function arguments (`SETTINGS` and `CONTENT_SETTINGS` are passed automatically).
-    - **preview_html** (default: True): Set to `False` if you do not want the preview to render as HTML in the admin panel.
+    - **template_static_data**: (Optional) A dictionary of additional values that can be passed to the template from global env (not as arguments to the function). It can also be a function
+    - **template_static_includes** (default: `('CONTENT_SETTINGS', 'SETTINGS')`) - by default both `content_settings` and `settings` are included in context, but by adjusting this tuple you can change that.
 
 Example:
 
@@ -128,6 +130,20 @@ content_settings.SHORT_DESCRIPTION("Hello world", "your first line of code")
 # returns:
 # <b>Hello world</b><br>
 # <i>your first line of code</i>
+```
+
+- **DjangoTemplateNoArgs**: the same as `DjangoTemplate` but without input arguments and return value without calling the attribute
+
+```python
+# content_settings.py
+TITLE_IMG = DjangoTemplate("<img src='{{SETTINGS.STATIC_URL}}title.png' />")
+
+# in code
+
+content_settings.TITLE_IMG
+
+# returns:
+# /static/title.png
 ```
 
 - **DjangoModelTemplate**: is a specialized class for rendering templates for individual Django model objects
@@ -157,6 +173,8 @@ content_settings.COMISSION(Decimal('100'))
 # returns
 Decimal("20")
 ```
+
+- **SimpleEvalNoArgs**: the same as `SimpleEval` but without passing input args. It works the same as `DjangoTemplateNoArgs` and simply getting an attribute.
 
 ### Calling Functions in Template *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/templatetags/content_settings_extras.py))*
 

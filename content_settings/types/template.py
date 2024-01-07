@@ -3,7 +3,7 @@ from itertools import zip_longest
 from django.core.exceptions import ValidationError
 
 from .basic import SimpleText
-from .mixins import CallToPythonMixin
+from .mixins import CallToPythonMixin, GiveCallMixin
 from .validators import call_validator
 
 
@@ -12,9 +12,9 @@ class required:
 
 
 class SimpleCallTemplate(CallToPythonMixin, SimpleText):
+    template_static_includes = ("CONTENT_SETTINGS", "SETTINGS")
     template_static_data = None
     template_args_default = None
-    preview_html = True
     help_format = "Simple <a href='https://docs.djangoproject.com/en/3.2/topics/templates/' target='_blank'>Django Template</a>. Available objects:"
 
     def prepare_python_call(self, value):
@@ -31,6 +31,8 @@ class SimpleCallTemplate(CallToPythonMixin, SimpleText):
     def get_template_static_data(self):
         if not self.template_static_data:
             return {}
+        if callable(self.template_static_data):
+            return self.template_static_data()
         return self.template_static_data
 
     def get_help_format(self):
@@ -65,24 +67,23 @@ class SimpleCallTemplate(CallToPythonMixin, SimpleText):
 
         return kwargs
 
-    def get_template_static_data(self):
-        from django.conf import settings
-        from content_settings.conf import content_settings
+    def get_template_full_static_data(self):
+        ret = {}
 
-        ret = {
-            "CONTENT_SETTINGS": content_settings,
-            "SETTINGS": settings,
+        if "CONTENT_SETTINGS" in self.template_static_includes:
+            from content_settings.conf import content_settings
+
+            ret["CONTENT_SETTINGS"] = content_settings
+
+        if "SETTINGS" in self.template_static_includes:
+            from django.conf import settings
+
+            ret["SETTINGS"] = settings
+
+        return {
+            **ret,
+            **self.get_template_static_data(),
         }
-
-        if self.template_static_data is not None:
-            ret = {**ret, **self.template_static_data}
-        return ret
-
-    def get_admin_preview_value(self, value, name):
-        ret = super().get_admin_preview_value(value, name)
-        if self.preview_html:
-            return ret
-        return f"<pre>{ret}</pre>"
 
 
 class DjangoTemplate(SimpleCallTemplate):
@@ -100,16 +101,21 @@ class DjangoTemplate(SimpleCallTemplate):
         return template.render(
             Context(
                 {
-                    **self.get_template_static_data(),
+                    **self.get_template_full_static_data(),
                     **self.prepate_input_to_dict(*args, **kwargs),
                 }
             )
         )
 
 
+class DjangoTemplateNoArgs(GiveCallMixin, DjangoTemplate):
+    pass
+
+
 class DjangoModelTemplate(DjangoTemplate):
     model_queryset = None
     obj_name = "object"
+    admin_preview_call = False
 
     def get_template_args_default(self):
         return {
@@ -117,15 +123,37 @@ class DjangoModelTemplate(DjangoTemplate):
             **super().get_template_args_default(),
         }
 
-    def get_validators(self):
-        validators = super().get_validators()
-
+    def get_first_call_validator(self):
         if self.model_queryset is not None:
             first = self.model_queryset.first()
             if first is not None:
-                validators = (*validators, call_validator(self.model_queryset.first()))
+                return call_validator(first)
+
+    def get_validators(self):
+        validators = super().get_validators()
+        first_validator = self.get_first_call_validator()
+
+        if first_validator is not None:
+            validators = (first_validator, *validators)
 
         return validators
+
+    def get_validators(self):
+        validators = super().get_validators()
+        first_validator = self.get_first_call_validator()
+
+        if first_validator is not None:
+            validators = (first_validator, *validators)
+
+        return validators
+
+    def get_preview_validators(self):
+        first_validator = self.get_first_call_validator()
+
+        if first_validator is not None:
+            return (first_validator,)
+
+        return ()
 
 
 class SimpleEval(SimpleCallTemplate):
@@ -138,9 +166,13 @@ class SimpleEval(SimpleCallTemplate):
     def python_call(self, *args, **kwargs):
         template = kwargs.pop("template")
         globs = {
-            **self.get_template_static_data(),
+            **self.get_template_full_static_data(),
             **self.prepate_input_to_dict(*args, **kwargs),
             "__import__": None,
         }
 
         return eval(template, globs)
+
+
+class SimpleEvalNoArgs(GiveCallMixin, SimpleEval):
+    pass

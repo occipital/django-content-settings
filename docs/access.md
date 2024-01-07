@@ -1,5 +1,3 @@
-![Django Content Settings](img/title_10.png)
-
 # Using Variables in your project
 
 ## Introduction

@@ -62,7 +62,7 @@ def test_fetch_group_multiple_values():
     resp = client.get("/content-settings/fetch/home-detail/")
     assert resp.status_code == 200
     assert resp.json() == {
-        "DESCRIPTION": "The best book store in the world",
+        "DESCRIPTION": "Book Store is the best book store in the world",
         "TITLE": "Book Store",
     }
 
@@ -70,7 +70,7 @@ def test_fetch_group_multiple_values():
     resp = client.get("/content-settings/fetch/home-detail/")
     assert resp.status_code == 200
     assert resp.json() == {
-        "DESCRIPTION": "The best book store in the world",
+        "DESCRIPTION": "Book Store is the best book store in the world",
         "OPEN_DATE": "2023-01-01",
         "TITLE": "Book Store",
     }

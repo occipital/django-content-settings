@@ -1,8 +1,6 @@
-from functools import cached_property
-
 from django.core.exceptions import ValidationError
 
-from .basic import SimpleText, BaseSetting, SimpleInt
+from .basic import SimpleText, BaseSetting, PREVIEW_PYTHON
 
 
 def f_empty(value):
@@ -26,6 +24,7 @@ class SimpleStringsList(SimpleText):
     filter_empty = True
     split_lines = "\n"
     filters = None
+    admin_preview_as = PREVIEW_PYTHON
 
     def get_filters(self):
         if self.filters is not None:
@@ -107,3 +106,6 @@ class TypedStringsList(SimpleStringsList):
         yield from super().get_help_format()
         yield "Each line is "
         yield from self.line_type.get_help_format()
+
+    def give(self, value):
+        return [self.line_type.give(v) for v in value]

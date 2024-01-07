@@ -4,11 +4,12 @@ from content_settings.types.basic import (
     SimpleInt,
     SimpleBool,
     SimpleDecimal,
+    PREVIEW_HTML,
 )
 from content_settings.types.datetime import DateString
 from content_settings.types.mixins import mix, PositiveValidationMixin
 from content_settings.types.markup import SimpleCSV
-from content_settings.types.template import DjangoModelTemplate, SimpleEval
+from content_settings.types.template import DjangoModelTemplate, DjangoTemplateNoArgs
 from content_settings import permissions
 
 from .models import Book
@@ -20,8 +21,8 @@ TITLE = SimpleString(
     help="The title of the book store",
 )
 
-DESCRIPTION = SimpleText(
-    "The best book store in the world",
+DESCRIPTION = DjangoTemplateNoArgs(
+    "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world",
     fetch_groups="home-detail",
     fetch_permission=permissions.any,
     help="The description of the book store",
@@ -62,5 +63,6 @@ BOOK_RICH_DESCRIPTION = DjangoModelTemplate(
     "<b>{{book.title}}</b><br><i>{{book.description}}</i>",
     model_queryset=Book.objects.all(),
     obj_name="book",
+    admin_preview_as=PREVIEW_HTML,
     help="The description of the book",
 )

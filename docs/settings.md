@@ -1,5 +1,3 @@
-![Django Content Settings](img/title_4.png)
-
 # Available Settings
 
 ## Overview

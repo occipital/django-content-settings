@@ -1,5 +1,3 @@
-![Django Content Settings](img/title_3.png)
-
 # Cookbook
 
 Here we will try to cover some of the cases that might be useful in your projects
@@ -154,7 +152,7 @@ from content_settings.models import ContentSetting
 def process_variable_update(instance, created, **kwargs):
     if instance.name != 'VARIABLE':
         continue
-    val = content_settings.type__VARIABLE.to_python(instance.value)
+    val = content_settings.type__VARIABLE.give_python(instance.value)
 
     # process value
 ```
@@ -175,3 +173,9 @@ def process_variable_update(instance, created, **kwargs):
 
     # process value
 ```
+
+### What if I had a SimpleText variable, but after some project iterations, I realized I needed a template? Should I go back and change all of the variables from `VARNAME` to `VARNAME()`?
+
+No, if your template has no input arguments you can use mixin `GiveCallMixin` or use NoArgs types such as `DjangoTemplateNoArgs` and `SimpleEvalNoArgs`.
+
+If you have an oposite situation use `MakeCallMixin`

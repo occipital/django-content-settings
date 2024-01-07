@@ -1,10 +1,13 @@
+from functools import cached_property
+
 from django.core.exceptions import ValidationError
 
-from .basic import SimpleText
+from .basic import SimpleText, PREVIEW_PYTHON, SimpleString
 
 
 class SimpleYAML(SimpleText):
     help_format = "Simple <a href='https://en.wikipedia.org/wiki/YAML' target='_blank'>YAML format</a>"
+    admin_preview_as = PREVIEW_PYTHON
     yaml_loader = None
     tags = {"yaml"}
 
@@ -40,6 +43,7 @@ class SimpleYAML(SimpleText):
 
 class SimpleJSON(SimpleText):
     help_format = "Simple <a href='https://en.wikipedia.org/wiki/JSON' target='_blank'>JSON format</a>"
+    admin_preview_as = PREVIEW_PYTHON
     decoder_cls = None
     tags = {"json"}
 
@@ -60,6 +64,7 @@ class SimpleJSON(SimpleText):
 
 class SimpleCSV(SimpleText):
     help_format = "Simple <a href='https://en.wikipedia.org/wiki/Comma-separated_values' target='_blank'>CSV format</a>"
+    admin_preview_as = PREVIEW_PYTHON
     csv_dialect = "unix"
     fields = None
     tags = {"csv"}
@@ -67,6 +72,15 @@ class SimpleCSV(SimpleText):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         assert self.fields is not None, "fields cannot be None"
+        assert isinstance(
+            self.fields, (list, tuple, dict)
+        ), "fields must be list, tuple or dict"
+
+    @cached_property
+    def dict_fields(self):
+        if isinstance(self.fields, dict):
+            return self.fields
+        return {f: SimpleString() for f in self.fields}
 
     def gen_to_python(self, value):
         value = super().to_python(value)
@@ -81,22 +95,13 @@ class SimpleCSV(SimpleText):
         except Exception as e:
             raise ValidationError(str(e))
 
-        if isinstance(self.fields, dict):
-            yield from self.gen_to_python_dict(csv)
-        else:
-            yield from self.gen_to_python_list(csv)
+        yield from self.gen_rows_to_python(csv)
 
-    def gen_to_python_list(self, csv):
-        for row in csv:
-            yield dict(zip(self.fields, row))
-
-    def gen_to_python_dict(self, csv):
+    def gen_rows_to_python(self, csv):
         for row in csv:
             yield {
                 name: c_type.to_python(value)
-                for name, c_type, value in zip(
-                    self.fields.keys(), self.fields.values(), row
-                )
+                for (name, c_type), value in zip(self.dict_fields.items(), row)
             }
 
     def to_python(self, value):
@@ -104,3 +109,10 @@ class SimpleCSV(SimpleText):
         if val is None:
             return None
         return list(val)
+
+    def give(self, value):
+        if not value:
+            return value
+        return [
+            {k: self.dict_fields[k].give(v) for k, v in row.items()} for row in value
+        ]

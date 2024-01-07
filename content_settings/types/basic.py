@@ -1,13 +1,17 @@
 from inspect import isclass
-from pprint import pformat
 from functools import cached_property
-
-from django.core.exceptions import ValidationError
+from pprint import pformat
 
 from django import forms
 
 from content_settings.context_managers import context_defaults_kwargs
 from content_settings.settings import CACHE_SPLITER
+from content_settings.types import (
+    PREVIEW_ALL,
+    PREVIEW_HTML,
+    PREVIEW_TEXT,
+    PREVIEW_PYTHON,
+)
 
 
 class BaseSetting:
@@ -28,6 +32,7 @@ class SimpleString(BaseSetting):
     fetch_groups = None
     validators = ()
     empty_is_none = False
+    admin_preview_as = PREVIEW_TEXT
 
     def __init__(self, default="", **kwargs):
         for k in kwargs.keys():
@@ -42,6 +47,9 @@ class SimpleString(BaseSetting):
         assert (
             CACHE_SPLITER not in self.version
         ), f"Version should not contain CACHE_SPLITER:{CACHE_SPLITER}"
+        assert (
+            self.admin_preview_as in PREVIEW_ALL
+        ), f"admin_preview_as should be in {PREVIEW_ALL}"
 
     def init_assign_kwargs(self, kwargs):
         for k, v in kwargs.items():
@@ -137,12 +145,39 @@ class SimpleString(BaseSetting):
     def json_view_value(self, request, value):
         return value
 
+    def give_python_to_admin(self, value, name):
+        return self.give_python(value)
+
+    def get_admin_preview_html(self, value, name):
+        return self.give_python_to_admin(value, name)
+
+    def get_admin_preview_text(self, value, name):
+        return self.give_python_to_admin(value, name)
+
+    def get_admin_preview_python(self, value, name):
+        return self.give_python_to_admin(value, name)
+
     def get_admin_preview_value(self, value, name):
+        if self.admin_preview_as == PREVIEW_HTML:
+            return str(self.get_admin_preview_html(value, name))
+
+        if self.admin_preview_as == PREVIEW_TEXT:
+            value = str(self.get_admin_preview_text(value, name))
+        else:
+            value = pformat(self.get_admin_preview_python(value, name))
+
         return "<pre>{}</pre>".format(
-            pformat(
-                self.to_python(value),
-            )
+            value.replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("&", "&amp;")
+            .replace('"', "&quot;")
         )
+
+    def give(self, value):
+        return value
+
+    def give_python(self, value):
+        return self.give(self.to_python(value))
 
 
 class SimpleText(SimpleString):
@@ -167,6 +202,7 @@ class SimpleBool(SimpleInt):
     min_value = 0
     max_value = 1
     empty_is_none = True
+    admin_preview_as = PREVIEW_PYTHON
 
     def to_python(self, value):
         return bool(super().to_python(value))

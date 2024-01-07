@@ -22,31 +22,31 @@ pytestmark = [pytest.mark.django_db]
 def test_simple_string():
     var = SimpleString()
 
-    assert var.to_python("New BookStore") == "New BookStore"
+    assert var.give_python("New BookStore") == "New BookStore"
 
 
 def test_simple_string_empty_is_none():
     var = SimpleString()
 
-    assert var.to_python("") == ""
+    assert var.give_python("") == ""
 
     var = SimpleString(empty_is_none=True)
 
-    assert var.to_python("") is None
+    assert var.give_python("") is None
 
 
 def test_simple_text():
     var = SimpleText()
 
-    assert var.to_python("New BookStore") == "New BookStore"
+    assert var.give_python("New BookStore") == "New BookStore"
 
 
 def test_simple_int():
     var = SimpleInt()
 
-    assert var.to_python("123") == 123
-    assert var.to_python("-1") == -1
-    assert var.to_python("0") == 0
+    assert var.give_python("123") == 123
+    assert var.give_python("-1") == -1
+    assert var.give_python("0") == 0
 
 
 def test_simple_int_validate():
@@ -78,9 +78,9 @@ def test_simple_int_min_max_validate_mixin():
 def test_simple_decimal():
     var = SimpleDecimal()
 
-    assert var.to_python("123.45") == Decimal("123.45")
-    assert var.to_python("-1.23") == Decimal("-1.23")
-    assert var.to_python("0.0") == Decimal("0.0")
+    assert var.give_python("123.45") == Decimal("123.45")
+    assert var.give_python("-1.23") == Decimal("-1.23")
+    assert var.give_python("0.0") == Decimal("0.0")
 
 
 def test_simple_decimal_validate():
@@ -102,9 +102,9 @@ def test_simple_decimal_validate_min():
 def test_bool():
     var = SimpleBool()
 
-    assert var.to_python("1") is True
-    assert var.to_python("0") is False
-    assert var.to_python("") is False
+    assert var.give_python("1") is True
+    assert var.give_python("0") is False
+    assert var.give_python("") is False
 
 
 class SimpleFormat(CallToPythonMixin, SimpleString):
@@ -118,7 +118,7 @@ class SimpleFormat(CallToPythonMixin, SimpleString):
 def test_call():
     var = SimpleFormat()
 
-    assert var.to_python("Hello, {name}!")("John") == "Hello, John!"
+    assert var.give_python("Hello, {name}!")("John") == "Hello, John!"
 
 
 def test_assert_unknown_attribute():

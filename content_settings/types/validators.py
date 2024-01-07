@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from pprint import pformat
 
 
 class call_validator:
@@ -11,3 +12,20 @@ class call_validator:
             return func(*self.args, **self.kwargs)
         except Exception as e:
             raise ValidationError(str(e))
+
+    def __str__(self) -> str:
+        ret = ""
+        if self.args:
+            ret += ", ".join([pformat(arg) for arg in self.args])
+
+        if self.kwargs:
+            if ret:
+                ret += ", "
+            ret += ", ".join(
+                [f"{key}={pformat(value)}" for key, value in self.kwargs.items()]
+            )
+
+        return ret
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} {str(self)}>"

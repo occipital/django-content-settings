@@ -1,5 +1,3 @@
-![Django Content Settings](img/title_5.png)
-
 # Permissions
 
 ## Overview

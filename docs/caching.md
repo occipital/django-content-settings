@@ -1,5 +1,3 @@
-![Django Content Settings](img/title_8.png)
-
 # How Caching is Organized
 
 ## Introduction
