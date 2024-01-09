@@ -7,6 +7,7 @@ from content_settings.types.basic import (
     SimpleInt,
     SimpleDecimal,
     SimpleBool,
+    EmailString,
 )
 from content_settings.types.mixins import (
     MinMaxValidationMixin,
@@ -143,8 +144,13 @@ def test_assert_version_not_supported():
         var = SimpleFormat("123", version=f"2{CACHE_SPLITER}1")
 
 
-"""
-TODO:
-* unkonwn attribute should raise error
-* test other assert errors in init
-"""
+def test_email_validate_fail():
+    var = EmailString()
+    with pytest.raises(ValidationError) as error:
+        var.validate_value("invalid email")
+    assert error.value.message == "Enter a valid email address."
+
+
+def test_email_validate_fail():
+    var = EmailString()
+    var.validate_value("name@checkio.org")

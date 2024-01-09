@@ -12,6 +12,7 @@ from content_settings.types import (
     PREVIEW_HTML,
     PREVIEW_TEXT,
     PREVIEW_PYTHON,
+    PREVIEW_NONE,
 )
 
 
@@ -32,7 +33,7 @@ class SimpleString(BaseSetting):
     tags = None
     validators = ()
     empty_is_none = False
-    admin_preview_as = PREVIEW_TEXT
+    admin_preview_as = PREVIEW_NONE
     suffixes = ()
 
     def __init__(self, default="", **kwargs):
@@ -123,7 +124,7 @@ class SimpleString(BaseSetting):
         return set(tags)
 
     def get_validators(self):
-        return self.validators
+        return self.validators + tuple(self.cls_field.default_validators)
 
     def get_field(self):
         return self.cls_field(
@@ -165,6 +166,9 @@ class SimpleString(BaseSetting):
         return self.give_python_to_admin(value, name)
 
     def get_admin_preview_value(self, value, name):
+        if self.admin_preview_as == PREVIEW_NONE:
+            return ""
+
         if self.admin_preview_as == PREVIEW_HTML:
             return str(self.get_admin_preview_html(value, name))
 
@@ -195,13 +199,24 @@ class SimpleText(SimpleString):
     widget_attrs = {"rows": 10, "cols": 80}
 
 
+class SimpleHTML(SimpleText):
+    admin_preview_as = PREVIEW_HTML
+
+
 class URLString(SimpleString):
     cls_field = forms.URLField
     widget = forms.URLInput
     widget_attrs = {"style": "max-width: 600px; width: 100%"}
 
 
+class EmailString(SimpleString):
+    cls_field = forms.EmailField
+    widget = forms.EmailInput
+    widget_attrs = {"style": "max-width: 600px; width: 100%"}
+
+
 class SimpleInt(SimpleString):
+    admin_preview_as = PREVIEW_PYTHON
     cls_field = forms.IntegerField
 
     def get_help_format(self):
@@ -209,6 +224,7 @@ class SimpleInt(SimpleString):
 
 
 class SimpleBool(SimpleInt):
+    admin_preview_as = PREVIEW_PYTHON
     min_value = 0
     max_value = 1
     empty_is_none = True
@@ -219,4 +235,5 @@ class SimpleBool(SimpleInt):
 
 
 class SimpleDecimal(SimpleString):
+    admin_preview_as = PREVIEW_PYTHON
     cls_field = forms.DecimalField

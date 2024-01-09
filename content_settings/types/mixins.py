@@ -161,6 +161,9 @@ class GiveCallMixin:
 
 
 class MakeCallMixin:
+    def get_suffixes(self):
+        return ("call",) + super().get_suffixes()
+
     def give_python_to_admin(self, value, name):
         return self.give_python(value)()
 

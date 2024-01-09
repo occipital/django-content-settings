@@ -46,7 +46,9 @@ Note: Validators are not used when converting text from the database to the vari
 ### Other Basic Types (`content_settings.types.base`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py))*
 
 - **SimpleText**: Similar to SimpleString, but the input field can contain multiple lines.
+- **SimpleHTML**: Same as SimpleText, but with html preview in admin
 - **URLString**: A SimpleString that validates the input as a URL.
+- **EmailString**: A SimpleString that validates the input as a Email.
 - **SimpleInt**: A SimpleString that converts to an integer.
 - **SimpleDecimal**: A SimpleString that converts to a Decimal.
 - **SimpleBool**: A SimpleString that converts to a boolean. 0 or empty is False, 1 is True.

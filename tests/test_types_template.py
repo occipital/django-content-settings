@@ -7,6 +7,7 @@ from content_settings.types.template import (
     SimpleEval,
     SimpleEvalNoArgs,
     required,
+    SimpleExec,
 )
 from content_settings.types.validators import call_validator
 from content_settings.types import PREVIEW_HTML
@@ -173,3 +174,65 @@ def test_eval_noargs_call():
     assert var.give_python(value) == "/static/test.png"
     assert var.give_python(value, "call")("/my/") == "/my/test.png"
     assert var.give_python(value, "call")(base_url="/my/") == "/my/test.png"
+
+
+def test_exec_call_return_tuple():
+    from decimal import Decimal
+
+    var = SimpleExec(
+        template_args_default={"value": Decimal("0.0")},
+        template_static_data={"Decimal": Decimal},
+        call_return=("result", "fee"),
+    )
+
+    value = """
+fee = value * Decimal("0.1")
+result = value - fee
+    """
+    assert var.give_python(value)(Decimal("100")) == {
+        "fee": Decimal("10.0"),
+        "result": Decimal("90.0"),
+    }
+
+
+def test_exec_call_return_dict():
+    from decimal import Decimal
+
+    var = SimpleExec(
+        template_args_default={"value": Decimal("0.0")},
+        template_static_data={"Decimal": Decimal},
+        call_return={
+            "result": Decimal("0.00"),
+            "fee": Decimal("0.00"),
+            "tax": Decimal("0.00"),
+        },
+    )
+
+    value = """
+fee = value * Decimal("0.1")
+result = value - fee
+    """
+    assert var.give_python(value)(Decimal("100")) == {
+        "fee": Decimal("10.0"),
+        "result": Decimal("90.0"),
+        "tax": Decimal("0.00"),
+    }
+
+
+def test_exec_call_return_none():
+    from decimal import Decimal
+
+    var = SimpleExec(
+        template_args_default={"value": Decimal("0.0")},
+        template_static_data={"Decimal": Decimal},
+        call_return=None,
+    )
+
+    value = """
+fee = value * Decimal("0.1")
+result = value - fee
+    """
+    globs = var.give_python(value)(Decimal("100"))
+    assert len(globs) > 3
+    assert globs["fee"] == Decimal("10.0")
+    assert globs["result"] == Decimal("90.0")

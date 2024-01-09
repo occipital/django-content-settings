@@ -10,7 +10,7 @@ from content_settings.types.template import (
     SimpleEval,
     SimpleEvalNoArgs,
 )
-from content_settings.types.basic import SimpleString, SimpleInt
+from content_settings.types.basic import SimpleString, SimpleInt, EmailString
 from content_settings.types.array import SimpleStringsList
 from content_settings.types.validators import call_validator
 from content_settings.types.template import required

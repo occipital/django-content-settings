@@ -1,5 +1,15 @@
 # Changelog
 
+### 0.4.3
+
+* fix field validators
+* None admin preview by default
+* `SimpleHTML` - same as SimpleText but with HTML preview
+* `EmailString` - new base type
+* `SimpleExec` and `SimpleExecNoArgs` - new types. Works in the same way as SimpleEval, but using exec instead of eval and return values based on `call_return` attribute
+* all eval and exec types have `superuser` as default value for `update_permission`
+* `MakeCallMixin` has `call` suffix, just in case
+
 ### 0.4.2 - local dev fixes
 
 * handeling removed settigs

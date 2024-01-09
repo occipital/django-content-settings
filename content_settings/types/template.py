@@ -5,6 +5,8 @@ from django.core.exceptions import ValidationError
 from .basic import SimpleText
 from .mixins import CallToPythonMixin, GiveCallMixin
 from .validators import call_validator
+from . import PREVIEW_TEXT
+from ..permissions import superuser
 
 
 class required:
@@ -12,6 +14,7 @@ class required:
 
 
 class SimpleCallTemplate(CallToPythonMixin, SimpleText):
+    admin_preview_as = PREVIEW_TEXT
     template_static_includes = ("CONTENT_SETTINGS", "SETTINGS")
     template_static_data = None
     template_args_default = None
@@ -148,6 +151,7 @@ class DjangoModelTemplate(DjangoTemplate):
 
 
 class SimpleEval(SimpleCallTemplate):
+    update_permission = superuser
     help_format = "Python code that returns a value"
     tags = {"eval"}
 
@@ -166,4 +170,48 @@ class SimpleEval(SimpleCallTemplate):
 
 
 class SimpleEvalNoArgs(GiveCallMixin, SimpleEval):
+    pass
+
+
+class SimpleExec(SimpleCallTemplate):
+    update_permission = superuser
+    help_format = "Python code that execute and returns generated variables "
+    tags = {"eval"}
+    call_return = None
+
+    def get_call_return(self):
+        if self.call_return is None:
+            return None
+        if isinstance(self.call_return, dict):
+            return self.call_return
+
+        return {name: None for name in self.call_return}
+
+    def get_help_format(self):
+        yield from super().get_help_format()
+        yield f"Expected variables: <ul>"
+        for name, value in self.get_call_return().items():
+            yield f"<li>{name}: {value}</li>"
+        yield "</ul>"
+
+    def prepare_python_call(self, value):
+        return {"template": compile(value, "<string>", "exec")}
+
+    def python_call(self, *args, **kwargs):
+        template = kwargs.pop("template")
+        globs = {
+            **self.get_template_full_static_data(),
+            **self.prepate_input_to_dict(*args, **kwargs),
+            "__import__": None,
+        }
+
+        exec(template, globs)
+        call_return = self.get_call_return()
+
+        if call_return is None:
+            return globs
+        return {k: globs.get(k, v) for k, v in call_return.items()}
+
+
+class SimpleExecNoArgs(GiveCallMixin, SimpleExec):
     pass

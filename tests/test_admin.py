@@ -146,7 +146,7 @@ def test_preview_simple(webtest_admin):
     )
 
     assert resp.status_int == 200
-    assert resp.json == {"html": "<pre>New Title</pre>"}
+    assert resp.json == {"html": ""}
 
 
 def test_preivew_format(webtest_admin):
