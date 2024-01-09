@@ -299,3 +299,16 @@ def test_remove_tag(webtest_admin):
     assert resp.json == {"success": True}
 
     assert initial_total_tags == UserTagSetting.objects.all().count()
+
+
+def test_preview_non_existed_name(webtest_admin):
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/preview/",
+        {
+            "name": "TITLE-NEW",
+            "value": "New Title",
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.json == {"html": ""}

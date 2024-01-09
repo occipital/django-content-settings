@@ -1,5 +1,12 @@
 # Changelog
 
+### 0.4.2 - local dev fixes
+
+* handeling removed settigs
+* `CONTENT_SETTINGS_VALUES_ONLY_FROM_DB` - for DEBUG=False only
+* handleling update version during local debug
+* preview and updates for non-existed settings
+
 ### 0.4.1
 
 * fix admin fields

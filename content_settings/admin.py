@@ -23,6 +23,8 @@ from .settings import USER_TAGS
 
 
 def user_able_to_update(user, name):
+    if name not in ALL:
+        return False
     return ALL[name].update_permission is None or ALL[name].update_permission(user)
 
 
@@ -365,7 +367,11 @@ class ContentSettingAdmin(admin.ModelAdmin):
             )
 
     def preview_setting(self, request):
-        setting = ALL[request.POST["name"]]
+        try:
+            setting = ALL[request.POST["name"]]
+        except KeyError:
+            return JsonResponse({"html": ""})
+
         value = request.POST["value"]
 
         other_values = {

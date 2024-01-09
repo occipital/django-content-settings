@@ -3,6 +3,7 @@ import hashlib
 from functools import lru_cache
 
 from django.core.cache import caches
+from django.conf import settings
 
 from .settings import (
     CHECKSUM_KEY_PREFIX,
@@ -68,6 +69,9 @@ def get_checksum_from_local():
 def set_new_value(name, new_value, version=None):
     from .conf import ALL
 
+    if name not in ALL:
+        return None
+
     prev_value = DATA.ALL_RAW_VALUES.get(name)
 
     if version is None or ALL[name].version == version and prev_value != new_value:
@@ -113,13 +117,19 @@ def reset_all_values(trigger_checksum=None):
     DATA.POPULATED = True
     for name in ALL.keys():
         if name in db:
-            set_new_value(name, db[name].value, version=db[name].version)
+            set_new_value(
+                name,
+                db[name].value,
+                version=(None if settings.DEBUG else db[name].version),
+            )
         else:
             if VALUES_ONLY_FROM_DB:
                 raise AssertionError(f"VALUES_ONLY_FROM_DB: {name} is not in DB")
             set_new_value(name, ALL[name].default, ALL[name].version)
 
-    assert len(DATA.ALL_VALUES) == len(ALL), "Not all values are populated"
+    assert len(DATA.ALL_VALUES) == len(
+        ALL
+    ), "Not all values are populated; DB version does not match, migrate DB"
 
     set_local_checksum()
 
