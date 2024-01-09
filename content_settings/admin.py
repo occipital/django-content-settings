@@ -65,6 +65,8 @@ class SettingsChangeList(ChangeList):
 class ContentSettinForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(ContentSettinForm, self).__init__(*args, **kwargs)
+        if self.instance.name and self.instance.name in ALL:
+            self.fields["value"] = ALL[self.instance.name].field
         self.fields["value"].strip = False
 
     def save(self, *args, **kwargs):

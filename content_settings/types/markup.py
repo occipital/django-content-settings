@@ -99,6 +99,8 @@ class SimpleCSV(SimpleText):
 
     def gen_rows_to_python(self, csv):
         for row in csv:
+            if not row:
+                continue
             yield {
                 name: c_type.to_python(value)
                 for (name, c_type), value in zip(self.dict_fields.items(), row)

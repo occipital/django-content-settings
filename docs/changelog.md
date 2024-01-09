@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.4.1
+
+* fix admin fields
+
 ## 0.4 - suffix and `fetch_groups` deprication
 
 * `lazy_give` new function for giving a lazy object of the type. `LazyObject` has moved to own module `types.lazy`
