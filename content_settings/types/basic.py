@@ -1,6 +1,8 @@
 from inspect import isclass
 from functools import cached_property
 from pprint import pformat
+from typing import Optional, Set, Tuple, Union, Any, Callable
+from collections.abc import Iterable
 
 from django import forms
 
@@ -21,22 +23,40 @@ class BaseSetting:
 
 
 class SimpleString(BaseSetting):
-    cls_field = forms.CharField
-    widget = forms.TextInput
-    widget_attrs = None
-    fetch_permission = None
-    update_permission = None
-    help_format = None
-    help = None
-    value_required = False
-    version = ""
-    tags = None
-    validators = ()
-    empty_is_none = False
-    admin_preview_as = PREVIEW_NONE
-    suffixes = ()
+    """
+     Attributes:
+    - cls_field (forms.CharField): The form field class to use for the setting.
+    - widget (forms.Widget): The form widget to use for the cls_field.
+    - widget_attrs (Optional[dict]): Optional attributes for the widget initiation.
+    - fetch_permission (Optional[str]): Optional permission required to fetch the setting.
+    - update_permission (Optional[str]): Optional permission required to update the setting.
+    - help_format (Optional[str]): Optional format string for the help text for the format (align to the type).
+    - help (Optional[str]): Optional help text for the setting.
+    - value_required (bool): Whether a value is required for the setting.
+    - version (str): The version of the setting (using for caching).
+    - tags (Optional[Iterable[str]]): Optional tags associated with the setting.
+    - validators (Tuple[Callable]): Validators to apply to the setting value.
+    - empty_is_none (bool): Whether an empty value should be treated as None.
+    - admin_preview_as (str): The format to use for the admin preview.
+    - suffixes (Tuple[str]): Suffixes that can be appended to the setting value.
+    """
 
-    def __init__(self, default="", **kwargs):
+    cls_field: forms.CharField = forms.CharField
+    widget: forms.Widget = forms.TextInput
+    widget_attrs: Optional[dict] = None
+    fetch_permission: Optional[str] = None
+    update_permission: Optional[str] = None
+    help_format: Optional[str] = None
+    help: Optional[str] = None
+    value_required: bool = False
+    version: str = ""
+    tags: Optional[Iterable[str]] = None
+    validators: Tuple[Callable] = ()
+    empty_is_none: bool = False
+    admin_preview_as: str = PREVIEW_NONE
+    suffixes: Tuple[str] = ()
+
+    def __init__(self, default: str = "", **kwargs):
         for k in kwargs.keys():
             assert self.can_assign(k), "Attribute {} not found".format(k)
         assert isinstance(default, str), "Default should be str"
@@ -62,9 +82,9 @@ class SimpleString(BaseSetting):
             else:
                 setattr(self, k, v)
 
-    def init__tags(self, tags):
+    def init__tags(self, tags: Union[None, str, Iterable[str]]) -> None:
         if not tags:
-            return self.tags
+            return
 
         if isinstance(tags, str):
             tags = {tags}
@@ -74,19 +94,19 @@ class SimpleString(BaseSetting):
         self.tags = tags if self.tags is None else self.tags | tags
 
     @cached_property
-    def field(self):
+    def field(self) -> forms.Field:
         return self.get_field()
 
-    def get_suffixes(self):
+    def get_suffixes(self) -> Tuple:
         return self.suffixes
 
-    def can_suffix(self, suffix):
+    def can_suffix(self, suffix: Optional[str]) -> bool:
         return suffix is None or suffix in self.get_suffixes()
 
-    def can_assign(self, name):
+    def can_assign(self, name: str) -> bool:
         return hasattr(self, name)
 
-    def update_defaults_context(self, kwargs):
+    def update_defaults_context(self, kwargs: dict) -> dict:
         # initiate default values
         context_defaults = {
             name: value
@@ -106,10 +126,10 @@ class SimpleString(BaseSetting):
             if self.can_assign(name)
         }
 
-    def get_help_format(self):
+    def get_help_format(self) -> Optional[Union[str, Iterable[str]]]:
         return self.help_format
 
-    def get_help(self):
+    def get_help(self) -> Optional[str]:
         help_format = self.get_help_format()
         if help_format is not None and not isinstance(help_format, str):
             help_format = "".join(help_format)
@@ -117,55 +137,55 @@ class SimpleString(BaseSetting):
             return f"{self.help} <br><br> {help_format}"
         return self.help
 
-    def get_tags(self):
+    def get_tags(self) -> Set[str]:
         tags = self.tags
         if tags is None:
             tags = set()
         return set(tags)
 
-    def get_validators(self):
+    def get_validators(self) -> Tuple[Callable]:
         return self.validators + tuple(self.cls_field.default_validators)
 
-    def get_field(self):
+    def get_field(self) -> forms.Field:
         return self.cls_field(
             widget=self.get_widget(),
             validators=(self.validate_value,),
             required=self.value_required,
         )
 
-    def get_widget(self):
+    def get_widget(self) -> forms.Widget:
         if isclass(self.widget) and self.widget_attrs is not None:
             return self.widget(attrs=self.widget_attrs)
         else:
             return self.widget
 
-    def validate_value(self, value):
+    def validate_value(self, value: str) -> Any:
         val = self.to_python(value)
         for validator in self.get_validators():
             validator(val)
         return val
 
-    def to_python(self, value):
+    def to_python(self, value: str) -> Any:
         if self.empty_is_none and value.strip() == "":
             return None
         return self.field.to_python(value)
 
-    def json_view_value(self, request, value):
+    def json_view_value(self, request, value: Any) -> Any:
         return value
 
-    def give_python_to_admin(self, value, name):
+    def give_python_to_admin(self, value: str, name: str) -> Any:
         return self.to_python(value)
 
-    def get_admin_preview_html(self, value, name):
+    def get_admin_preview_html(self, value: str, name: str) -> Any:
         return self.give_python_to_admin(value, name)
 
-    def get_admin_preview_text(self, value, name):
+    def get_admin_preview_text(self, value: str, name: str) -> Any:
         return self.give_python_to_admin(value, name)
 
-    def get_admin_preview_python(self, value, name):
+    def get_admin_preview_python(self, value: str, name: str) -> Any:
         return self.give_python_to_admin(value, name)
 
-    def get_admin_preview_value(self, value, name):
+    def get_admin_preview_value(self, value: str, name: str) -> str:
         if self.admin_preview_as == PREVIEW_NONE:
             return ""
 
@@ -184,56 +204,55 @@ class SimpleString(BaseSetting):
             .replace('"', "&quot;")
         )
 
-    def lazy_give(self, l_func, suffix=None):
+    def lazy_give(self, l_func: Callable, suffix=None) -> LazyObject:
         return LazyObject(l_func)
 
-    def give(self, value, suffix=None):
+    def give(self, value, suffix: Optional[str] = None):
         return value
 
-    def give_python(self, value, suffix=None):
+    def give_python(self, value: str, suffix=None) -> Any:
         return self.give(self.to_python(value), suffix)
 
 
 class SimpleText(SimpleString):
-    widget = forms.Textarea
-    widget_attrs = {"rows": 10, "cols": 80}
+    widget: forms.Widget = forms.Textarea
+    widget_attrs: dict = {"rows": 10, "cols": 80}
 
 
 class SimpleHTML(SimpleText):
-    admin_preview_as = PREVIEW_HTML
+    admin_preview_as: str = PREVIEW_HTML
 
 
 class URLString(SimpleString):
-    cls_field = forms.URLField
-    widget = forms.URLInput
-    widget_attrs = {"style": "max-width: 600px; width: 100%"}
+    cls_field: forms.Field = forms.URLField
+    widget: forms.Widget = forms.URLInput
+    widget_attrs: dict = {"style": "max-width: 600px; width: 100%"}
 
 
 class EmailString(SimpleString):
-    cls_field = forms.EmailField
-    widget = forms.EmailInput
-    widget_attrs = {"style": "max-width: 600px; width: 100%"}
+    cls_field: forms.Field = forms.EmailField
+    widget: forms.Widget = forms.EmailInput
+    widget_attrs: dict = {"style": "max-width: 600px; width: 100%"}
 
 
 class SimpleInt(SimpleString):
-    admin_preview_as = PREVIEW_PYTHON
-    cls_field = forms.IntegerField
+    admin_preview_as: str = PREVIEW_PYTHON
+    cls_field: forms.Field = forms.IntegerField
 
     def get_help_format(self):
         yield "Any number"
 
 
 class SimpleBool(SimpleInt):
-    admin_preview_as = PREVIEW_PYTHON
-    min_value = 0
-    max_value = 1
-    empty_is_none = True
-    admin_preview_as = PREVIEW_PYTHON
+    admin_preview_as: str = PREVIEW_PYTHON
+    min_value: int = 0
+    max_value: int = 1
+    empty_is_none: bool = True
 
-    def to_python(self, value):
+    def to_python(self, value) -> bool:
         return bool(super().to_python(value))
 
 
 class SimpleDecimal(SimpleString):
-    admin_preview_as = PREVIEW_PYTHON
-    cls_field = forms.DecimalField
+    admin_preview_as: str = PREVIEW_PYTHON
+    cls_field: forms.Field = forms.DecimalField
