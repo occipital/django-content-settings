@@ -4,7 +4,7 @@ a lot of cases have been covered in [Cookbook](cookbook.md), but here I just wan
 
 ### Can I create variable in Django admin before one was created in content_settings.py?
 
-No. 
+No. But we have an [issue](https://github.com/occipital/django-content-settings/issues/14) with that request.
 
 ### Can I change settings in code?
 
