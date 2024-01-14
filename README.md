@@ -36,3 +36,68 @@ The module comes with a built-in API system, enabling:
 
 For the full documentation, please visit [here](https://django-content-settings.readthedocs.io/).
 
+### How does it look
+
+- **Setup**. [Here](https://django-content-settings.readthedocs.io/en/latest/first/) you can get step-by-step instruction.
+
+- **Define the setting**. To do so you need to define constant in `content_settings.py` in your app
+
+```python
+# content_settings.py
+
+from content_settings.types.basic import SimpleString
+
+TITLE = SimpleString("Songs", help="The title of the site")
+```
+
+the code above defines a variable `TITLE`, with type `SimpleString` and default value `Songs`.
+
+- **Migrate**. In order to be able to edit data in Django Admin
+
+```bash
+$ python manage.py migrate
+```
+
+_Technically, you can use variable in code even without migration. The migration is need to make variable editable in admin panel_
+
+- **Use it in your project**. That is it. You can the variable `TITLE` in your code. 
+
+```python
+
+from content_settings.conf import content_settings
+
+content_settings.TITLE
+```
+
+In template:
+
+```html
+<h2>{{CONTENT_SETTINGS>TITLE}}</h2>
+```
+
+In API:
+
+```bash
+$ curl http://127.0.0.1/content-settings/fetch/title/
+```
+
+Ok, I lied, in order to use in API you need to update permission from the setting:
+
+```python
+# content_settings.py
+
+from content_settings.types.basic import SimpleString
+from content_settings import permissions
+
+TITLE = SimpleString(
+    "Songs",
+    fetch_permission=permissions.any,
+    help="The title of the site",
+)
+```
+
+Simple as that, we have a lot of types for settings you can use `SimpleText`, `SimpleHTML`, `SimpleInt`, `SimpleBool`, `SimpleDecimal`, `DateTimeString`, `SimpleTimedelta`, `SimpleYAML`, `SimpleJSON`, `SimpleCSV`, `DjangoTemplate`, `DjangoModelTemplate`, `SimpleEval`, `SimpleExec` and so on... [Read more](https://django-content-settings.readthedocs.io/en/latest/types/) about the types available for you.
+
+It is also very fast thanks to our caching system. [Read more about it](https://django-content-settings.readthedocs.io/en/latest/caching/).
+
+Some fancy things you can find in our [cookbook](https://django-content-settings.readthedocs.io/en/latest/cookbook/).
