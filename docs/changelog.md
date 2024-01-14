@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.4.4
+
+* built-in support huey and celery
+
 ### 0.4.3
 
 * fix field validators
