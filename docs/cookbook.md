@@ -120,18 +120,7 @@ class Command(BaseCommand):
 
 ### I want to have all of the celery tasks updated with a celery/huey/other task
 
-You should use the same function `check_update` function from `content_settings.caching` module, as it was described before, but add it to the `task_prerun` signal handler
-
-```python
-from celery.signals import task_prerun
-from content_settings.caching import check_update
-
-@task_prerun.connect
-def check_update_for_celery(*args, **kwargs):
-    check_update()
-```
-
-Huey also has `@huey.pre_execute()` decorator you can use in the same way as `@task_prerun.connect`
+It is done automatically.
 
 ### Changin variable should trigger a procedure, for example data sync.
 

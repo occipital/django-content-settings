@@ -68,3 +68,27 @@ def update_stored_values(*args, **kwargs):
 @receiver(connection_created)
 def db_connection_done(*args, **kwargs):
     reset_all_values()
+
+
+# INTEGRATIONS
+
+try:
+    from celery.signals import task_prerun
+except ImportError:
+    pass
+else:
+
+    @task_prerun.connect
+    def check_update_for_celery(*args, **kwargs):
+        check_update()
+
+
+try:
+    from huey.contrib.djhuey import pre_execute
+except ImportError:
+    pass
+else:
+
+    @pre_execute()
+    def check_update_for_huey(*args, **kwargs):
+        check_update()
