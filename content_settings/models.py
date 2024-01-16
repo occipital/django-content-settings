@@ -10,6 +10,11 @@ class ContentSetting(models.Model):
     name = models.CharField(max_length=200, unique=True)
     value = models.TextField(blank=True)
     version = models.CharField(max_length=50, null=True)
+    help = models.TextField(blank=True, null=True)
+    tags = models.TextField(blank=True, null=True)
+    user_defined_type = models.CharField(
+        max_length=50, null=True, default=None, db_index=True
+    )
 
     class Meta:
         ordering = ("name",)
@@ -41,6 +46,9 @@ class HistoryContentSetting(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True
     )
+    help = models.TextField(blank=True, null=True)
+    tags = models.TextField(blank=True, null=True)
+    user_defined_type = models.CharField(max_length=50, null=True, default=None)
 
     class Meta:
         ordering = ("-id",)
