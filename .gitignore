@@ -4,6 +4,7 @@
 .*
 *.py.bak
 cov.xml
+cs_test
 
 
 /site/
