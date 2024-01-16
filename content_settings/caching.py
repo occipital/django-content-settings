@@ -115,13 +115,17 @@ def reset_all_values(trigger_checksum=None):
         return
 
     DATA.POPULATED = True
-    for name in ALL.keys():
-        if name in db:
+    for name, cs_type in ALL.items():
+        if cs_type.constant:
+            set_new_value(name, ALL[name].default)
+
+        elif name in db:
             set_new_value(
                 name,
                 db[name].value,
                 version=(None if settings.DEBUG else db[name].version),
             )
+
         else:
             if VALUES_ONLY_FROM_DB:
                 raise AssertionError(f"VALUES_ONLY_FROM_DB: {name} is not in DB")
@@ -157,6 +161,9 @@ def recalc_checksums():
     db_values = {}
 
     for name in set(ALL.keys()) | set(db.keys()):
+        if name not in ALL or ALL[name].constant:
+            continue
+
         if name in db:
             db_versions[name] = db[name].version
             db_values[name] = db[name].value

@@ -25,6 +25,7 @@ class BaseSetting:
 class SimpleString(BaseSetting):
     """
      Attributes:
+    - constant (bool): Whether the setting is constant (can not be changed).
     - cls_field (forms.CharField): The form field class to use for the setting.
     - widget (forms.Widget): The form widget to use for the cls_field.
     - widget_attrs (Optional[dict]): Optional attributes for the widget initiation.
@@ -43,6 +44,7 @@ class SimpleString(BaseSetting):
     - overwrite_user_defined (bool): Whether the setting can overwrite a user defined setting.
     """
 
+    constant: bool = False
     cls_field: forms.CharField = forms.CharField
     widget: forms.Widget = forms.TextInput
     widget_attrs: Optional[dict] = None

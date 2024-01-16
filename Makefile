@@ -15,3 +15,6 @@ doc:
 
 publish:
 	poetry publish --build
+
+cs-test:
+	poetry run poetry run python cs_test/manage.py runserver
