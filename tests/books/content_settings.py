@@ -72,3 +72,9 @@ BOOK_RICH_DESCRIPTION = DjangoModelTemplate(
     admin_preview_as=PREVIEW_HTML,
     help="The description of the book",
 )
+
+AUTHOR = SimpleString(
+    "Alexandr Lyabah",
+    constant=True,
+    fetch_permission=permissions.any,
+)

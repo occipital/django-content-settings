@@ -96,6 +96,7 @@ def test_fetch_group_suffix():
         ["staff", "open-date", 200],
         ["staff", "OPEN-DATE", 200],
         ["staff", "OPEN_DATE", 200],
+        ["anonymous", "author", 200],
     ],
 )
 def test_fetch_permissions(client, name, status_code):

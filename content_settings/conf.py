@@ -85,7 +85,10 @@ def set_initial_values_for_db(apply=False):
     from content_settings.models import ContentSetting, HistoryContentSetting
 
     changes = []
-    for k in ALL.keys():
+    for k, cs_type in ALL.items():
+        if cs_type.constant:
+            continue
+
         try:
             ContentSetting.objects.get(name=k)
         except ContentSetting.DoesNotExist:
@@ -101,6 +104,14 @@ def set_initial_values_for_db(apply=False):
 
     for cs in ContentSetting.objects.all():
         if cs.name in ALL:
+            if ALL[cs.name].constant:
+                if apply:
+                    cs.delete()
+                    HistoryContentSetting.update_last_record_for_name(cs.name)
+
+                changes.append((cs.name, "delete"))
+                continue
+
             if cs.version != ALL[cs.name].version:
                 if apply:
                     cs.value = ALL[cs.name].default
@@ -116,6 +127,8 @@ def set_initial_values_for_db(apply=False):
                 HistoryContentSetting.update_last_record_for_name(cs.name)
 
             changes.append((cs.name, "delete"))
+
+    return changes
 
 
 content_settings = _Settings()

@@ -235,6 +235,10 @@ class ContentSettingAdmin(admin.ModelAdmin):
             help = ALL[obj.name].get_help()
         except KeyError:
             return "(the setting is not using)"
+
+        if ALL[obj.name].constant:
+            return "(the setting is not using)"
+
         if obj.value.replace("\r", "") != ALL[obj.name].default:
             help = "<i>(value is not default)</i> <br>" + help
         return mark_safe(help)
@@ -244,10 +248,13 @@ class ContentSettingAdmin(admin.ModelAdmin):
             tags = ALL[obj.name].get_tags()
         except KeyError:
             return "(the setting is not using)"
-        else:
-            if not tags:
-                return "---"
-            return ", ".join(tags)
+
+        if ALL[obj.name].constant:
+            return "(the setting is not using)"
+
+        if not tags:
+            return "---"
+        return ", ".join(tags)
 
     def marks(self, obj):
         return mark_safe(
@@ -262,12 +269,25 @@ class ContentSettingAdmin(admin.ModelAdmin):
 
     def py_data(self, obj):
         try:
-            return mark_safe(ALL[obj.name].get_admin_preview_value(obj.value, obj.name))
+            cs_type = ALL[obj.name]
         except KeyError:
             return ""
 
+        if cs_type.constant:
+            return ""
+
+        return mark_safe(cs_type.get_admin_preview_value(obj.value, obj.name))
+
     def default_value(self, obj):
         from django.utils.html import escape
+
+        try:
+            cs_type = ALL[obj.name]
+        except KeyError:
+            return ""
+
+        if cs_type.constant:
+            return ""
 
         attr_default = (
             ALL[obj.name]
@@ -275,15 +295,12 @@ class ContentSettingAdmin(admin.ModelAdmin):
             .replace("\n", "&NewLine;")
             .replace('"', "&quot;")
         )
-        try:
-            return mark_safe(
-                f"""
-            <pre class="default_value">{escape(ALL[obj.name].default)}</pre>
-            <a class="reset_default" data-value="{attr_default}" style="cursor: pointer; color:var(--link-fg)">Reset ("save" is required for applying)</a>
-            """
-            )
-        except KeyError:
-            return ""
+        return mark_safe(
+            f"""
+        <pre class="default_value">{escape(cs_type.default)}</pre>
+        <a class="reset_default" data-value="{attr_default}" style="cursor: pointer; color:var(--link-fg)">Reset ("save" is required for applying)</a>
+        """
+        )
 
     def fetch_one_setting(self, obj):
         if not obj.name:
