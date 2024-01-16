@@ -46,7 +46,7 @@ content_settings.TITLE
 In template:
 
 ```html
-<h2>{{CONTENT_SETTINGS>TITLE}}</h2>
+<h2>{{CONTENT_SETTINGS.TITLE}}</h2>
 ```
 
 In API:
