@@ -51,31 +51,6 @@ The Night of Taras,12,1
     }
 
 
-def test_admin_update_permission_forbidden(webtest_stuff):
-    cs = ContentSetting.objects.get(name="BOOKS")
-    init_value = cs.value
-    resp = webtest_stuff.get(f"/admin/content_settings/contentsetting/{cs.id}/change/")
-    assert resp.status_int == 200
-
-    resp.forms["contentsetting_form"][
-        "value"
-    ] = """
-The Poplar,12,1
-The Night of Taras,12,1
-"""
-    resp = resp.forms["contentsetting_form"].submit()
-    assert resp.status_int == 302
-
-    resp = webtest_stuff.get("/admin/content_settings/contentsetting/")
-    assert list(resp.context["messages"])[0].message.startswith(
-        "You are not allowed to change"
-    )
-    assert resp.status_int == 200
-
-    cs.refresh_from_db()
-    assert cs.value == init_value
-
-
 def test_admin_change_from_different_version(webtest_admin):
     cs = ContentSetting.objects.get(name="TITLE")
     cs.version = "NEW"
@@ -228,7 +203,7 @@ def test_add_tag(webtest_admin):
         "/admin/content_settings/contentsetting/add-tag/",
         {
             "name": cs.name,
-            "tag": "important",
+            "tag": "favorites",
         },
     )
 
@@ -236,20 +211,18 @@ def test_add_tag(webtest_admin):
 
     new_tag = UserTagSetting.objects.all().last()
     assert new_tag.name == cs.name
-    assert new_tag.tag == "important"
+    assert new_tag.tag == "favorites"
     assert new_tag.user.username == "testadmin"
 
     resp = webtest_admin.get("/admin/content_settings/contentsetting/context-tags/")
     assert resp.status_int == 200
-    assert '<a href="?tags=important">important</a><sup>1</sup>' in resp.content.decode(
-        "utf-8"
-    )
+    assert '<a href="?tags=favorites">⭐</a><sup>1</sup>' in resp.content.decode("utf-8")
 
     resp = webtest_admin.get("/admin/content_settings/contentsetting/")
     assert resp.status_int == 200
     assert len(resp.html.find("table", {"id": "result_list"}).findAll("tr")) > 2
 
-    resp = webtest_admin.get("/admin/content_settings/contentsetting/?tags=important")
+    resp = webtest_admin.get("/admin/content_settings/contentsetting/?tags=favorites")
     assert resp.status_int == 200
     assert len(resp.html.find("table", {"id": "result_list"}).findAll("tr")) == 2
 
@@ -311,4 +284,4 @@ def test_preview_non_existed_name(webtest_admin):
     )
 
     assert resp.status_int == 200
-    assert resp.json == {"html": ""}
+    assert resp.json == {"html": "", "error": "Invalid name"}

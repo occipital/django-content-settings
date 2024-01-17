@@ -52,7 +52,11 @@ def pytest_configure(config):
         ),
         PASSWORD_HASHERS=("django.contrib.auth.hashers.MD5PasswordHasher",),
         CONTENT_SETTINGS_USER_DEFINED_TYPES=[
-            ("line", "content_settings.types.basic.SimpleString", "Line"),
+            (
+                "line",
+                "tests.books.content_settings.PublicSimpleString",
+                "Line (Public)",
+            ),
             ("text", "content_settings.types.basic.SimpleText", "Text"),
             ("html", "content_settings.types.basic.SimpleHTML", "HTML"),
         ],

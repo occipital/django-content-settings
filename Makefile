@@ -18,3 +18,6 @@ publish:
 
 cs-test:
 	poetry run poetry run python cs_test/manage.py runserver
+
+cs-test-migrate:
+	poetry run poetry run python cs_test/manage.py migrate

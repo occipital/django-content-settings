@@ -3,6 +3,7 @@ from collections import defaultdict
 
 from django.contrib import admin
 from django.forms import ModelForm
+from django import forms
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.contrib.admin.views.main import ChangeList
@@ -14,18 +15,23 @@ from django.utils.text import capfirst
 from django.template.response import TemplateResponse
 from django.contrib.messages import add_message, ERROR
 from django.utils.translation import gettext as _
+from django.db.models import Q
 
 
 from .models import ContentSetting, HistoryContentSetting, UserTagSetting
 from .context_managers import content_settings_context
-from .conf import ALL
-from .settings import USER_TAGS
+from .conf import ALL, USER_DEFINED_TYPES_INSTANCE
+from .settings import USER_TAGS, USER_DEFINED_TYPES
+from .caching import get_type_by_name
 
 
-def user_able_to_update(user, name):
-    if name not in ALL:
+def user_able_to_update(user, name, user_defined_type=None):
+    cs_type = get_type_by_name(name)
+    if cs_type is None and user_defined_type is not None:
+        cs_type = USER_DEFINED_TYPES_INSTANCE[user_defined_type]()
+    if cs_type is None:
         return False
-    return ALL[name].update_permission is None or ALL[name].update_permission(user)
+    return cs_type.update_permission is None or cs_type.update_permission(user)
 
 
 TAGS_PARAM = "tags"
@@ -52,24 +58,35 @@ class SettingsChangeList(ChangeList):
         if not tags:
             return q
 
-        all_keys = []
-        user_settings = UserTagSetting.get_user_settings(request.user)
-        for name, val in ALL.items():
-            val_tags = val.get_tags() | user_settings[name]
-            if not val_tags or tags - val_tags:
+        user_settings = list(
+            UserTagSetting.objects.filter(user=request.user, tag__in=tags).values_list(
+                "name", flat=True
+            )
+        )
+        if user_settings:
+            q = q.filter(name__in=user_settings)
+
+        combine = Q()
+        for tag in tags:
+            if tag in USER_TAGS:
                 continue
+            combine &= Q(tags__iregex=rf"(^|\n){tag}($|\n)")
 
-            all_keys.append(name)
-
-        return q.filter(name__in=all_keys)
+        return q.filter(combine)
 
 
 class ContentSettinForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(ContentSettinForm, self).__init__(*args, **kwargs)
-        if self.instance.name and self.instance.name in ALL:
-            self.fields["value"] = ALL[self.instance.name].field
+        if self.instance.name:
+            cs_type = get_type_by_name(self.instance.name)
+            self.fields["value"] = cs_type.field
         self.fields["value"].strip = False
+
+        if "user_defined_type" in self.fields:
+            self.fields["user_defined_type"].widget = forms.Select(
+                choices=[(v[0], v[2]) for v in USER_DEFINED_TYPES]
+            )
 
     def save(self, *args, **kwargs):
         return super().save(*args, **kwargs)
@@ -80,15 +97,16 @@ class ContentSettinForm(ModelForm):
 
 
 class ContentSettingAdmin(admin.ModelAdmin):
-    list_display = ["name", "value", "help", "tags", "marks"]
+    list_display = ["name", "value", "setting_help", "setting_tags", "marks"]
     list_editable = [
         "value",
     ]
-    search_fields = ["name", "value"]
+    search_fields = ["name", "value", "tags", "help"]
     readonly_fields = [
         "py_data",
         "name",
-        "help",
+        "setting_help",
+        "setting_tags",
         "version",
         "default_value",
         "fetch_one_setting",
@@ -97,7 +115,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
     form = ContentSettinForm
 
     def save_model(self, request, obj, form, change):
-        if user_able_to_update(request.user, obj.name):
+        if user_able_to_update(request.user, obj.name, obj.user_defined_type):
             super().save_model(request, obj, form, change)
             HistoryContentSetting.update_last_record_for_name(obj.name, request.user)
         else:
@@ -107,24 +125,30 @@ class ContentSettingAdmin(admin.ModelAdmin):
                 _("You are not allowed to change %(name)s") % {"name": obj.name},
             )
 
-    def get_search_results(self, request, queryset, search_term):
-        qs, search_use_distinct = super().get_search_results(
-            request, queryset, search_term
-        )
+    def get_readonly_fields(self, request, obj=None):
+        if not USER_DEFINED_TYPES or obj and not obj.user_defined_type:
+            return super().get_readonly_fields(request, obj)
 
-        if search_term:
-            help_names = [
-                name
-                for name, value in ALL.items()
-                if search_term.lower() in value.help.lower()
-            ]
-            help_names = set(help_names).difference(
-                set(qs.values_list("name", flat=True))
+        return [
+            v
+            for v in super().get_readonly_fields(request, obj)
+            if v
+            not in (
+                "name",
+                "setting_help",
+                "setting_tags",
             )
-            if help_names:
-                qs = qs.union(ContentSetting.objects.filter(name__in=help_names))
+        ]
 
-        return qs, search_use_distinct
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        if USER_DEFINED_TYPES and not obj or obj.user_defined_type:
+            kwargs["fields"] = ["user_defined_type", "name", "value", "help", "tags"]
+        else:
+            kwargs["fields"] = [
+                "value",
+            ]
+
+        return super().get_form(request, obj=None, change=False, **kwargs)
 
     def get_changelist(self, request, **kwargs):
         return SettingsChangeList
@@ -154,8 +178,8 @@ class ContentSettingAdmin(admin.ModelAdmin):
 
         tags_stat = defaultdict(int)
         user_settings = UserTagSetting.get_user_settings(request.user)
-        for name, val in ALL.items():
-            val_tags = val.get_tags() | user_settings[name]
+        for cs in ContentSetting.objects.all():
+            val_tags = cs.tags_set | user_settings[cs.name]
             if selected_tags and (not val_tags or selected_tags - val_tags):
                 continue
 
@@ -224,37 +248,43 @@ class ContentSettingAdmin(admin.ModelAdmin):
     def get_changelist_form(self, request, **kwargs):
         return ContentSettinForm
 
-    def has_delete_permission(self, *args):
-        return False
+    def has_delete_permission(self, request, obj=None):
+        default_del_permission = super().has_delete_permission(request, obj)
+        if not default_del_permission or not USER_DEFINED_TYPES:
+            return False
+        return not obj or obj.user_defined_type is not None
 
     def has_add_permission(self, *args):
-        return False
+        return super().has_add_permission(*args) and USER_DEFINED_TYPES
 
-    def help(self, obj):
-        try:
-            help = ALL[obj.name].get_help()
-        except KeyError:
+    def has_change_permission(self, request, obj=None):
+        default_change_permission = super().has_change_permission(request, obj)
+        if not default_change_permission:
+            return False
+        if not obj:
+            return True
+        return user_able_to_update(request.user, obj.name)
+
+    def setting_help(self, obj):
+        cs_type = get_type_by_name(obj.name)
+        if cs_type is None or cs_type.constant:
+            return "(the setting is not using)"
+        return mark_safe(obj.help)
+
+    setting_help.short_description = "Help"
+
+    def setting_tags(self, obj):
+        cs_type = get_type_by_name(obj.name)
+        if cs_type is None or cs_type.constant:
             return "(the setting is not using)"
 
-        if ALL[obj.name].constant:
-            return "(the setting is not using)"
-
-        if obj.value.replace("\r", "") != ALL[obj.name].default:
-            help = "<i>(value is not default)</i> <br>" + help
-        return mark_safe(help)
-
-    def tags(self, obj):
-        try:
-            tags = ALL[obj.name].get_tags()
-        except KeyError:
-            return "(the setting is not using)"
-
-        if ALL[obj.name].constant:
-            return "(the setting is not using)"
+        tags = obj.tags_set
 
         if not tags:
             return "---"
         return ", ".join(tags)
+
+    setting_tags.short_description = "Tags"
 
     def marks(self, obj):
         return mark_safe(
@@ -268,12 +298,9 @@ class ContentSettingAdmin(admin.ModelAdmin):
         )
 
     def py_data(self, obj):
-        try:
-            cs_type = ALL[obj.name]
-        except KeyError:
-            return ""
+        cs_type = get_type_by_name(obj.name)
 
-        if cs_type.constant:
+        if cs_type is None or cs_type.constant:
             return ""
 
         return mark_safe(cs_type.get_admin_preview_value(obj.value, obj.name))
@@ -281,17 +308,13 @@ class ContentSettingAdmin(admin.ModelAdmin):
     def default_value(self, obj):
         from django.utils.html import escape
 
-        try:
-            cs_type = ALL[obj.name]
-        except KeyError:
-            return ""
+        cs_type = get_type_by_name(obj.name)
 
-        if cs_type.constant:
+        if cs_type is None or cs_type.constant:
             return ""
 
         attr_default = (
-            ALL[obj.name]
-            .default.replace("&", "&amp;")
+            cs_type.default.replace("&", "&amp;")
             .replace("\n", "&NewLine;")
             .replace('"', "&quot;")
         )
@@ -384,10 +407,24 @@ class ContentSettingAdmin(admin.ModelAdmin):
             )
 
     def preview_setting(self, request):
-        try:
-            setting = ALL[request.POST["name"]]
-        except KeyError:
-            return JsonResponse({"html": ""})
+        if request.POST.get("user_defined_type"):
+            try:
+                cs_type_instance = USER_DEFINED_TYPES_INSTANCE[
+                    request.POST["user_defined_type"]
+                ]
+            except KeyError:
+                return JsonResponse(
+                    {
+                        "error": "Invalid user_defined_type",
+                        "html": "",
+                    }
+                )
+            else:
+                cs_type = cs_type_instance()
+        else:
+            cs_type = get_type_by_name(request.POST["name"])
+        if cs_type is None or cs_type.constant:
+            return JsonResponse({"html": "", "error": "Invalid name"})
 
         value = request.POST["value"]
 
@@ -396,8 +433,9 @@ class ContentSettingAdmin(admin.ModelAdmin):
             for name, value in request.POST.items()
             if name.startswith("o_")
         }
+
         try:
-            setting.validate_value(value)
+            cs_type.validate_value(value)
         except Exception as e:
             return JsonResponse(
                 {
@@ -407,7 +445,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
         with content_settings_context(**other_values):
             return JsonResponse(
                 {
-                    "html": setting.get_admin_preview_value(
+                    "html": cs_type.get_admin_preview_value(
                         value, request.POST["name"]
                     ),
                 }

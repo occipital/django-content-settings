@@ -1,8 +1,10 @@
-from django.db.models.signals import post_save, post_migrate, post_delete
+from django.db.models.signals import post_save, post_migrate, post_delete, pre_save
 from django.core.signals import request_started
 from django.db.backends.signals import connection_created
 from django.apps import apps
 from django.db import transaction
+
+from .settings import USER_DEFINED_TYPES
 
 from django.dispatch import receiver
 
@@ -31,8 +33,21 @@ def create_history_settings(sender, instance, created, **kwargs):
         name=instance.name,
         value=instance.value,
         version=instance.version,
+        tags=instance.tags,
+        help=instance.help,
         was_changed=not created,
     )
+
+
+if USER_DEFINED_TYPES:
+
+    @receiver(pre_save, sender=ContentSetting)
+    def check_user_defined_type_version(sender, instance, **kwargs):
+        from .conf import USER_DEFINED_TYPES_VERSION
+
+        if instance.user_defined_type not in USER_DEFINED_TYPES_VERSION:
+            return
+        instance.version = USER_DEFINED_TYPES_VERSION[instance.user_defined_type]
 
 
 @receiver(post_delete, sender=ContentSetting)
@@ -41,6 +56,8 @@ def create_history_settings_delete(sender, instance, **kwargs):
         name=instance.name,
         value=instance.value,
         version=instance.version,
+        tags=instance.tags,
+        help=instance.help,
         was_changed=None,
     )
 

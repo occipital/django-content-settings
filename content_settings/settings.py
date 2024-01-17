@@ -17,6 +17,10 @@ CHECKSUM_KEY_PREFIX = (
     get_setting("CHECKSUM_KEY_PREFIX", "CS_CHECKSUM_") + VERSION + "__"
 )
 
+CHECKSUM_USER_KEY_PREFIX = (
+    get_setting("CHECKSUM_KEY_PREFIX", "CS_USER_CHECKSUM_") + VERSION + "__"
+)
+
 USER_TAGS = get_setting(
     "USER_TAGS",
     {
@@ -40,6 +44,9 @@ CONTEXT_PROCESSORS = get_setting("CONTEXT_PROCESSORS", [])
 USER_DEFINED_TYPES = get_setting("USER_DEFINED_TYPES", [])
 
 assert isinstance(USER_DEFINED_TYPES, list), "USER_DEFINED_TYPES must be a list"
+assert len(USER_DEFINED_TYPES) == len(
+    set([val[0] for val in USER_DEFINED_TYPES])
+), "USER_DEFINED_TYPES must have unique slugs"
 for i, val in enumerate(USER_DEFINED_TYPES):
     assert len(val) == 3, f"USER_DEFINED_TYPES[{i}] must be a tuple of 3 elements"
     assert all(

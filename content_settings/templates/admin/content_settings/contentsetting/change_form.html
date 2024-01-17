@@ -8,10 +8,14 @@
         const $id = $('#id_value');
         const $value = $('.field-py_data div.readonly').first();
         const $label = $('.field-py_data label');
-        var syncedValue = $id.val();
+        const $user_defined_type = $('#id_user_defined_type');
+        const genSyncedValue = function() {
+            return $id.val() + '::' + ($user_defined_type.length ? $user_defined_type.val() : '');
+        }
+        var syncedValue = genSyncedValue();
         setInterval(function(){
-            if (syncedValue == $id.val()) { return }
-            const newValue = $id.val();
+            if (syncedValue == genSyncedValue()) { return }
+            const newValue = genSyncedValue();
             $.ajax({
                 "method": "POST",
                 "crossDomain": true,
@@ -20,14 +24,15 @@
                 },
                 "url": PREVIEW_URL,
                 "data": {
-                    "name": objName, "value": newValue,
+                    "name": objName, "value": $id.val(),
+                    "user_defined_type": ($user_defined_type.length ? $user_defined_type.val() : ''),
                     "csrfmiddlewaretoken": $('[name=csrfmiddlewaretoken]').val(),
                 },
                 "success": function(value) {
-                    if (value.html) {
-                        $value.html(value.html);
-                    } else if (value.error) {
+                    if (value.error) {
                         $value.html('<pre style="color:red">' + value.error + '</pre>');
+                    } else {
+                        $value.html(value.html);
                     }
                     syncedValue = newValue;
                 }

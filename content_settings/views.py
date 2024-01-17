@@ -3,6 +3,7 @@ from django.views.generic import View
 from content_settings.conf import content_settings
 
 from .conf import ALL, split_attr
+from .caching import get_type_by_name
 
 
 class FetchSettingsView(View):
@@ -14,8 +15,11 @@ class FetchSettingsView(View):
             prefix, name, suffix = split_attr(val)
             assert prefix is None, "prefix is not None"
 
-            setting = ALL[name]
-            if not setting.fetch_permission or not setting.fetch_permission(
+            cs_type = get_type_by_name(name)
+            if cs_type is None:
+                continue
+
+            if not cs_type.fetch_permission or not cs_type.fetch_permission(
                 request.user
             ):
                 continue
@@ -24,23 +28,21 @@ class FetchSettingsView(View):
             else:
                 setting_name = f"{name}__{suffix}"
             value = getattr(content_settings, setting_name)
-            ret[setting_name] = setting.json_view_value(request, value)
+            ret[setting_name] = cs_type.json_view_value(request, value)
 
         return JsonResponse(ret)
 
 
 def fetch_one_setting(request, name, suffix=None):
     settings_name = name.upper().replace("-", "_")
+    cs_type = get_type_by_name(settings_name)
+    if cs_type is None:
+        return HttpResponseNotFound("value not found")
 
-    try:
-        setting = ALL[settings_name]
-    except KeyError:
-        return HttpResponseNotFound("wrong name")
-
-    if setting.fetch_permission is None:
+    if cs_type.fetch_permission is None:
         return HttpResponseNotFound("hidden")
 
-    if not setting.fetch_permission(request.user):
+    if not cs_type.fetch_permission(request.user):
         return HttpResponseForbidden("permission denied")
 
     if suffix is not None:
@@ -49,4 +51,4 @@ def fetch_one_setting(request, name, suffix=None):
 
     value = getattr(content_settings, settings_name)
 
-    return JsonResponse({settings_name: setting.json_view_value(request, value)})
+    return JsonResponse({settings_name: cs_type.json_view_value(request, value)})

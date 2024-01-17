@@ -1,13 +1,22 @@
 from collections import defaultdict
 
 from django.db import models
-from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.utils import timezone
 from django.conf import settings
 
 
 class ContentSetting(models.Model):
-    name = models.CharField(max_length=200, unique=True)
+    name = models.CharField(
+        max_length=200,
+        unique=True,
+        validators=[
+            RegexValidator(
+                regex=r"^[A-Z][A-Z0-9_]*$",
+                message="Value must be uppercase, can include numbers and underscores, and cannot start with a number.",
+            ),
+        ],
+    )
     value = models.TextField(blank=True)
     version = models.CharField(max_length=50, null=True)
     help = models.TextField(blank=True, null=True)
@@ -18,6 +27,13 @@ class ContentSetting(models.Model):
 
     class Meta:
         ordering = ("name",)
+
+    @property
+    def tags_set(self):
+        if not self.tags:
+            return set()
+
+        return set(tag for tag in self.tags.splitlines() if tag.strip())
 
     def __str__(self):
         return self.name

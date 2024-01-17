@@ -102,7 +102,7 @@
 
         $('.field-value textarea,.field-value input').focus(function(){
             $(".value_preview").remove();
-            $(this).after('<div style="margin-top: 10px" class="value_preview">Preview Loading...</div>');
+            $(this).after('<div style="margin-top: 10px" class="value_preview"></div>');
             if (currentInterval) {
                 clearInterval(currentInterval);
             }
@@ -137,10 +137,10 @@
                     "url": PREVIEW_URL,
                     "data": data,
                     "success": function(value) {
-                        if (value.html) {
-                            $('.value_preview').html(value.html);
-                        } else if (value.error) {
+                        if (value.error) {
                             $('.value_preview').html('<pre style="color:red">' + value.error + '</pre>');
+                        } else {
+                            $('.value_preview').html(value.html);
                         }
                         currentValue = newValue;
                         currentAjax = undefined;

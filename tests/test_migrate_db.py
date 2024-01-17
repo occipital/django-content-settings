@@ -24,3 +24,11 @@ def test_created_constant():
 def test_created_unkown():
     ContentSetting.objects.create(name="UNKWONW", value="John Doe")
     assert set_initial_values_for_db() == [("UNKWONW", "delete")]
+
+
+def test_update_version_value():
+    cs = ContentSetting.objects.get(name="TITLE")
+    cs.version += "2"
+    cs.save()
+
+    assert set_initial_values_for_db() == [("TITLE", "update")]
