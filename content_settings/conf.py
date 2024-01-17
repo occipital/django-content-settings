@@ -13,6 +13,7 @@ CLS_ATTRIBUTE_PREFIX = "type"
 USER_DEFINED_TYPES_INSTANCE = {}
 USER_DEFINED_TYPES_VERSION = {}
 ALL = {}
+PREFIXSES = {}
 
 if USER_DEFINED_TYPES:
     for slug, imp_line, name in USER_DEFINED_TYPES:
@@ -23,6 +24,26 @@ if USER_DEFINED_TYPES:
             type_class, is_user_defined=True, version=type_class.version
         )
         USER_DEFINED_TYPES_VERSION[slug] = type_class.version
+
+
+def register_prefix(name):
+    def _cover(func):
+        PREFIXSES[name] = func
+        return func
+
+    return _cover
+
+
+@register_prefix("lazy")
+def lazy_prefix(name, suffix):
+    return get_type_by_name(name).lazy_give(lambda: get_value(name, suffix), suffix)
+
+
+@register_prefix("type")
+def type_prefix(name, suffix):
+    assert not suffix, "type prefix can not have suffix"
+
+    return get_type_by_name(name)
 
 
 for app_config in apps.app_configs.values():
@@ -57,14 +78,14 @@ def split_attr(value):
     """
     splits the name of the attr on 3 parts: prefix, name, suffix
 
-    * prefix can only be LAZY_ATTRIBUTE_PREFIX or CLS_ATTRIBUTE_PREFIX
+    * prefix should be registered by register_prefix
     * name should be uppercase
     * suffix can be any string, but not uppercase
     """
     prefix = None
     parts = value.split("__")
 
-    if parts[0] in (LAZY_ATTRIBUTE_PREFIX, CLS_ATTRIBUTE_PREFIX):
+    if parts[0] in PREFIXSES:
         prefix = parts.pop(0)
 
     assert len(parts), f"Invalid attribute name: {value}; can not be only prefix"
@@ -87,14 +108,12 @@ def split_attr(value):
 class _Settings:
     def __getattr__(self, value):
         prefix, name, suffix = split_attr(value)
-        if prefix == CLS_ATTRIBUTE_PREFIX:
-            return get_type_by_name(name)
-        elif prefix == LAZY_ATTRIBUTE_PREFIX:
-            return get_type_by_name(name).lazy_give(
-                lambda: get_value(name, suffix), suffix
-            )
-        else:
-            return get_value(name, suffix)
+        if prefix:
+            assert (
+                prefix in PREFIXSES
+            ), f"Invalid attribute name: {value}; prefix not found"
+            return PREFIXSES[prefix](name, suffix)
+        return get_value(name, suffix)
 
     def __contains__(self, value):
         _, name, suffix = split_attr(value)
