@@ -40,7 +40,7 @@ class SimpleString(BaseSetting):
     - empty_is_none (bool): Whether an empty value should be treated as None.
     - admin_preview_as (str): The format to use for the admin preview.
     - suffixes (Tuple[str]): Suffixes that can be appended to the setting value.
-    - is_user_defined (bool): Whether the setting is defined in DB only. (should not be set in content_settings)
+    - user_defined_slug (str): it contains a slug from db If the setting is defined in DB only (should not be set in content_settings)
     - overwrite_user_defined (bool): Whether the setting can overwrite a user defined setting.
     - default (str): The default value for the setting.
     """
@@ -60,7 +60,7 @@ class SimpleString(BaseSetting):
     empty_is_none: bool = False
     admin_preview_as: str = PREVIEW_NONE
     suffixes: Tuple[str] = ()
-    is_user_defined: bool = False
+    user_defined_slug: Optional[str] = None
     overwrite_user_defined: bool = False
     default: str = ""
 

@@ -11,7 +11,7 @@ LAZY_ATTRIBUTE_PREFIX = "lazy"
 CLS_ATTRIBUTE_PREFIX = "type"
 
 USER_DEFINED_TYPES_INSTANCE = {}
-USER_DEFINED_TYPES_VERSION = {}
+USER_DEFINED_TYPES_INITIAL = {}
 ALL = {}
 PREFIXSES = {}
 
@@ -21,9 +21,9 @@ if USER_DEFINED_TYPES:
         type_module = import_module(".".join(imp_line_parts[:-1]))
         type_class = getattr(type_module, imp_line_parts[-1])
         USER_DEFINED_TYPES_INSTANCE[slug] = partial(
-            type_class, is_user_defined=True, version=type_class.version
+            type_class, user_defined_slug=slug, version=type_class.version
         )
-        USER_DEFINED_TYPES_VERSION[slug] = type_class.version
+        USER_DEFINED_TYPES_INITIAL[slug] = USER_DEFINED_TYPES_INSTANCE[slug]()
 
 
 def register_prefix(name):
@@ -46,6 +46,9 @@ def type_prefix(name, suffix):
     return get_type_by_name(name)
 
 
+# todo: register startswith prefix
+
+
 for app_config in apps.app_configs.values():
     app = app_config.name
     try:
@@ -61,15 +64,15 @@ for app_config in apps.app_configs.values():
 
         assert attr not in ALL, "Content Setting {} defined twice".format(attr)
 
-        if attr in ALL and not ALL[attr].is_user_defined:
+        if attr in ALL and not ALL[attr].user_defined_slug:
             raise AssertionError("Overwriting content setting {}".format(attr))
 
         if not attr.isupper():
             raise AssertionError("content setting {} should be uppercase".format(attr))
 
         assert (
-            not val.is_user_defined
-        ), "Do not set is_user_defined=True in content_settings.py"
+            not val.user_defined_slug
+        ), "Do not set user_defined_slug in content_settings.py"
 
         ALL[attr] = val
 
@@ -187,7 +190,10 @@ def set_initial_values_for_db(apply=False):
             if cs.user_defined_type:
                 if cs.user_defined_type not in USER_DEFINED_TYPES_INSTANCE:
                     execute(cs.name, "delete", lambda: cs.delete())
-                elif cs.version != USER_DEFINED_TYPES_VERSION[cs.user_defined_type]:
+                elif (
+                    cs.version
+                    != USER_DEFINED_TYPES_INITIAL[cs.user_defined_type].version
+                ):
                     cs_type = USER_DEFINED_TYPES_INSTANCE[cs.user_defined_type]()
                     execute_update_version(
                         cs.name, cs, value=cs_type.default, version=cs_type.version

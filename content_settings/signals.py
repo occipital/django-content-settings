@@ -43,11 +43,13 @@ if USER_DEFINED_TYPES:
 
     @receiver(pre_save, sender=ContentSetting)
     def check_user_defined_type_version(sender, instance, **kwargs):
-        from .conf import USER_DEFINED_TYPES_VERSION
+        from .conf import USER_DEFINED_TYPES_INITIAL
 
-        if instance.user_defined_type not in USER_DEFINED_TYPES_VERSION:
+        if instance.user_defined_type not in USER_DEFINED_TYPES_INITIAL:
             return
-        instance.version = USER_DEFINED_TYPES_VERSION[instance.user_defined_type]
+        instance.version = USER_DEFINED_TYPES_INITIAL[
+            instance.user_defined_type
+        ].version
 
 
 @receiver(post_delete, sender=ContentSetting)

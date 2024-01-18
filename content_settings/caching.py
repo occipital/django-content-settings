@@ -35,9 +35,9 @@ def get_user_cache_key():
     if not USER_DEFINED_TYPES:
         return None
 
-    from .conf import USER_DEFINED_TYPES_VERSION
+    from .conf import USER_DEFINED_TYPES_INITIAL
 
-    return calc_checksum(USER_DEFINED_TYPES_VERSION)
+    return calc_checksum({k: v.version for k, v in USER_DEFINED_TYPES_INITIAL.items()})
 
 
 def calc_checksum(values):
@@ -113,22 +113,13 @@ def get_checksum_from_user_local():
 def set_new_type(name, cs):
     from .conf import USER_DEFINED_TYPES_INSTANCE
 
-    if (name, cs.user_defined_type) in DATA.ALL_USER_DEFINES_CACHE:
-        cs_type = DATA.ALL_USER_DEFINES_CACHE[(name, cs.user_defined_type)]
-    else:
-        cs_type_partial = USER_DEFINED_TYPES_INSTANCE[cs.user_defined_type]
+    cs_type = DATA.ALL_USER_DEFINES.get(name)
 
-        tags = set()
-        if cs.tags:
-            for tag in cs.tags.splitlines():
-                if tag.strip():
-                    tags.add(tag.strip())
-
-        cs_type = cs_type_partial(
+    if not cs_type or cs_type.tags != cs.tags_set or cs_type.help != cs.help:
+        cs_type = USER_DEFINED_TYPES_INSTANCE[cs.user_defined_type](
             help=cs.help,
-            tags=tags,
+            tags=cs.tags_set,
         )
-        DATA.ALL_USER_DEFINES_CACHE[(name, cs.user_defined_type)] = cs_type
 
     DATA.ALL_USER_DEFINES[name] = cs_type
 
@@ -193,7 +184,6 @@ def reset_all_values():
         DATA.ALL_RAW_VALUES = {}
         DATA.ALL_VALUES_CHECKSUM = None
         DATA.ALL_USER_DEFINES = {}
-        DATA.ALL_USER_DEFINES_CACHE = {}
         DATA.POPULATED = False
 
     try:
@@ -299,15 +289,15 @@ def recalc_checksums():
 
 
 def recalc_user_checksums(db):
-    from .conf import USER_DEFINED_TYPES_VERSION
+    from .conf import USER_DEFINED_TYPES_INITIAL
 
     values = {}
     for name, cs in db.items():
         if not cs.user_defined_type:
             continue
-        if cs.user_defined_type not in USER_DEFINED_TYPES_VERSION:
+        if cs.user_defined_type not in USER_DEFINED_TYPES_INITIAL:
             break
-        if cs.version == USER_DEFINED_TYPES_VERSION[cs.user_defined_type]:
+        if cs.version == USER_DEFINED_TYPES_INITIAL[cs.user_defined_type].version:
             values[name] = cs.user_defined_type + CACHE_SPLITER + db[name].value
         elif name in DATA.ALL_RAW_VALUES:
             values[name] = (
