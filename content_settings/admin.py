@@ -453,8 +453,20 @@ class ContentSettingAdmin(admin.ModelAdmin):
 
 
 class HistoryContentSettingAdmin(admin.ModelAdmin):
-    list_display = ["name", "value", "version", "tags", "help", "was_changed"]
-    list_filter = ["name", "was_changed"]
+    list_display = [
+        "name",
+        "value",
+        "user_defined_type",
+        "version",
+        "tags",
+        "help",
+        "was_changed",
+        "user",
+    ]
+    list_filter = [
+        "was_changed",
+        "name",
+    ]
     search_fields = ["name", "value", "tags", "help"]
 
     def has_delete_permission(self, request, obj=None):
