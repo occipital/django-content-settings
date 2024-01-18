@@ -1,5 +1,21 @@
 # Changelog
 
+📖 - documentation is required
+
+## 0.5
+
+* 📖 User Defined Variables - variables can now be created not only in code but also in admin
+* 📖 `overwrite_user_defined` - new attribute that allows overwrite user defined variable
+* 📖 `constant` - new attribute that makes the code variable unchangable in admin panel and only default value is using
+* 📖 `conf.register_prefix` - decorator that allows you to registered a new prefix
+* 📖 `startswith__` - new built-in decorator, that returns all of the names that starts with NAME
+* `dir(content_settings)` - shows all of the registered variables
+* db now stores tags and help for all variables
+* 📖 `CHECKSUM_USER_KEY_PREFIX` and `USER_DEFINED_TYPES` two new settings
+* fix "Preview Loading..." for variables without preview
+* `caching.get_type_by_name` - new function
+* test covarage: 93%
+
 ### 0.4.4
 
 * built-in support huey and celery
