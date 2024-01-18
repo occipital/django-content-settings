@@ -27,6 +27,7 @@ class PublicSimpleString(SimpleString):
 TITLE = SimpleString(
     "Book Store",
     fetch_permission=permissions.any,
+    overwrite_user_defined=True,
     help="The title of the book store",
 )
 

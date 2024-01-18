@@ -250,7 +250,9 @@ def reset_code_values(db=None, trigger_checksum=None):
             set_new_value(name, ALL[name].default)
 
         elif name in db:
-            assert not db[name].user_defined_type, f"{name} is not a code setting"
+            assert (
+                not db[name].user_defined_type or cs_type.overwrite_user_defined
+            ), f"{name} is not a code setting and not overwrite_user_defined"
 
             set_new_value(
                 name,

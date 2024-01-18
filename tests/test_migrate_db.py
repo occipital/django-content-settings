@@ -32,3 +32,24 @@ def test_update_version_value():
     cs.save()
 
     assert set_initial_values_for_db() == [("TITLE", "update")]
+
+
+def test_overwrite_user_defined_allowed():
+    ContentSetting.objects.filter(name="TITLE").update(
+        user_defined_type="line", value="WOW Store"
+    )
+
+    assert set_initial_values_for_db(apply=True) == [("TITLE", "update")]
+
+    cs = ContentSetting.objects.get(name="TITLE")
+    assert not cs.user_defined_type
+    assert cs.value == "Book Store"
+
+
+def test_overwrite_user_defined_not_allowed():
+    ContentSetting.objects.filter(name="DESCRIPTION").update(
+        user_defined_type="line", value="WOW Store"
+    )
+
+    with pytest.raises(AssertionError):
+        set_initial_values_for_db(apply=True)

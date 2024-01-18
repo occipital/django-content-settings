@@ -153,13 +153,13 @@ def set_initial_values_for_db(apply=False):
             func()
             HistoryContentSetting.update_last_record_for_name(name)
 
-    def execute_update_version(name, cs, **kwargs):
-        def _():
+    def execute_update_obj(name, cs, **kwargs):
+        def _up():
             for k, v in kwargs.items():
                 setattr(cs, k, v)
             cs.save()
 
-        execute(name, "update", _)
+        execute(name, "update", _up)
 
     for k, cs_type in ALL.items():
         if cs_type.constant:
@@ -187,16 +187,28 @@ def set_initial_values_for_db(apply=False):
                 execute(cs.name, "delete", lambda: cs.delete())
                 continue
 
-            if cs.version != cs_type.version:
-                execute_update_version(
-                    cs.name, cs, value=cs_type.default, version=cs_type.version
-                )
-
             str_tags = get_str_tags(cs_type)
             str_help = cs_type.get_help()
 
-            if cs.tags != str_tags or cs.help != str_help:
-                execute_update_version(cs.name, cs, tags=str_tags, help=str_help)
+            assert (
+                not cs.user_defined_type or cs_type.overwrite_user_defined
+            ), f"{cs.name} is not a code setting and not overwrite_user_defined"
+
+            if (
+                cs.version != cs_type.version
+                or cs.user_defined_type
+                or cs.tags != str_tags
+                or cs.help != str_help
+            ):
+                execute_update_obj(
+                    cs.name,
+                    cs,
+                    value=cs_type.default,
+                    version=cs_type.version,
+                    tags=str_tags,
+                    help=str_help,
+                    user_defined_type=None,
+                )
 
         else:
             if cs.user_defined_type:
@@ -207,7 +219,7 @@ def set_initial_values_for_db(apply=False):
                     != USER_DEFINED_TYPES_INITIAL[cs.user_defined_type].version
                 ):
                     cs_type = USER_DEFINED_TYPES_INSTANCE[cs.user_defined_type]()
-                    execute_update_version(
+                    execute_update_obj(
                         cs.name, cs, value=cs_type.default, version=cs_type.version
                     )
             else:
