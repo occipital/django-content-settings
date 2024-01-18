@@ -1,4 +1,5 @@
 import pytest
+import re
 
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
@@ -93,7 +94,7 @@ def test_admin_change_but_cache_was_expired(webtest_admin):
     assert resp.json == {"TITLE": initial_value}
 
 
-def test_context_processor(webtest_admin, webtest_user):
+def test_admin_update(webtest_admin, webtest_user):
     resp = webtest_user.get("/books/")
     assert resp.status_int == 200
     assert resp.html.find("title").text == "Book Store"
@@ -109,6 +110,36 @@ def test_context_processor(webtest_admin, webtest_user):
 
     resp = webtest_user.get("/books/")
     assert resp.html.find("title").text == "New Title"
+
+
+def test_admin_update_history(webtest_admin):
+    cs = ContentSetting.objects.get(name="TITLE")
+    resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/history/")
+    assert resp.status_int == 200
+    assert len(resp.html.find("table", {"id": "change-history"}).find_all("tr")) == 2
+
+    resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/change/")
+    assert resp.status_int == 200
+
+    resp.forms["contentsetting_form"]["value"] = "New Title"
+    resp = resp.forms["contentsetting_form"].submit()
+    assert resp.status_int == 302
+
+    resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/history/")
+    assert resp.status_int == 200
+
+    assert len(resp.html.find("table", {"id": "change-history"}).find_all("tr")) == 3
+    assert (
+        re.sub(
+            r"\s+",
+            " ",
+            resp.html.find("table", {"id": "change-history"})
+            .find_all("tr")[1]
+            .find_all("td")[0]
+            .text.replace("\n", " "),
+        ).strip()
+        == "Changed by user testadmin"
+    )
 
 
 def test_preview_simple(webtest_admin):
