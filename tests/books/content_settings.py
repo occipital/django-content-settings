@@ -18,9 +18,16 @@ from content_settings import permissions
 
 from .models import Book
 
+
+class PublicSimpleString(SimpleString):
+    fetch_permission = staticmethod(permissions.any)
+    version = "3.0.0"
+
+
 TITLE = SimpleString(
     "Book Store",
     fetch_permission=permissions.any,
+    overwrite_user_defined=True,
     help="The title of the book store",
 )
 

@@ -22,6 +22,9 @@
             <th scope="col">{% translate 'Date/time' %}</th>
             <th scope="col">{% translate 'User' %}</th>
             <th scope="col">{% translate 'Value' %}</th>
+            <th scope="col">{% translate 'User Type' %}</th>
+            <th scope="col">{% translate 'Tags' %}</th>
+            <th scope="col">{% translate 'Help' %}</th>
         </tr>
         </thead>
         <tbody>
@@ -34,6 +37,9 @@
                 {{ action.user }}
             </td>
             <td><pre>{{ action.value }}</pre></td>
+            <td>{{action.user_defined_type_display}}</td>
+            <td>{% if action.tags %}<pre>{{action.tags}}</pre>{% endif %}</td>
+            <td>{% if action.help %}<pre>{{action.help}}</pre>{% endif %}</td>
         </tr>
         {% endfor %}
         </tbody>
