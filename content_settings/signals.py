@@ -35,6 +35,7 @@ def create_history_settings(sender, instance, created, **kwargs):
         version=instance.version,
         tags=instance.tags,
         help=instance.help,
+        user_defined_type=instance.user_defined_type,
         was_changed=not created,
     )
 

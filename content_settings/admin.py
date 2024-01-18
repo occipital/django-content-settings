@@ -452,4 +452,20 @@ class ContentSettingAdmin(admin.ModelAdmin):
             )
 
 
+class HistoryContentSettingAdmin(admin.ModelAdmin):
+    list_display = ["name", "value", "version", "tags", "help", "was_changed"]
+    list_filter = ["name", "was_changed"]
+    search_fields = ["name", "value", "tags", "help"]
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, *args):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
 admin.site.register(ContentSetting, ContentSettingAdmin)
+admin.site.register(HistoryContentSetting, HistoryContentSettingAdmin)

@@ -280,8 +280,6 @@ def check_update():
 
 
 def recalc_checksums():
-    """ """
-
     db = get_db_objects()
     recalc_code_checksums(db)
     if USER_DEFINED_TYPES:
@@ -311,6 +309,11 @@ def recalc_user_checksums(db):
 
 def recalc_code_checksums(db):
     from .conf import ALL
+
+    push_checksum(
+        calc_checksum({k: v.value for k, v in db.items()}),
+        calc_checksum({k: v.version for k, v in db.items()}),
+    )
 
     db_versions = {}
     db_values = {}

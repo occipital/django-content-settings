@@ -12,6 +12,7 @@ CLS_ATTRIBUTE_PREFIX = "type"
 
 USER_DEFINED_TYPES_INSTANCE = {}
 USER_DEFINED_TYPES_INITIAL = {}
+USER_DEFINED_TYPES_NAME = {}
 ALL = {}
 PREFIXSES = {}
 
@@ -24,6 +25,7 @@ if USER_DEFINED_TYPES:
             type_class, user_defined_slug=slug, version=type_class.version
         )
         USER_DEFINED_TYPES_INITIAL[slug] = USER_DEFINED_TYPES_INSTANCE[slug]()
+        USER_DEFINED_TYPES_NAME[slug] = name
 
 
 def register_prefix(name):
