@@ -19,3 +19,8 @@ def test_update_simple_text():
     reset_all_values()
 
     assert content_settings.TITLE == "New Title"
+
+
+def test_startswith():
+    assert content_settings.startswith__IS_ == {"IS_OPEN": True}
+    assert content_settings.startswith("IS_") == {"IS_OPEN": True}

@@ -48,7 +48,9 @@ def type_prefix(name, suffix):
     return get_type_by_name(name)
 
 
-# todo: register startswith prefix
+@register_prefix("startswith")
+def startswith_prefix(name, suffix):
+    return content_settings.startswith(name, suffix)
 
 
 for app_config in apps.app_configs.values():
@@ -119,6 +121,14 @@ class _Settings:
             ), f"Invalid attribute name: {value}; prefix not found"
             return PREFIXSES[prefix](name, suffix)
         return get_value(name, suffix)
+
+    def __dir__(self):
+        from .caching import get_all_names
+
+        return sorted(get_all_names() + dir(super()))
+
+    def startswith(self, value, suffix=None):
+        return {k: get_value(k, suffix) for k in dir(self) if k.startswith(value)}
 
     def __contains__(self, value):
         _, name, suffix = split_attr(value)

@@ -178,6 +178,12 @@ def get_db_objects():
     return {v.name: v for v in ContentSetting.objects.all()}
 
 
+def get_all_names():
+    if not is_populated():
+        return []
+    return list(DATA.ALL_VALUES.keys())
+
+
 def reset_all_values():
     if not is_populated():
         DATA.ALL_VALUES = {}
