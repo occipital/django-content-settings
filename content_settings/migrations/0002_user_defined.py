@@ -10,11 +10,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RenameIndex(
-            model_name="historycontentsetting",
-            new_name="content_set_name_86a215_idx",
-            old_name="static_cont_name_d40020_idx",
-        ),
         migrations.AddField(
             model_name="contentsetting",
             name="help",
