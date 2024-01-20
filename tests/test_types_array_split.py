@@ -20,6 +20,11 @@ from content_settings.types.array import (
 pytestmark = [pytest.mark.django_db(transaction=True)]
 
 
+def test_help():
+    var = SplitByFirstLine(split_default_key="EN", help="Some Help")
+    assert var.get_help() == "Some Help"
+
+
 def test_empty_line():
     var = SplitByFirstLine(split_default_key="EN")
     var.validate_value("")

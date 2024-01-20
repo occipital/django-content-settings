@@ -51,7 +51,7 @@ class SimpleString(BaseSetting):
     widget_attrs: Optional[dict] = None
     fetch_permission: Optional[str] = None
     update_permission: Optional[str] = None
-    help_format: Optional[str] = None
+    help_format: Optional[str] = ""
     help: Optional[str] = None
     value_required: bool = False
     version: str = ""
@@ -137,12 +137,10 @@ class SimpleString(BaseSetting):
         }
 
     def get_help_format(self) -> Optional[Union[str, Iterable[str]]]:
-        return self.help_format
+        yield self.help_format
 
     def get_help(self) -> Optional[str]:
-        help_format = self.get_help_format()
-        if help_format is not None and not isinstance(help_format, str):
-            help_format = "".join(help_format)
+        help_format = "".join(self.get_help_format())
         if help_format:
             return f"{self.help} <br><br> {help_format}"
         return self.help

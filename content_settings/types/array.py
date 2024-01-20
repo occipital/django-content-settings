@@ -280,20 +280,20 @@ class SplitByFirstLine(SimpleText):
             for k in values.keys():
                 self.get_split_key_validator()(k)
 
-    # def get_help_format(self):
-    #     yield from super().get_help_format()
-    #     yield from self.line_type.get_help_format()
+    def get_help_format(self):
+        yield from super().get_help_format()
+        yield from self.split_type.get_help_format()
 
 
 class SplitTranslation(SplitByFirstLine):
     split_default_key = "EN"
     split_not_found = NOT_FOUND_DEFAULT
 
-    # def get_help_format(self):
-    #     yield f"<b>With translation ({self.get_split_default_key()} by default)</b>"
+    def get_help_format(self):
+        yield f"<b>With translation ({self.get_split_default_key()} by default)</b>"
 
-    #     yield from super().get_help_format()
-    #     yield from self.line_type.get_help_format()
+        yield from super().get_help_format()
+        yield from self.split_type.get_help_format()
 
     def split_default_choose(self, value):
         from django.utils.translation import get_language
