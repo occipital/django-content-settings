@@ -169,11 +169,17 @@ class SimpleString(BaseSetting):
         else:
             return self.widget
 
+    def validate_raw_value(self, value: str) -> None:
+        pass
+
     def validate_value(self, value: str) -> Any:
+        self.validate_raw_value(value)
         val = self.to_python(value)
+        self.validate(val)
+
+    def validate(self, value):
         for validator in self.get_validators():
-            validator(val)
-        return val
+            validator(value)
 
     def to_python(self, value: str) -> Any:
         if self.empty_is_none and value.strip() == "":

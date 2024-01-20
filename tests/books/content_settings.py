@@ -1,5 +1,6 @@
 from content_settings.types.basic import (
     SimpleString,
+    SimpleText,
     SimpleInt,
     SimpleBool,
     SimpleDecimal,
@@ -13,6 +14,7 @@ from content_settings.types.mixins import (
 )
 from content_settings.types.markup import SimpleCSV
 from content_settings.types.template import DjangoModelTemplate, DjangoTemplateNoArgs
+from content_settings.types.array import SplitTranslation
 from content_settings import permissions
 from content_settings.context_managers import context_defaults, add_tags
 
@@ -93,4 +95,10 @@ AUTHOR = SimpleString(
     "Alexandr Lyabah",
     constant=True,
     fetch_permission=permissions.any,
+)
+
+COMPANY_DESCRIPTION = SplitTranslation(
+    "The best Company",
+    fetch_permission=permissions.any,
+    help="The description of the company",
 )
