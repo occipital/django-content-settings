@@ -4,11 +4,8 @@ from functools import partial
 from django.apps import apps
 
 from .types.basic import BaseSetting
-from .caching import get_value, get_type_by_name
+from .caching import get_value, get_type_by_name, get_all_names
 from .settings import USER_DEFINED_TYPES
-
-LAZY_ATTRIBUTE_PREFIX = "lazy"
-CLS_ATTRIBUTE_PREFIX = "type"
 
 USER_DEFINED_TYPES_INSTANCE = {}
 USER_DEFINED_TYPES_INITIAL = {}
@@ -51,6 +48,14 @@ def type_prefix(name, suffix):
 @register_prefix("startswith")
 def startswith_prefix(name, suffix):
     return content_settings.startswith(name, suffix)
+
+
+@register_prefix("withtag")
+def withtag_prefix(name, suffix):
+    return {
+        **content_settings.withtag(name, suffix),
+        **content_settings.withtag(name.lower(), suffix),
+    }
 
 
 for app_config in apps.app_configs.values():
@@ -123,12 +128,17 @@ class _Settings:
         return get_value(name, suffix)
 
     def __dir__(self):
-        from .caching import get_all_names
-
-        return sorted(get_all_names() + dir(super()))
+        return get_all_names()
 
     def startswith(self, value, suffix=None):
         return {k: get_value(k, suffix) for k in dir(self) if k.startswith(value)}
+
+    def withtag(self, value, suffix=None):
+        return {
+            k: get_value(k, suffix)
+            for k in dir(self)
+            if value in get_type_by_name(k).get_tags()
+        }
 
     def __contains__(self, value):
         _, name, suffix = split_attr(value)

@@ -235,3 +235,64 @@ def test_admin_update_history(webtest_admin):
         ).strip()
         == "Added by user testadmin"
     )
+
+
+def test_fetch_tags():
+    client = Client()
+    resp = client.get("/books/fetch/general/")
+    assert resp.json() == {
+        "DESCRIPTION": "Book Store is the best book store in the world",
+        "TITLE": "Book Store",
+    }
+
+    create_content_settings(
+        name="PREFIX",
+        value="Some Title Prefix",
+        user_defined_type="line",
+        tags="general",
+    )
+
+    # wrong tag
+    create_content_settings(
+        name="PREFIX2",
+        value="Some Title Prefix",
+        user_defined_type="line",
+        tags="general2",
+    )
+
+    # no permissions
+    create_content_settings(
+        name="PREFIX3",
+        value="Some Title Prefix",
+        user_defined_type="text",
+        tags="general",
+    )
+
+    resp = client.get("/books/fetch/general/")
+    assert resp.json() == {
+        "DESCRIPTION": "Book Store is the best book store in the world",
+        "TITLE": "Book Store",
+        "PREFIX": "Some Title Prefix",
+    }
+
+
+def test_fetch_startswith():
+    client = Client()
+    resp = client.get("/books/fetch/is/")
+    assert resp.json() == {"IS_CLOSED": False}
+
+    create_content_settings(
+        name="IS_EXISITNG",
+        value="Some Title Prefix",
+        user_defined_type="line",
+    )
+
+    # we looking for only "IS_" prefix
+    create_content_settings(
+        name="ISTANBUL",
+        value="Some Title Prefix",
+        user_defined_type="line",
+    )
+
+    resp = client.get("/books/fetch/is/")
+    assert resp.json() == {"IS_CLOSED": False, "IS_EXISITNG": "Some Title Prefix"}

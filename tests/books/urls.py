@@ -2,7 +2,7 @@ from django.urls import path
 from django.views.generic import TemplateView, ListView
 
 from .models import Book
-from content_settings.views import FetchSettingsView
+from content_settings.views import FetchSettingsView, gen_hastag, gen_startswith
 
 
 class BookListView(ListView):
@@ -43,5 +43,15 @@ urlpatterns = [
             ]
         ),
         name="fetch_home_detail",
+    ),
+    path(
+        "fetch/is/",
+        FetchSettingsView.as_view(attrs=gen_startswith("IS_")),
+        name="fetch_is",
+    ),
+    path(
+        "fetch/general/",
+        FetchSettingsView.as_view(attrs=gen_hastag("general")),
+        name="fetch_is",
     ),
 ]

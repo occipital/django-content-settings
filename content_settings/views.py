@@ -2,8 +2,26 @@ from django.http import HttpResponseNotFound, HttpResponseForbidden, JsonRespons
 from django.views.generic import View
 from content_settings.conf import content_settings
 
-from .conf import ALL, split_attr
+from .conf import ALL, split_attr, content_settings
 from .caching import get_type_by_name
+
+
+def gen_startswith(startswith):
+    def _(request):
+        for name in dir(content_settings):
+            if name.startswith(startswith):
+                yield name
+
+    return _
+
+
+def gen_hastag(tag):
+    def _(request):
+        for name in dir(content_settings):
+            if tag in get_type_by_name(name).get_tags():
+                yield name
+
+    return _
 
 
 class FetchSettingsView(View):
@@ -11,7 +29,7 @@ class FetchSettingsView(View):
 
     def get(self, request):
         ret = {}
-        for val in self.attrs:
+        for val in self.attrs(request) if callable(self.attrs) else self.attrs:
             prefix, name, suffix = split_attr(val)
             assert prefix is None, "prefix is not None"
 

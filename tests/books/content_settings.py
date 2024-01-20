@@ -1,6 +1,5 @@
 from content_settings.types.basic import (
     SimpleString,
-    SimpleText,
     SimpleInt,
     SimpleBool,
     SimpleDecimal,
@@ -15,6 +14,7 @@ from content_settings.types.mixins import (
 from content_settings.types.markup import SimpleCSV
 from content_settings.types.template import DjangoModelTemplate, DjangoTemplateNoArgs
 from content_settings import permissions
+from content_settings.context_managers import context_defaults, add_tags
 
 from .models import Book
 
@@ -24,18 +24,21 @@ class PublicSimpleString(SimpleString):
     version = "3.0.0"
 
 
-TITLE = SimpleString(
-    "Book Store",
-    fetch_permission=permissions.any,
-    overwrite_user_defined=True,
-    help="The title of the book store",
-)
+with context_defaults(add_tags({"general"})):
 
-DESCRIPTION = DjangoTemplateNoArgs(
-    "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world",
-    fetch_permission=permissions.any,
-    help="The description of the book store",
-)
+    TITLE = SimpleString(
+        "Book Store",
+        fetch_permission=permissions.any,
+        overwrite_user_defined=True,
+        help="The title of the book store",
+    )
+
+    DESCRIPTION = DjangoTemplateNoArgs(
+        "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world",
+        fetch_permission=permissions.any,
+        help="The description of the book store",
+    )
+
 
 BOOKS_ON_HOME_PAGE = mix(PositiveValidationMixin, SimpleInt)(
     "3", help="The number of books to show on the home page"
@@ -49,6 +52,12 @@ OPEN_DATE = DateString(
 
 IS_OPEN = SimpleBool(
     "1",
+)
+
+
+IS_CLOSED = SimpleBool(
+    "0",
+    fetch_permission=permissions.any,
 )
 
 BOOKS = mix(DictSuffixesMixin, SimpleCSV)(

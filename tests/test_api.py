@@ -140,3 +140,27 @@ def test_fetch_suffix():
     assert resp.json() == {
         "BOOKS__available_names": ["Kateryna", "The Poplar", "The Night of Taras"]
     }
+
+
+def test_fetch_tags():
+    client = get_anonymous_client()
+    resp = client.get("/books/fetch/general/")
+    assert resp.json() == {
+        "DESCRIPTION": "Book Store is the best book store in the world",
+        "TITLE": "Book Store",
+    }
+
+    cs = ContentSetting.objects.get(name="DESCRIPTION")
+    cs.value = "New Description"
+    cs.save()
+
+    resp = client.get("/books/fetch/general/")
+    assert resp.json() == {"DESCRIPTION": "New Description", "TITLE": "Book Store"}
+
+
+def test_fetch_startswith():
+    client = get_anonymous_client()
+    resp = client.get("/books/fetch/is/")
+
+    # is open should not be match as it is without permissions
+    assert resp.json() == {"IS_CLOSED": False}
