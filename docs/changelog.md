@@ -20,6 +20,9 @@ Minor:
 * `validate_value` now splitted on two `validate_raw_value` for validation text and `validate` for validation python object
 * 📖 `withtag__NAME` - new built-in prefix, that returns all of the names that have tag "name"
 * `help_format` - by default empty text
+* `get_admin_preview_as`
+* `validate_value` and other validators does not return value
+* `get_admin_preview_(self, value, name, **kwargs)` - has now `**kwargs` can be passed from the preview request
 
 ## 0.5 User Defined Variables & Constants
 
