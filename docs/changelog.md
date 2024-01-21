@@ -1,10 +1,10 @@
 # Changelog
 
-📖 - documentation is required
+📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
 ## 0.5
 
-* 📖 User Defined Variables - variables can now be created not only in code but also in admin
+* User Defined Variables - variables can now be created not only in code but also in admin
 * 📖 `overwrite_user_defined` - new attribute that allows overwrite user defined variable
 * 📖 `constant` - new attribute that makes the code variable unchangable in admin panel and only default value is using
 * 📖 `conf.register_prefix` - decorator that allows you to registered a new prefix
