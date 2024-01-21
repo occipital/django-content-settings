@@ -169,7 +169,9 @@ def test_csv_empty():
 
 
 def test_csv_fields_list_default_required():
-    var = SimpleCSV(csv_fields=["name", "price"], csv_fields_list_default=required)
+    var = SimpleCSV(
+        csv_fields=["name", "price"], csv_fields_list_type=SimpleString(required)
+    )
 
     with pytest.raises(ValidationError) as error:
         var.validate_value("Alex")
@@ -212,6 +214,21 @@ def test_csv_value_validation():
         var.validate_value("Alex, zero")
 
     assert error.value.messages == ["row #1, price: ['Enter a number.']"]
+
+
+def test_csv_default_value():
+    var = SimpleCSV(
+        csv_fields={
+            "name": SimpleString(required),
+            "price": SimpleDecimal("0"),
+        },
+    )
+
+    var.validate_value("Alex")
+    var.validate_value("Alex, 10")
+
+    assert var.give_python("Alex") == [{"name": "Alex", "price": Decimal("0")}]
+    assert var.give_python("Alex, 10") == [{"name": "Alex", "price": Decimal("10")}]
 
 
 @pytest.mark.skipif(yaml_installed, reason="yaml is installed")

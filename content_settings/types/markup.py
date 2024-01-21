@@ -71,7 +71,7 @@ class SimpleCSV(SimpleText):
     csv_dialect = "unix"
     csv_fields = None
     csv_default_row = None
-    csv_fields_list_default = optional
+    csv_fields_list_type = SimpleString(optional)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -91,7 +91,7 @@ class SimpleCSV(SimpleText):
     def dict_csv_fields(self):
         if isinstance(self.csv_fields, dict):
             return self.csv_fields
-        return {f: SimpleString(self.csv_fields_list_default) for f in self.csv_fields}
+        return {f: self.csv_fields_list_type for f in self.csv_fields}
 
     def get_csv_reader(self, value):
         value = super().to_python(value)

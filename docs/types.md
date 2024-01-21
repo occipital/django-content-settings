@@ -97,7 +97,21 @@ NUMBERS = IntList()
 - **SimpleYAML**: YAML text format to object (requires [pyyaml](https://pypi.org/project/PyYAML/) to be installed).
 - **SimpleJSON**: JSON text format to object.
 - **SimpleCSV**: CSV text format to object.
-    - **fields (required)** - a list of fieldnames, or dict name->type
+    - **csv_dialect** (default: unix): read more about dialects in the [python doc](https://docs.python.org/3/library/csv.html#csv.Dialect)
+    - **csv_fields (required)** - a list of fieldnames, or dict name->type. The default value for types will be used. There is also an option to use `required` and `optional` for the default argument
+    - **csv_fields_list_type** (default: `SimpleString(optional)`) - what will be default type for csv_fields is list of columns
+
+```python
+var = SimpleCSV(
+    csv_fields={
+        "name": SimpleString(required), # required to be
+        "balance": SimpleDecimal("0"), # 0 by default
+        "price": SimpleDecimal(optional), # price key is not exist in case of two columns row
+    },
+)
+```
+    
+    
 
 ## Templates (`content_settings.types.template`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py))*
 
