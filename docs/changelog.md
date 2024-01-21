@@ -18,6 +18,8 @@
 Minor:
 
 * `validate_value` now splitted on two `validate_raw_value` for validation text and `validate` for validation python object
+* 📖 `withtag__NAME` - new built-in prefix, that returns all of the names that have tag "name"
+* `help_format` - by default empty text
 
 ## 0.5 User Defined Variables & Constants
 
@@ -26,7 +28,6 @@ Minor:
 * 📖 `constant` - new attribute that makes the code variable unchangable in admin panel and only default value is using
 * 📖 `conf.register_prefix` - decorator that allows you to registered a new prefix
 * 📖 `startswith__NAME` - new built-in prefix, that returns all of the names that starts with NAME
-* 📖 `withtag__NAME` - new built-in prefix, that returns all of the names that have tag "name"
 * `dir(content_settings)` - shows all of the registered variables
 * db now stores tags and help for all variables
 * 📖 `CHECKSUM_USER_KEY_PREFIX` and `USER_DEFINED_TYPES` two new settings
