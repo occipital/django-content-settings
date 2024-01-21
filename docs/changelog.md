@@ -2,6 +2,20 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
+### 0.6.1 SimpleCSV: you can now set default, required and optional argument for the column type
+
+```python
+from content_settings.types import required, optional
+
+var = SimpleCSV(
+    csv_fields={
+        "name": SimpleString(required),
+        "balance": SimpleDecimal("0"),
+        "price": SimpleDecimal(optional),
+    },
+)
+```
+
 ## 0.6 I18N & suffix preview in admin
 
 * 📖 `types.mixin.AdminPreviewMixin` - build menu on top of preview
