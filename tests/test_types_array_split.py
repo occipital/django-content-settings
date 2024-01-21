@@ -342,3 +342,77 @@ La mejor empresa
     assert resp.json() == {
         "COMPANY_DESCRIPTION": "La mejor empresa",
     }
+
+
+def test_admin_preview_default(webtest_admin):
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/preview/",
+        {
+            "name": "COMPANY_DESCRIPTION",
+            "value": "This is not so long, but very interesting text",
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.json == {
+        "html": "<pre>This is not so long, but very interesting text</pre>",
+    }
+
+
+def test_admin_preview_with_header(webtest_admin):
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/preview/",
+        {
+            "name": "COMPANY_DESCRIPTION",
+            "value": """
+==== EN ====
+This is not so long, but very interesting text
+""".strip(),
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.json == {
+        "html": "<pre>This is not so long, but very interesting text</pre>",
+    }
+
+
+def test_admin_preview_with_two_langs(webtest_admin):
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/preview/",
+        {
+            "name": "COMPANY_DESCRIPTION",
+            "value": """
+==== EN ====
+This is not so long, but very interesting text
+==== UA ====
+Це не так довго, але дуже цікавий текст
+""".strip(),
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.json == {
+        "html": '<div> <b>EN</b>  <a class="cs_set_params" data-param-suffix="UA">UA</a> </div><pre>This is not so long, but very interesting text</pre>',
+    }
+
+
+def test_admin_preview_with_two_langs_ua(webtest_admin):
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/preview/",
+        {
+            "name": "COMPANY_DESCRIPTION",
+            "p_suffix": "UA",
+            "value": """
+==== EN ====
+This is not so long, but very interesting text
+==== UA ====
+Це не так довго, але дуже цікавий текст
+""".strip(),
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.json == {
+        "html": '<div> <a class="cs_set_params">EN</a>  <b>UA</b> </div><pre>Це не так довго, але дуже цікавий текст</pre>',
+    }

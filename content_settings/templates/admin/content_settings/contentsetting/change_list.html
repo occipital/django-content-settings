@@ -11,6 +11,11 @@
     cursor: pointer;
     font-size: 18px;
 }
+.value_preview a {
+    color: var(--link-fg);
+    text-decoration: underline;
+    cursor: pointer;
+}
 </style>
 {% endblock %}
 
@@ -99,6 +104,7 @@
         var currentInterval;
         var currentAjax;
         var currentName;
+        var previewParams = {};
 
         $('.field-value textarea,.field-value input').focus(function(){
             $(".value_preview").remove();
@@ -113,13 +119,28 @@
             currentInput = $(this);
             currentValue = $(this).val();
             currentName = $(this).parent('.field-value').siblings('.field-name').children('a').text();
+            $(".value_preview").click(function(e){
+                var $target = $(e.target);
+                if ($target.hasClass('cs_set_params')) {
+                    e.preventDefault();
+
+                    previewParams[currentName] = {};
+                    $.each($target.data(), function(key, value) {
+                        if (key.startsWith('param')) {
+                            let newKey = key.slice(5).toLowerCase();
+                            previewParams[currentName]['p_' + newKey] = value;
+                        }
+                    });
+                    refreshPreview();
+                }
+            });
 
             var refreshPreview = function() {
                 const newValue = currentInput.val();
-                const data = {
+                const data = Object.assign({
                     "name": currentName, "value": newValue,
                     "csrfmiddlewaretoken": $('[name=csrfmiddlewaretoken]').val(),
-                };
+                }, previewParams[currentName] || {});
 
                 $('#result_list tr').each(function(){
                     var name = $(this).find('.field-name a').text();

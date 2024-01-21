@@ -5,12 +5,14 @@ from content_settings.types.basic import (
     SimpleBool,
     SimpleDecimal,
     PREVIEW_HTML,
+    PREVIEW_TEXT,
 )
 from content_settings.types.datetime import DateString
 from content_settings.types.mixins import (
     mix,
     PositiveValidationMixin,
     DictSuffixesMixin,
+    DictSuffixesPreviewMixin,
 )
 from content_settings.types.markup import SimpleCSV
 from content_settings.types.template import DjangoModelTemplate, DjangoTemplateNoArgs
@@ -101,4 +103,16 @@ COMPANY_DESCRIPTION = SplitTranslation(
     "The best Company",
     fetch_permission=permissions.any,
     help="The description of the company",
+)
+
+INTERESTING_TEXT = mix(DictSuffixesPreviewMixin, SimpleText)(
+    "This is a long interesting text",
+    suffixes={
+        "trim": lambda text, max_length=10: (text[: max_length - 3] + "...")
+        if len(text) > max_length
+        else text
+    },
+    admin_preview_as=PREVIEW_TEXT,
+    fetch_permission=permissions.any,
+    help="The interesting text",
 )

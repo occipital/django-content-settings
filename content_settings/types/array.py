@@ -1,6 +1,9 @@
+from typing import Any, Optional
+
 from django.core.exceptions import ValidationError
 
-from .basic import SimpleText, BaseSetting, PREVIEW_PYTHON
+from .basic import SimpleText, BaseSetting, PREVIEW_PYTHON, PREVIEW_TEXT, PREVIEW_NONE
+from .mixins import AdminPreviewSuffixesMixin
 
 
 def f_empty(value):
@@ -121,7 +124,7 @@ SPLIT_SUFFIX_SPLIT_OWN = "split_own"
 SPLIT_SUFFIX_SPLIT_PARENT = "split_parent"
 
 
-class SplitByFirstLine(SimpleText):
+class SplitByFirstLine(AdminPreviewSuffixesMixin, SimpleText):
     split_type = SimpleText()
     split_values = None
     split_default_key = None
@@ -214,6 +217,20 @@ class SplitByFirstLine(SimpleText):
             cur_iter.append(line)
 
         return {k: "\n".join(v) for k, v in ret.items()}
+
+    def get_admin_preview_as(self):
+        split_admin_preview = self.split_type.get_admin_preview_as()
+        if split_admin_preview == PREVIEW_NONE:
+            return PREVIEW_TEXT
+        return split_admin_preview
+
+    def get_admin_preview_suffixes_default(self):
+        return self.get_split_default_key()
+
+    def get_admin_preview_suffixes(self, value: str, name: str, **kwargs):
+        keys = list(self.split_value(value).keys())
+        keys.remove(self.get_split_default_key())
+        return tuple(keys)
 
     def to_python(self, value):
         values = self.split_value(value)

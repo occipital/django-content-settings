@@ -80,8 +80,11 @@ class SimpleString(BaseSetting):
             CACHE_SPLITER not in self.version
         ), f"Version should not contain CACHE_SPLITER:{CACHE_SPLITER}"
         assert (
-            self.admin_preview_as in PREVIEW_ALL
+            self.get_admin_preview_as() in PREVIEW_ALL
         ), f"admin_preview_as should be in {PREVIEW_ALL}"
+
+    def get_admin_preview_as(self) -> str:
+        return self.admin_preview_as
 
     def init_assign_kwargs(self, kwargs):
         for k, v in kwargs.items():
@@ -187,29 +190,29 @@ class SimpleString(BaseSetting):
     def json_view_value(self, request, value: Any) -> Any:
         return value
 
-    def give_python_to_admin(self, value: str, name: str) -> Any:
+    def give_python_to_admin(self, value: str, name: str, **kwargs) -> Any:
         return self.to_python(value)
 
-    def get_admin_preview_html(self, value: str, name: str) -> Any:
-        return self.give_python_to_admin(value, name)
+    def get_admin_preview_html(self, value: str, name: str, **kwargs) -> Any:
+        return self.give_python_to_admin(value, name, **kwargs)
 
-    def get_admin_preview_text(self, value: str, name: str) -> Any:
-        return self.give_python_to_admin(value, name)
+    def get_admin_preview_text(self, value: str, name: str, **kwargs) -> Any:
+        return self.give_python_to_admin(value, name, **kwargs)
 
-    def get_admin_preview_python(self, value: str, name: str) -> Any:
-        return self.give_python_to_admin(value, name)
+    def get_admin_preview_python(self, value: str, name: str, **kwargs) -> Any:
+        return self.give_python_to_admin(value, name, **kwargs)
 
-    def get_admin_preview_value(self, value: str, name: str) -> str:
-        if self.admin_preview_as == PREVIEW_NONE:
+    def get_admin_preview_value(self, value: str, name: str, **kwargs) -> str:
+        if self.get_admin_preview_as() == PREVIEW_NONE:
             return ""
 
-        if self.admin_preview_as == PREVIEW_HTML:
-            return str(self.get_admin_preview_html(value, name))
+        if self.get_admin_preview_as() == PREVIEW_HTML:
+            return str(self.get_admin_preview_html(value, name, **kwargs))
 
-        if self.admin_preview_as == PREVIEW_TEXT:
-            value = str(self.get_admin_preview_text(value, name))
+        if self.get_admin_preview_as() == PREVIEW_TEXT:
+            value = str(self.get_admin_preview_text(value, name, **kwargs))
         else:
-            value = pformat(self.get_admin_preview_python(value, name))
+            value = pformat(self.get_admin_preview_python(value, name, **kwargs))
 
         return "<pre>{}</pre>".format(
             value.replace("<", "&lt;")

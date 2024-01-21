@@ -316,3 +316,34 @@ def test_preview_non_existed_name(webtest_admin):
 
     assert resp.status_int == 200
     assert resp.json == {"html": "", "error": "Invalid name"}
+
+
+def test_preview_menu_default(webtest_admin):
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/preview/",
+        {
+            "name": "INTERESTING_TEXT",
+            "value": "This is not so long, but very interesting text",
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.json == {
+        "html": '<div> <b>default</b>  <a class="cs_set_params" data-param-suffix="trim">trim</a> </div><pre>This is not so long, but very interesting text</pre>',
+    }
+
+
+def test_preview_menu_trim(webtest_admin):
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/preview/",
+        {
+            "name": "INTERESTING_TEXT",
+            "value": "This is not so long, but very interesting text",
+            "p_suffix": "trim",
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.json == {
+        "html": '<div> <a class="cs_set_params">default</a>  <b>trim</b> </div><pre>This is...</pre>',
+    }

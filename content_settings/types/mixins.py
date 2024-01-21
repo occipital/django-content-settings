@@ -1,7 +1,9 @@
+from typing import Any, Optional
 from pprint import pformat
 from django.core.exceptions import ValidationError
 
 from .validators import call_validator
+from . import PREVIEW_NONE
 
 
 def mix(*cls):
@@ -83,7 +85,7 @@ class CallToPythonMixin:
                 ret.append((str_validator, e))
         return ret
 
-    def get_admin_preview_html(self, value, name):
+    def get_admin_preview_html(self, value, name, **kwargs):
         ret = self.give_python_to_admin(value, name)
         if not ret:
             return "No preview (add at least one validator to preview_validators)"
@@ -102,7 +104,7 @@ class CallToPythonMixin:
 
         return html
 
-    def get_admin_preview_text(self, value, name):
+    def get_admin_preview_text(self, value, name, **kwargs):
         ret = self.give_python_to_admin(value, name)
         if not ret:
             return "No preview (add at least one validator to preview_validators)"
@@ -121,7 +123,7 @@ class CallToPythonMixin:
 
         return "\n".join(_())
 
-    def get_admin_preview_python(self, value, name):
+    def get_admin_preview_python(self, value, name, **kwargs):
         ret = self.give_python_to_admin(value, name)
 
         if self.admin_preview_call:
@@ -177,3 +179,55 @@ class DictSuffixesMixin:
         if suffix is None:
             return value
         return self.suffixes[suffix](value)
+
+
+class AdminPreviewMixin:
+    def get_admin_preview_html_menu(self, value: str, name: str, **kwargs) -> str:
+        return ""
+
+    def get_admin_preview_value(self, value: str, name: str, **kwargs) -> str:
+        if self.get_admin_preview_as() == PREVIEW_NONE:
+            return ""
+        return self.get_admin_preview_html_menu(
+            value, name, **kwargs
+        ) + super().get_admin_preview_value(value, name, **kwargs)
+
+
+class AdminPreviewSuffixesMixin(AdminPreviewMixin):
+    admin_preview_suffixes = ()
+    admin_preview_suffixes_default = "default"
+
+    def get_admin_preview_suffixes_default(self):
+        return self.admin_preview_suffixes_default
+
+    def get_admin_preview_suffixes(self, value: str, name: str, **kwargs):
+        return self.admin_preview_suffixes
+
+    def get_admin_preview_html_menu(
+        self, value: str, name: str, suffix: Optional[str] = None, **kwargs
+    ) -> str:
+        suffixes = self.get_admin_preview_suffixes(value, name, **kwargs)
+        if not len(suffixes):
+            return ""
+
+        ret = "<div>"
+        for suf in (None, *suffixes):
+            if suf == suffix:
+                ret += f" <b>{suf or self.get_admin_preview_suffixes_default()}</b> "
+            elif suf is None:
+                ret += f' <a class="cs_set_params">{self.get_admin_preview_suffixes_default()}</a> '
+            else:
+                ret += f' <a class="cs_set_params" data-param-suffix="{suf}">{suf}</a> '
+        ret += "</div>"
+
+        return ret
+
+    def give_python_to_admin(
+        self, value: str, name: str, suffix: Optional[str] = None, **kwargs
+    ) -> Any:
+        return self.give_python(value, suffix)
+
+
+class DictSuffixesPreviewMixin(DictSuffixesMixin, AdminPreviewSuffixesMixin):
+    def get_admin_preview_suffixes(self, value: str, name: str, **kwargs):
+        return tuple(self.suffixes.keys())

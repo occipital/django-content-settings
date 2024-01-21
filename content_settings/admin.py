@@ -434,6 +434,12 @@ class ContentSettingAdmin(admin.ModelAdmin):
             if name.startswith("o_")
         }
 
+        params = {
+            name[2:]: value
+            for name, value in request.POST.items()
+            if name.startswith("p_")
+        }
+
         try:
             cs_type.validate_value(value)
         except Exception as e:
@@ -446,7 +452,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
             return JsonResponse(
                 {
                     "html": cs_type.get_admin_preview_value(
-                        value, request.POST["name"]
+                        value, request.POST["name"], **params
                     ),
                 }
             )
