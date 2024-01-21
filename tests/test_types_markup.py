@@ -15,6 +15,7 @@ from content_settings.types.markup import (
 )
 from content_settings.types.template import DjangoTemplateNoArgs
 from content_settings.types.mixins import mix, DictSuffixesMixin
+from content_settings.types import required, optional
 
 
 pytestmark = [pytest.mark.django_db]
@@ -57,8 +58,8 @@ The Will,200
 
 
 def test_csv():
-    var = SimpleCSV(fields=["name", "price"])
-
+    var = SimpleCSV(csv_fields=["name", "price"])
+    var.validate_value(CSV_TEXT)
     assert var.give_python(CSV_TEXT) == [
         {"name": "Kateryna", "price": "1.2"},
         {"name": "The Will", "price": "200"},
@@ -67,12 +68,12 @@ def test_csv():
 
 def test_csv_typed():
     var = SimpleCSV(
-        fields={
+        csv_fields={
             "name": SimpleString(),
             "price": SimpleDecimal(),
         }
     )
-
+    var.validate_value(CSV_TEXT)
     assert var.give_python(CSV_TEXT) == [
         {"name": "Kateryna", "price": Decimal("1.2")},
         {"name": "The Will", "price": Decimal("200")},
@@ -81,7 +82,7 @@ def test_csv_typed():
 
 def test_csv_typed_suffix():
     var = mix(DictSuffixesMixin, SimpleCSV)(
-        fields={
+        csv_fields={
             "name": SimpleString(),
             "available": SimpleBool(),
             "price": SimpleDecimal(),
@@ -109,19 +110,18 @@ green,1,0
 
 def test_csv_typed_template_no_args():
     var = SimpleCSV(
-        fields={
+        csv_fields={
             "name": SimpleString(),
             "price": SimpleDecimal(),
             "pic": DjangoTemplateNoArgs(),
         }
     )
-
-    assert var.give_python(
-        """
+    text = """
 Kateryna,1.2,{{SETTINGS.STATIC_URL}}cover/kateryna.jpg
 The Will,200,{{SETTINGS.STATIC_URL}}cover/will.jpg
     """
-    ) == [
+    var.validate_value(text)
+    assert var.give_python(text) == [
         {
             "name": "Kateryna",
             "price": Decimal("1.2"),
@@ -132,13 +132,14 @@ The Will,200,{{SETTINGS.STATIC_URL}}cover/will.jpg
 
 
 def test_csv_overload():
-    var = SimpleCSV(fields=["name", "price"])
+    var = SimpleCSV(csv_fields=["name", "price"])
 
     text = """
 Kateryna,1.2,light
 The Will,200
     """
 
+    var.validate_value(text)
     assert var.give_python(text) == [
         {"name": "Kateryna", "price": "1.2"},
         {"name": "The Will", "price": "200"},
@@ -146,13 +147,13 @@ The Will,200
 
 
 def test_csv_missing():
-    var = SimpleCSV(fields=["name", "price"])
+    var = SimpleCSV(csv_fields=["name", "price"])
 
     text = """
 Kateryna,1.2
 The Will
     """
-
+    var.validate_value(text)
     assert var.give_python(text) == [
         {"name": "Kateryna", "price": "1.2"},
         {"name": "The Will"},
@@ -160,11 +161,57 @@ The Will
 
 
 def test_csv_empty():
-    var = SimpleCSV(fields=["name", "price"])
+    var = SimpleCSV(csv_fields=["name", "price"])
 
     text = ""
-
+    var.validate_value(text)
     assert var.give_python(text) == []
+
+
+def test_csv_fields_list_default_required():
+    var = SimpleCSV(csv_fields=["name", "price"], csv_fields_list_default=required)
+
+    with pytest.raises(ValidationError) as error:
+        var.validate_value("Alex")
+
+    assert error.value.messages == ["row #1, price: Value is required"]
+
+    var.validate_value("Alex,1.2")
+
+
+def test_csv_typed_required():
+    var = SimpleCSV(
+        csv_fields={
+            "name": SimpleString(required),
+            "balance": SimpleDecimal(required),
+            "price": SimpleDecimal(optional),
+        },
+    )
+    var.validate_value("Alex, 0")
+    var.validate_value("Alex, 0, 1.2")
+    with pytest.raises(ValidationError) as error:
+        var.validate_value("Alex")
+
+    assert error.value.messages == ["row #1, balance: Value is required"]
+
+    var.validate_value("Alex,1.2")
+
+
+def test_csv_value_validation():
+    var = SimpleCSV(
+        csv_fields={
+            "name": SimpleString(required),
+            "price": SimpleDecimal(optional),
+        },
+    )
+
+    var.validate_value("Alex, 0")
+    var.validate_value("Alex")
+
+    with pytest.raises(ValidationError) as error:
+        var.validate_value("Alex, zero")
+
+    assert error.value.messages == ["row #1, price: ['Enter a number.']"]
 
 
 @pytest.mark.skipif(yaml_installed, reason="yaml is installed")

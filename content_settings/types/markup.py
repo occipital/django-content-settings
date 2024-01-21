@@ -3,6 +3,7 @@ from functools import cached_property
 from django.core.exceptions import ValidationError
 
 from .basic import SimpleText, PREVIEW_PYTHON, SimpleString
+from . import required, optional
 
 
 class SimpleYAML(SimpleText):
@@ -65,24 +66,34 @@ class SimpleJSON(SimpleText):
 class SimpleCSV(SimpleText):
     help_format = "Simple <a href='https://en.wikipedia.org/wiki/Comma-separated_values' target='_blank'>CSV format</a>"
     admin_preview_as = PREVIEW_PYTHON
-    csv_dialect = "unix"
-    fields = None
     tags = {"csv"}
+
+    csv_dialect = "unix"
+    csv_fields = None
+    csv_default_row = None
+    csv_fields_list_default = optional
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        assert self.fields is not None, "fields cannot be None"
+        assert self.csv_fields is not None, "csv_fields cannot be None"
         assert isinstance(
-            self.fields, (list, tuple, dict)
-        ), "fields must be list, tuple or dict"
+            self.csv_fields, (list, tuple, dict)
+        ), "csv_fields must be list, tuple or dict"
+
+        if self.csv_default_row is None:
+            self.csv_default_row = {
+                k: (v.default if v.default == required else v.to_python(v.default))
+                for k, v in self.dict_csv_fields.items()
+                if v.default != optional
+            }
 
     @cached_property
-    def dict_fields(self):
-        if isinstance(self.fields, dict):
-            return self.fields
-        return {f: SimpleString() for f in self.fields}
+    def dict_csv_fields(self):
+        if isinstance(self.csv_fields, dict):
+            return self.csv_fields
+        return {f: SimpleString(self.csv_fields_list_default) for f in self.csv_fields}
 
-    def gen_to_python(self, value):
+    def get_csv_reader(self, value):
         value = super().to_python(value)
         if value is None:
             return None
@@ -91,20 +102,47 @@ class SimpleCSV(SimpleText):
         from io import StringIO
 
         try:
-            csv = reader(StringIO(value), dialect=self.csv_dialect)
+            return reader(StringIO(value), dialect=self.csv_dialect)
         except Exception as e:
             raise ValidationError(str(e))
 
-        yield from self.gen_rows_to_python(csv)
+    def gen_to_python(self, value):
+        yield from self.gen_rows_to_python(self.get_csv_reader(value))
 
     def gen_rows_to_python(self, csv):
         for row in csv:
             if not row:
                 continue
             yield {
-                name: c_type.to_python(value)
-                for (name, c_type), value in zip(self.dict_fields.items(), row)
+                **self.csv_default_row,
+                **{
+                    name: c_type.to_python(value)
+                    for (name, c_type), value in zip(self.dict_csv_fields.items(), row)
+                },
             }
+
+    def validate_raw_value(self, value: str) -> None:
+        super().validate_raw_value(value)
+
+        for i, row in enumerate(self.get_csv_reader(value), start=1):
+            if not row:
+                continue
+            for (name, c_type), value in zip(self.dict_csv_fields.items(), row):
+                try:
+                    c_type.validate_value(value)
+                except ValidationError as e:
+                    raise ValidationError(f"row #{i}, {name}: {e}")
+
+    def validate(self, rows):
+        super().validate(rows)
+
+        if rows is None:
+            return
+
+        for i, row in enumerate(rows, start=1):
+            for name, value in row.items():
+                if value == required:
+                    raise ValidationError(f"row #{i}, {name}: Value is required")
 
     def to_python(self, value):
         val = self.gen_to_python(value)
@@ -116,5 +154,6 @@ class SimpleCSV(SimpleText):
         if not value:
             return value
         return [
-            {k: self.dict_fields[k].give(v) for k, v in row.items()} for row in value
+            {k: self.dict_csv_fields[k].give(v, suffix) for k, v in row.items()}
+            for row in value
         ]

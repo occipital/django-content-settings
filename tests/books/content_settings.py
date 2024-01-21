@@ -71,7 +71,7 @@ The Will,200,0
 The Poplar,12,1
 The Night of Taras,12,1
 """,
-    fields={
+    csv_fields={
         "name": SimpleString(),
         "price": SimpleDecimal(),
         "is_available": SimpleBool(),

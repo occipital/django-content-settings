@@ -15,6 +15,8 @@ from content_settings.types import (
     PREVIEW_TEXT,
     PREVIEW_PYTHON,
     PREVIEW_NONE,
+    required,
+    optional,
 )
 
 
@@ -62,15 +64,19 @@ class SimpleString(BaseSetting):
     suffixes: Tuple[str] = ()
     user_defined_slug: Optional[str] = None
     overwrite_user_defined: bool = False
-    default: str = ""
+    default: Union[str, required, optional] = ""
 
-    def __init__(self, default: Optional[str] = None, **kwargs):
+    def __init__(
+        self, default: Optional[Union[str, required, optional]] = None, **kwargs
+    ):
         for k in kwargs.keys():
             assert self.can_assign(k), "Attribute {} not found".format(k)
 
         if default is not None:
             self.default = default
-        assert isinstance(self.default, str), "Default should be str"
+        assert self.default in (required, optional) or isinstance(
+            self.default, str
+        ), "Default should be str (or required or optional for special cases)"
 
         kwargs = self.update_defaults_context(kwargs)
         self.init_assign_kwargs(kwargs)
