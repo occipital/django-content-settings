@@ -16,6 +16,10 @@ def pytest_configure(config):
         USE_TZ=True,
         SECRET_KEY="not very secret in tests",
         USE_I18N=True,
+        LANGUAGES=[
+            ("en", "English"),
+            ("es", "Spanish"),
+        ],
         STATIC_URL="/static/",
         ROOT_URLCONF="tests.urls",
         TEMPLATES=[
@@ -36,6 +40,7 @@ def pytest_configure(config):
         MIDDLEWARE=(
             "django.middleware.common.CommonMiddleware",
             "django.contrib.sessions.middleware.SessionMiddleware",
+            "django.middleware.locale.LocaleMiddleware",
             "django.contrib.auth.middleware.AuthenticationMiddleware",
             "django.contrib.messages.middleware.MessageMiddleware",
         ),

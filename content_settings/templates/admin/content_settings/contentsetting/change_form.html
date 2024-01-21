@@ -1,6 +1,13 @@
 {% extends 'admin/change_form.html' %}
 
 {% block footer %}{{ block.super }}
+<style>
+    .field-py_data div.readonly a {
+        color: var(--link-fg);
+        text-decoration: underline;
+        cursor: pointer;
+    }
+    </style>
 <script>
     (function($) {
         const objName = "{{original.name}}";
@@ -9,13 +16,34 @@
         const $value = $('.field-py_data div.readonly').first();
         const $label = $('.field-py_data label');
         const $user_defined_type = $('#id_user_defined_type');
+        var previewParams = {};
+        $value.click(function(e) {
+            var $target = $(e.target);
+                if ($target.hasClass('cs_set_params')) {
+                    e.preventDefault();
+
+                    previewParams = {};
+                    $.each($target.data(), function(key, value) {
+                        if (key.startsWith('param')) {
+                            let newKey = key.slice(5).toLowerCase();
+                            previewParams['p_' + newKey] = value;
+                        }
+                    });
+                }
+        });
         const genSyncedValue = function() {
-            return $id.val() + '::' + ($user_defined_type.length ? $user_defined_type.val() : '');
+            return $id.val() + '::' + ($user_defined_type.length ? $user_defined_type.val() : '') + '::' + JSON.stringify(previewParams);
         }
         var syncedValue = genSyncedValue();
         setInterval(function(){
             if (syncedValue == genSyncedValue()) { return }
             const newValue = genSyncedValue();
+            const data = Object.assign({
+                "name": objName,
+                "value": $id.val(),
+                "user_defined_type": $user_defined_type.val(),
+                "csrfmiddlewaretoken": $('[name=csrfmiddlewaretoken]').val(),
+            }, previewParams);
             $.ajax({
                 "method": "POST",
                 "crossDomain": true,
@@ -23,11 +51,7 @@
                     "withCredentials": true
                 },
                 "url": PREVIEW_URL,
-                "data": {
-                    "name": objName, "value": $id.val(),
-                    "user_defined_type": ($user_defined_type.length ? $user_defined_type.val() : ''),
-                    "csrfmiddlewaretoken": $('[name=csrfmiddlewaretoken]').val(),
-                },
+                "data": data,
                 "success": function(value) {
                     if (value.error) {
                         $value.html('<pre style="color:red">' + value.error + '</pre>');
@@ -37,7 +61,7 @@
                     syncedValue = newValue;
                 }
             })
-        }, 1000)
+        }, 500)
         $('.reset_default').click(function(){
             $id.val($(this).data('value'));
         })

@@ -38,7 +38,7 @@ class DateTimeString(SimpleString):
         return self.input_formats
 
     def get_help_format(self):
-        return (
+        yield (
             "Use any of the following formats: <ul>"
             + "".join([f"<li>{l}</li>" for l in self.get_input_formats()])
             + "</ul>"
