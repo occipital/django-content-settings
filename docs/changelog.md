@@ -2,13 +2,31 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
-## 0.5
+## 0.6 I18N & suffix preview in admin
+
+* 📖 `types.mixin.AdminPreviewMixin` - build menu on top of preview
+* 📖 `types.mixin.AdminPreviewSuffixesMixin` - top menu build based on using suffixes
+* 📖 `types.mixin.DictSuffixesPreviewMixin` - mix with `DictSuffixesMixin`
+
+![DictSuffixesPreviewMixin](img/dict_suffixes_preview.gif)
+
+* 📖 `types.array.SplitByFirstLine` - splitting text by multiple suffixes with custom chooser of the default value
+* 📖 `types.array.SplitTranslation` - `types.array.SplitByFirstLine` with chooser by the current translation
+
+![SplitTranslation](img/split_translation.png)
+
+Minor:
+
+* `validate_value` now splitted on two `validate_raw_value` for validation text and `validate` for validation python object
+
+## 0.5 User Defined Variables & Constants
 
 * User Defined Variables - variables can now be created not only in code but also in admin
 * 📖 `overwrite_user_defined` - new attribute that allows overwrite user defined variable
 * 📖 `constant` - new attribute that makes the code variable unchangable in admin panel and only default value is using
 * 📖 `conf.register_prefix` - decorator that allows you to registered a new prefix
-* 📖 `startswith__` - new built-in decorator, that returns all of the names that starts with NAME
+* 📖 `startswith__NAME` - new built-in prefix, that returns all of the names that starts with NAME
+* 📖 `withtag__NAME` - new built-in prefix, that returns all of the names that have tag "name"
 * `dir(content_settings)` - shows all of the registered variables
 * db now stores tags and help for all variables
 * 📖 `CHECKSUM_USER_KEY_PREFIX` and `USER_DEFINED_TYPES` two new settings
