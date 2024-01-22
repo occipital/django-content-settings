@@ -15,7 +15,7 @@ def f_empty(value):
 
 def f_comment(prefix):
     def _(value):
-        if value.strip().startswith("#"):
+        if value.strip().startswith(prefix):
             return None
         return value
 
