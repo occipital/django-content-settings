@@ -36,6 +36,10 @@ def test_simple_list():
         "The mighty river roar.",
     ]
 
+
+def test_simple_list_comment():
+    var = SimpleStringsList()
+
     assert var.give_python(
         """
         When I die, then bury me
@@ -55,10 +59,14 @@ def test_simple_list():
         "The mighty river roar.",
     ]
 
+
+def test_simple_list_window_new_line():
+    var = SimpleStringsList()
+
     assert var.give_python("windows\r\nlinebreaks") == ["windows", "linebreaks"]
 
 
-def test_simple_list():
+def test_simple_list_comment_starts_with():
     var = SimpleStringsList(comment_starts_with="//")
 
     assert var.give_python(
@@ -100,6 +108,22 @@ def test_typed_list():
         """
         )
         == [1, 2, 3]
+    )
+
+
+def test_typed_list_with_comment():
+    var = SimpleIntsList()
+
+    assert (
+        var.give_python(
+            """
+        1
+        #2
+        3
+                         
+        """
+        )
+        == [1, 3]
     )
 
 
