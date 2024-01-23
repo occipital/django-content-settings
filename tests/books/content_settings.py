@@ -4,6 +4,7 @@ from content_settings.types.basic import (
     SimpleInt,
     SimpleBool,
     SimpleDecimal,
+    SimpleHTML,
     PREVIEW_HTML,
     PREVIEW_TEXT,
 )
@@ -115,4 +116,9 @@ INTERESTING_TEXT = mix(DictSuffixesPreviewMixin, SimpleText)(
     admin_preview_as=PREVIEW_TEXT,
     fetch_permission=permissions.any,
     help="The interesting text",
+)
+
+SIMPLE_HTML_FIELD = SimpleHTML(
+    "<h1>Simple HTML</h1>",
+    help="The simple html field",
 )

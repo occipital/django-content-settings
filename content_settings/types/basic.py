@@ -5,6 +5,7 @@ from typing import Optional, Set, Tuple, Union, Any, Callable
 from collections.abc import Iterable
 
 from django import forms
+from django.utils.safestring import mark_safe
 
 from content_settings.context_managers import context_defaults_kwargs
 from content_settings.settings import CACHE_SPLITER
@@ -244,6 +245,9 @@ class SimpleText(SimpleString):
 
 class SimpleHTML(SimpleText):
     admin_preview_as: str = PREVIEW_HTML
+
+    def give(self, value, suffix=None):
+        return mark_safe(value)
 
 
 class URLString(SimpleString):

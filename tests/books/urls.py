@@ -15,6 +15,11 @@ urlpatterns = [
     path("", TemplateView.as_view(template_name="books/index.html"), name="index"),
     path("list/", BookListView.as_view(), name="list"),
     path(
+        "simple-html/",
+        TemplateView.as_view(template_name="books/simple.html"),
+        name="simple-html",
+    ),
+    path(
         "fetch/main/",
         FetchSettingsView.as_view(
             attrs=[

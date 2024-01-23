@@ -1,6 +1,9 @@
 import pytest
 from decimal import Decimal
 
+from django.test import Client
+from django.core.exceptions import ValidationError
+
 from content_settings.types.basic import (
     SimpleString,
     SimpleText,
@@ -14,8 +17,9 @@ from content_settings.types.mixins import (
     CallToPythonMixin,
     mix,
 )
+from content_settings.models import ContentSetting
+from content_settings.caching import recalc_checksums
 
-from django.core.exceptions import ValidationError
 
 pytestmark = [pytest.mark.django_db]
 
@@ -154,3 +158,19 @@ def test_email_validate_fail():
 def test_email_validate_fail():
     var = EmailString()
     var.validate_value("name@checkio.org")
+
+
+def test_simple_html_template_tag():
+    cs = ContentSetting.objects.get(name="TITLE")
+    cs.value = "<h1>Simple HTML</h1>"
+    cs.save()
+
+    recalc_checksums()
+
+    client = Client()
+    resp = client.get("/books/simple-html/")
+    assert resp.status_code == 200
+    assert (
+        resp.content
+        == b"SIMPLE_HTML_FIELD: <h1>Simple HTML</h1>\n\nTITLE: &lt;h1&gt;Simple HTML&lt;/h1&gt;"
+    )
