@@ -193,10 +193,13 @@ class SimpleExec(SimpleCallTemplate):
 
     def get_help_format(self):
         yield from super().get_help_format()
-        yield f"Expected variables: <ul>"
-        for name, value in self.get_call_return().items():
-            yield f"<li>{name}: {value}</li>"
-        yield "</ul>"
+        if self.get_call_return() is None:
+            yield "Return Dict is not specified"
+        else:
+            yield f"Return Dict: <ul>"
+            for name, value in self.get_call_return().items():
+                yield f"<li>{name}: {value}</li>"
+            yield "</ul>"
 
     def prepare_python_call(self, value):
         return {"template": compile(value, "<string>", "exec")}

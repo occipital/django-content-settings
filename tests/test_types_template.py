@@ -225,7 +225,6 @@ def test_exec_call_return_none():
     var = SimpleExec(
         template_args_default={"value": Decimal("0.0")},
         template_static_data={"Decimal": Decimal},
-        call_return=None,
     )
 
     value = """

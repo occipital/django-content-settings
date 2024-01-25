@@ -273,6 +273,7 @@ def reset_code_values(db=None, trigger_checksum=None):
 
 def check_update():
     if not is_populated():
+        reset_all_values()
         return
     store_checksum = get_checksum_from_store()
     if store_checksum is not None and store_checksum != get_checksum_from_local():
