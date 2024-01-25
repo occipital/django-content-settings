@@ -2,6 +2,13 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
+### 0.6.2 SimpleHTML and DjangoModelTemplateMixin
+
+* 📖 new mixin `DjangoModelTemplateMixin` and new types `DjangoModelEval` and `DjangoModelExec`
+* 📖 give for `SimpleHTML` is now marked safe, so no need to use `|safe` filter in template
+* fix `SimpleEval` and `SimpleExec` permissions
+* fix `SimpleStringsList.comment_starts_with`
+
 ### 0.6.1 SimpleCSV: you can now set default, required and optional argument for the column type
 
 ```python
