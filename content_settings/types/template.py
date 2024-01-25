@@ -111,7 +111,7 @@ class DjangoTemplateNoArgs(GiveCallMixin, DjangoTemplate):
     pass
 
 
-class DjangoModelTemplate(DjangoTemplate):
+class DjangoModelTemplateMixin:
     model_queryset = None
     obj_name = "object"
     admin_preview_call = False
@@ -146,6 +146,10 @@ class DjangoModelTemplate(DjangoTemplate):
         return ()
 
 
+class DjangoModelTemplate(DjangoModelTemplateMixin, DjangoTemplate):
+    pass
+
+
 class SimpleEval(SimpleCallTemplate):
     update_permission = staticmethod(superuser)
     help_format = "Python code that returns a value"
@@ -163,6 +167,10 @@ class SimpleEval(SimpleCallTemplate):
         }
 
         return eval(template, globs)
+
+
+class DjangoModelEval(DjangoModelTemplateMixin, SimpleEval):
+    pass
 
 
 class SimpleEvalNoArgs(GiveCallMixin, SimpleEval):
@@ -207,6 +215,10 @@ class SimpleExec(SimpleCallTemplate):
         if call_return is None:
             return globs
         return {k: globs.get(k, v) for k, v in call_return.items()}
+
+
+class DjangoModelExec(DjangoModelTemplateMixin, SimpleExec):
+    pass
 
 
 class SimpleExecNoArgs(GiveCallMixin, SimpleExec):

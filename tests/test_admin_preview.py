@@ -9,6 +9,7 @@ from content_settings.types.template import (
     DjangoTemplate,
     SimpleEval,
     SimpleEvalNoArgs,
+    DjangoModelEval,
 )
 from content_settings.types.basic import SimpleString, SimpleInt, EmailString
 from content_settings.types.array import SimpleStringsList
@@ -53,6 +54,14 @@ def adjust_params(params):
                     obj_name="book",
                 ),
                 "<b>The Poplar</b><br><i>A book about poplar trees</i>",
+                init_books,
+            ),
+            (
+                DjangoModelEval(
+                    '{"name": object.title, "description": object.description}',
+                    model_queryset=Book.objects.all(),
+                ),
+                "{'name': 'The Poplar', 'description': 'A book about poplar trees'}",
                 init_books,
             ),
             (
