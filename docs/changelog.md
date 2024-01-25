@@ -2,6 +2,8 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
+### 0.6.3 fix caching for huey and celery
+
 ### 0.6.2 SimpleHTML and DjangoModelTemplateMixin
 
 * 📖 new mixin `DjangoModelTemplateMixin` and new types `DjangoModelEval` and `DjangoModelExec`
