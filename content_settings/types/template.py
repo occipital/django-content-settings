@@ -5,12 +5,8 @@ from django.core.exceptions import ValidationError
 from .basic import SimpleText
 from .mixins import CallToPythonMixin, GiveCallMixin
 from .validators import call_validator
-from . import PREVIEW_TEXT
+from . import PREVIEW_TEXT, required
 from ..permissions import superuser
-
-
-class required:
-    pass
 
 
 class SimpleCallTemplate(CallToPythonMixin, SimpleText):
@@ -151,7 +147,7 @@ class DjangoModelTemplate(DjangoTemplate):
 
 
 class SimpleEval(SimpleCallTemplate):
-    update_permission = superuser
+    update_permission = staticmethod(superuser)
     help_format = "Python code that returns a value"
     tags = {"eval"}
 
@@ -174,7 +170,7 @@ class SimpleEvalNoArgs(GiveCallMixin, SimpleEval):
 
 
 class SimpleExec(SimpleCallTemplate):
-    update_permission = superuser
+    update_permission = staticmethod(superuser)
     help_format = "Python code that execute and returns generated variables "
     tags = {"eval"}
     call_return = None
