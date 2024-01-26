@@ -105,7 +105,36 @@ def test_add_tags():
         assert SimpleString(tags={"second"}).tags == {"second", "main"}
 
 
-def test_add_tags():
+@pytest.mark.parametrize(
+    "context_tags,init_tags,result",
+    [
+        ("main", "second", {"second", "main"}),
+        ({"main"}, "second", {"second", "main"}),
+        ("main", {"second"}, {"second", "main"}),
+        ({"main"}, {"second"}, {"second", "main"}),
+        ({"main"}, None, {"main"}),
+        ("main", ["second"], {"second", "main"}),
+        ({"main"}, ["second"], {"second", "main"}),
+        (["main"], ["second"], {"second", "main"}),
+        (["main"], None, {"main"}),
+        ("main", {"second", "third"}, {"second", "third", "main"}),
+        ({"main"}, {"second", "third"}, {"second", "third", "main"}),
+        ("main", {"second"}, {"second", "main"}),
+        ({"main"}, {"second"}, {"second", "main"}),
+        ("main", None, {"main"}),
+    ],
+)
+def test_add_tags_convertion(context_tags, init_tags, result):
+    with context_defaults(add_tags(context_tags)):
+        assert SimpleString(tags=init_tags).tags == result
+
+
+def test_add_tags_string_to_list():
+    with context_defaults(add_tags("main")):
+        assert SimpleString(tags=["second"]).tags == {"second", "main"}
+
+
+def test_add_tags_deep():
     with context_defaults(add_tags({"main"})):
         assert SimpleString().tags == {"main"}
         with context_defaults(add_tags({"second"})):

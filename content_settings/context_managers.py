@@ -26,7 +26,13 @@ class process_set(process):
     def process(self, kwargs):
         return {
             name: self.process_one(
-                kwargs.get(name, set()),
+                set()
+                if kwargs.get(name) is None
+                else (
+                    set([kwargs[name]])
+                    if isinstance(kwargs[name], str)
+                    else set(kwargs[name])
+                ),
                 set([value]) if isinstance(value, str) else set(value),
             )
             for name, value in self.kwargs.items()

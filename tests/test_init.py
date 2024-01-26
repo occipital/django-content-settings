@@ -2,7 +2,7 @@ import pytest
 
 from content_settings.conf import content_settings
 from content_settings.models import ContentSetting
-from content_settings.caching import reset_all_values
+from content_settings.caching import reset_all_values, get_raw_value
 
 pytestmark = [pytest.mark.django_db(transaction=True)]
 
@@ -35,3 +35,8 @@ def test_withtag():
         "TITLE": "Book Store",
         "DESCRIPTION": "Book Store is the best book store in the world",
     }
+
+
+def test_get_raw_value():
+    assert get_raw_value("TITLE") == "Book Store"
+    assert get_raw_value("IS_OPEN") == "1"

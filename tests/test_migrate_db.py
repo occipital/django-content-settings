@@ -28,15 +28,46 @@ def test_created_unkown():
 
 def test_update_version_value():
     cs = ContentSetting.objects.get(name="TITLE")
+    cs.value = "old value"
     cs.version += "2"
     cs.save()
 
-    assert set_initial_values_for_db() == [("TITLE", "update")]
+    assert set_initial_values_for_db(apply=True) == [("TITLE", "update")]
+
+    cs.refresh_from_db()
+    assert cs.value == "Book Store"
 
 
-def test_overwrite_user_defined_allowed():
+def test_update_tags_only():
+    cs = ContentSetting.objects.get(name="TITLE")
+    cs.tags = "newtag"
+    cs.value = "old value"
+    cs.save()
+
+    assert set_initial_values_for_db(apply=True) == [("TITLE", "update")]
+
+    cs.refresh_from_db()
+    assert cs.value == "old value"
+    assert cs.tags == "general"
+
+
+def test_overwrite_user_defined_allowed_without_version_change():
     ContentSetting.objects.filter(name="TITLE").update(
         user_defined_type="line", value="WOW Store"
+    )
+
+    assert set_initial_values_for_db(apply=True) == [("TITLE", "update")]
+
+    cs = ContentSetting.objects.get(name="TITLE")
+    assert not cs.user_defined_type
+    assert cs.value == "WOW Store"
+
+
+def test_overwrite_user_defined_allowed_with_version_change():
+    ContentSetting.objects.filter(name="TITLE").update(
+        user_defined_type="line",
+        value="WOW Store",
+        version="OLD",
     )
 
     assert set_initial_values_for_db(apply=True) == [("TITLE", "update")]

@@ -168,6 +168,12 @@ def get_value(name, suffix=None):
     return get_type_by_name(name).give(DATA.ALL_VALUES[name], suffix)
 
 
+def get_raw_value(name):
+    assert DATA.POPULATED
+
+    return DATA.ALL_RAW_VALUES[name]
+
+
 def is_populated():  # better name?
     return getattr(DATA, "POPULATED", False)
 

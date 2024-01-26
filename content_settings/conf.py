@@ -197,27 +197,35 @@ def set_initial_values_for_db(apply=False):
                 execute(cs.name, "delete", lambda: cs.delete())
                 continue
 
-            str_tags = get_str_tags(cs_type)
-            str_help = cs_type.get_help()
-
             assert (
                 not cs.user_defined_type or cs_type.overwrite_user_defined
             ), f"{cs.name} is not a code setting and not overwrite_user_defined"
 
-            if (
-                cs.version != cs_type.version
-                or cs.user_defined_type
-                or cs.tags != str_tags
-                or cs.help != str_help
-            ):
+            if cs.version != cs_type.version:
                 execute_update_obj(
                     cs.name,
                     cs,
                     value=cs_type.default,
                     version=cs_type.version,
+                    user_defined_type=None,
+                )
+
+            if cs.user_defined_type:
+                execute_update_obj(
+                    cs.name,
+                    cs,
+                    user_defined_type=None,
+                )
+
+            str_tags = get_str_tags(cs_type)
+            str_help = cs_type.get_help()
+
+            if cs.tags != str_tags or cs.help != str_help:
+                execute_update_obj(
+                    cs.name,
+                    cs,
                     tags=str_tags,
                     help=str_help,
-                    user_defined_type=None,
                 )
 
         else:
