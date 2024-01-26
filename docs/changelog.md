@@ -2,6 +2,12 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
+### 0.6.4
+
+* `caching.get_raw_value` - new function
+* 📖 `context_manager.process_set` - correct work with str, list and other iterable (those will be converted to set)
+* prevent resetting value if only help of tags were updated. The value will be reset to default only in case of version update
+
 ### 0.6.3 fix caching for huey and celery
 
 ### 0.6.2 SimpleHTML and DjangoModelTemplateMixin
