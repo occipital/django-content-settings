@@ -37,9 +37,7 @@ class FetchSettingsView(View):
             if cs_type is None:
                 continue
 
-            if not cs_type.fetch_permission or not cs_type.fetch_permission(
-                request.user
-            ):
+            if not cs_type.get_fetch_permission()(request.user):
                 continue
             if suffix is None:
                 setting_name = name
@@ -57,10 +55,7 @@ def fetch_one_setting(request, name, suffix=None):
     if cs_type is None:
         return HttpResponseNotFound("value not found")
 
-    if cs_type.fetch_permission is None:
-        return HttpResponseNotFound("hidden")
-
-    if not cs_type.fetch_permission(request.user):
+    if not cs_type.get_fetch_permission()(request.user):
         return HttpResponseForbidden("permission denied")
 
     if suffix is not None:

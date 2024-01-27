@@ -19,6 +19,7 @@ from content_settings.types import (
     required,
     optional,
 )
+from content_settings.permissions import none, staff
 
 
 class BaseSetting:
@@ -32,8 +33,8 @@ class SimpleString(BaseSetting):
     - cls_field (forms.CharField): The form field class to use for the setting.
     - widget (forms.Widget): The form widget to use for the cls_field.
     - widget_attrs (Optional[dict]): Optional attributes for the widget initiation.
-    - fetch_permission (Optional[str]): Optional permission required to fetch the setting.
-    - update_permission (Optional[str]): Optional permission required to update the setting.
+    - fetch_permission (Callable): Optional permission required to fetch the setting.
+    - update_permission (Callable): Optional permission required to update the setting.
     - help_format (Optional[str]): Optional format string for the help text for the format (align to the type).
     - help (Optional[str]): Optional help text for the setting.
     - value_required (bool): Whether a value is required for the setting.
@@ -52,8 +53,8 @@ class SimpleString(BaseSetting):
     cls_field: forms.CharField = forms.CharField
     widget: forms.Widget = forms.TextInput
     widget_attrs: Optional[dict] = None
-    fetch_permission: Optional[str] = None
-    update_permission: Optional[str] = None
+    fetch_permission: Callable = staticmethod(none)
+    update_permission: Callable = staticmethod(staff)
     help_format: Optional[str] = ""
     help: Optional[str] = None
     value_required: bool = False
@@ -89,6 +90,18 @@ class SimpleString(BaseSetting):
         assert (
             self.get_admin_preview_as() in PREVIEW_ALL
         ), f"admin_preview_as should be in {PREVIEW_ALL}"
+        assert callable(
+            self.get_fetch_permission()
+        ), "fetch_permission should be callable"
+        assert callable(
+            self.get_update_permission()
+        ), "update_permission should be callable"
+
+    def get_fetch_permission(self) -> Callable:
+        return self.fetch_permission
+
+    def get_update_permission(self) -> Callable:
+        return self.update_permission
 
     def get_admin_preview_as(self) -> str:
         return self.admin_preview_as

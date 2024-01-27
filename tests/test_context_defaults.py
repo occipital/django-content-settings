@@ -19,18 +19,16 @@ def test_context_defaults():
     with context_defaults(fetch_permission=any):
         assert SimpleString(fetch_permission=any).fetch_permission == any
         assert SimpleString().fetch_permission == any
-        assert SimpleString(fetch_permission=None).fetch_permission == None
+        assert SimpleString(fetch_permission=none).fetch_permission == none
 
 
 def test_nested():
-    assert SimpleString().fetch_permission is None
     with context_defaults(fetch_permission=any):
         assert SimpleString().fetch_permission == any
         with context_defaults(fetch_permission=none):
             assert SimpleString().fetch_permission == none
             assert SimpleString(fetch_permission=any).fetch_permission == any
         assert SimpleString().fetch_permission == any
-    assert SimpleString().fetch_permission is None
 
 
 def test_ignore_unkown_kwargs():
