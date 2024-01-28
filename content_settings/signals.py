@@ -4,7 +4,7 @@ from django.db.backends.signals import connection_created
 from django.apps import apps
 from django.db import transaction
 
-from .settings import USER_DEFINED_TYPES
+from .settings import USER_DEFINED_TYPES, UPDATE_DB_VALUES_BY_MIGRATE
 
 from django.dispatch import receiver
 
@@ -70,19 +70,21 @@ def check_update_for_request(*args, **kwargs):
     check_update()
 
 
-@receiver(post_migrate, sender=apps.get_app_config("content_settings"))
-def update_stored_values(*args, **kwargs):
-    try:
-        with transaction.atomic():
-            log = set_initial_values_for_db(apply=True)
-    except Exception as e:
-        log = [("Error", str(e))]
+if UPDATE_DB_VALUES_BY_MIGRATE:
 
-    if not log:
-        return
+    @receiver(post_migrate, sender=apps.get_app_config("content_settings"))
+    def update_stored_values(*args, **kwargs):
+        try:
+            with transaction.atomic():
+                log = set_initial_values_for_db(apply=True)
+        except Exception as e:
+            log = [("Error", str(e))]
 
-    for l in log:
-        print(" ".join(l))
+        if not log:
+            return
+
+        for l in log:
+            print(" ".join(l))
 
 
 @receiver(connection_created)

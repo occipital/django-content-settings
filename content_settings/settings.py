@@ -12,6 +12,7 @@ try:
 except Exception:
     VERSION = "dev"
 
+UPDATE_DB_VALUES_BY_MIGRATE = get_setting("UPDATE_DB_VALUES_BY_MIGRATE", True)
 
 CHECKSUM_KEY_PREFIX = (
     get_setting("CHECKSUM_KEY_PREFIX", "CS_CHECKSUM_") + VERSION + "__"
