@@ -180,6 +180,11 @@ class SimpleString(BaseSetting):
             tags = set()
         return set(tags)
 
+    def get_content_tags(self, value: str) -> Set[str]:
+        from content_settings.conf import gen_tags
+
+        return gen_tags(self, value)
+
     def get_validators(self) -> Tuple[Callable]:
         return self.validators + tuple(self.cls_field.default_validators)
 

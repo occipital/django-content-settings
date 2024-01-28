@@ -13,7 +13,7 @@ from .caching import (
     reset_all_values,
     recalc_checksums,
 )
-from .conf import set_initial_values_for_db
+from .conf import set_initial_values_for_db, get_type_by_name, get_str_tags
 from .models import ContentSetting, HistoryContentSetting
 
 
@@ -38,6 +38,18 @@ def create_history_settings(sender, instance, created, **kwargs):
         user_defined_type=instance.user_defined_type,
         was_changed=not created,
     )
+
+
+@receiver(pre_save, sender=ContentSetting)
+def update_value_tags(sender, instance, **kwargs):
+    if instance.user_defined_type:
+        return
+
+    cs_type = get_type_by_name(instance.name)
+    if cs_type is None:
+        return
+
+    instance.tags = get_str_tags(cs_type, instance.value)
 
 
 if USER_DEFINED_TYPES:

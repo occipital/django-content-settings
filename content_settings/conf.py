@@ -5,7 +5,7 @@ from django.apps import apps
 
 from .types.basic import BaseSetting
 from .caching import get_value, get_type_by_name, get_all_names
-from .settings import USER_DEFINED_TYPES
+from .settings import USER_DEFINED_TYPES, TAGS
 
 USER_DEFINED_TYPES_INSTANCE = {}
 USER_DEFINED_TYPES_INITIAL = {}
@@ -13,16 +13,39 @@ USER_DEFINED_TYPES_NAME = {}
 ALL = {}
 PREFIXSES = {}
 
+
+def import_object(path):
+    parts = path.split(".")
+    module = import_module(".".join(parts[:-1]))
+    return getattr(module, parts[-1])
+
+
 if USER_DEFINED_TYPES:
     for slug, imp_line, name in USER_DEFINED_TYPES:
-        imp_line_parts = imp_line.split(".")
-        type_module = import_module(".".join(imp_line_parts[:-1]))
-        type_class = getattr(type_module, imp_line_parts[-1])
+        type_class = import_object(imp_line)
         USER_DEFINED_TYPES_INSTANCE[slug] = partial(
             type_class, user_defined_slug=slug, version=type_class.version
         )
         USER_DEFINED_TYPES_INITIAL[slug] = USER_DEFINED_TYPES_INSTANCE[slug]()
         USER_DEFINED_TYPES_NAME[slug] = name
+
+
+CALL_TAGS = []
+for func_tag in TAGS:
+    if isinstance(func_tag, str):
+        func_tag = import_object(func_tag)
+    elif callable(func_tag):
+        pass
+    else:
+        raise AssertionError("func_tag should be str or callable")
+    CALL_TAGS.append(func_tag)
+
+
+def gen_tags(cs_type, value):
+    tags = set()
+    for func_tag in CALL_TAGS:
+        tags |= func_tag(cs_type, value)
+    return tags
 
 
 def register_prefix(name):
@@ -146,10 +169,11 @@ class _Settings:
         return cs_type is not None and cs_type.can_suffix(suffix)
 
 
-def get_str_tags(cs_type):
-    if cs_type.get_tags():
-        return "\n".join(sorted(cs_type.get_tags()))
-    return ""
+def get_str_tags(cs_type, value=None):
+    tags = cs_type.get_tags()
+    if not cs_type.user_defined_slug:
+        tags |= cs_type.get_content_tags(cs_type.default if value is None else value)
+    return "\n".join(sorted(tags))
 
 
 def set_initial_values_for_db(apply=False):
@@ -217,7 +241,7 @@ def set_initial_values_for_db(apply=False):
                     user_defined_type=None,
                 )
 
-            str_tags = get_str_tags(cs_type)
+            str_tags = get_str_tags(cs_type, cs.value)
             str_help = cs_type.get_help()
 
             if cs.tags != str_tags or cs.help != str_help:

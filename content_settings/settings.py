@@ -14,6 +14,15 @@ except Exception:
 
 UPDATE_DB_VALUES_BY_MIGRATE = get_setting("UPDATE_DB_VALUES_BY_MIGRATE", True)
 
+TAGS = get_setting(
+    "TAGS",
+    [
+        "content_settings.tags.changed",
+    ],
+)
+
+TAG_CHANGED = get_setting("TAG_CHANGED", "changed")
+
 CHECKSUM_KEY_PREFIX = (
     get_setting("CHECKSUM_KEY_PREFIX", "CS_CHECKSUM_") + VERSION + "__"
 )

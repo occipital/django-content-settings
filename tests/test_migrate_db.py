@@ -39,16 +39,13 @@ def test_update_version_value():
 
 
 def test_update_tags_only():
-    cs = ContentSetting.objects.get(name="TITLE")
-    cs.tags = "newtag"
-    cs.value = "old value"
-    cs.save()
+    ContentSetting.objects.filter(name="TITLE").update(tags="newtag", value="old value")
 
     assert set_initial_values_for_db(apply=True) == [("TITLE", "update")]
 
-    cs.refresh_from_db()
+    cs = ContentSetting.objects.get(name="TITLE")
     assert cs.value == "old value"
-    assert cs.tags == "general"
+    assert cs.tags == "changed\ngeneral"
 
 
 def test_overwrite_user_defined_allowed_without_version_change():
