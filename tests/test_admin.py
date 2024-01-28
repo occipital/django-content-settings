@@ -347,3 +347,49 @@ def test_preview_menu_trim(webtest_admin):
     assert resp.json == {
         "html": '<div> <a class="cs_set_params">default</a>  <b>trim</b> </div><pre>This is...</pre>',
     }
+
+
+def test_view_permission_staff_for_awesome_staff(webtest_staff):
+    resp = webtest_staff.get("/admin/content_settings/contentsetting/")
+    assert resp.status_int == 200
+    assert "REFFERAL_URL" in resp.html.text
+    assert "AWESOME_PASS" not in resp.html.text
+
+
+def test_view_permission_staff_for_awesome_staff_abs_url(webtest_staff):
+    cs = ContentSetting.objects.get(name="AWESOME_PASS")
+
+    resp = webtest_staff.get(
+        f"/admin/content_settings/contentsetting/{cs.id}/change/", expect_errors=True
+    )
+    assert resp.status_int == 403
+
+
+def test_view_permission_superuser_for_awesome_staff(webtest_admin):
+    resp = webtest_admin.get("/admin/content_settings/contentsetting/")
+    assert resp.status_int == 200
+    assert "REFFERAL_URL" in resp.html.text
+    assert "AWESOME_PASS" in resp.html.text
+
+
+def test_view_permission_superuser_for_awesome_staff_abs_url(webtest_admin):
+    cs = ContentSetting.objects.get(name="AWESOME_PASS")
+
+    resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/change/")
+    assert resp.status_int == 200
+
+
+def test_view_history_permission_superuser(webtest_admin):
+    cs = ContentSetting.objects.get(name="REFFERAL_URL")
+
+    resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/history/")
+    assert resp.status_int == 200
+
+
+def test_view_history_permission_staff(webtest_staff):
+    cs = ContentSetting.objects.get(name="REFFERAL_URL")
+
+    resp = webtest_staff.get(
+        f"/admin/content_settings/contentsetting/{cs.id}/history/", expect_errors=True
+    )
+    assert resp.status_int == 403

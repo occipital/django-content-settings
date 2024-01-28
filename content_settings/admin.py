@@ -31,7 +31,7 @@ def user_able_to_update(user, name, user_defined_type=None):
         cs_type = USER_DEFINED_TYPES_INSTANCE[user_defined_type]()
     if cs_type is None:
         return False
-    return cs_type.update_permission is None or cs_type.update_permission(user)
+    return cs_type.can_update(user)
 
 
 TAGS_PARAM = "tags"
@@ -52,27 +52,42 @@ class SettingsChangeList(ChangeList):
         return params
 
     def get_queryset(self, request, *args, **kwargs):
+        from .conf import get_type_by_name
+
         q = super().get_queryset(request, *args, **kwargs)
+        user = request.user
 
         tags = get_selected_tags_from_params(self.params)
-        if not tags:
-            return q
+        if tags:
 
-        user_settings = list(
-            UserTagSetting.objects.filter(user=request.user, tag__in=tags).values_list(
-                "name", flat=True
+            user_settings = list(
+                UserTagSetting.objects.filter(
+                    user=request.user, tag__in=tags
+                ).values_list("name", flat=True)
+            )
+            if user_settings:
+                q = q.filter(name__in=user_settings)
+
+            combine = Q()
+            for tag in tags:
+                if tag in USER_TAGS:
+                    continue
+                combine &= Q(tags__iregex=rf"(^|\n){tag}($|\n)")
+
+            q = q.filter(combine)
+
+        # This is terrable
+        # But I don't know how to do it better
+        # I need to filter out the names user don't have permissions to see
+
+        names = list(q.values_list("name", flat=True))
+        return q.filter(
+            ~Q(
+                name__in=[
+                    name for name in names if not get_type_by_name(name).can_view(user)
+                ]
             )
         )
-        if user_settings:
-            q = q.filter(name__in=user_settings)
-
-        combine = Q()
-        for tag in tags:
-            if tag in USER_TAGS:
-                continue
-            combine &= Q(tags__iregex=rf"(^|\n){tag}($|\n)")
-
-        return q.filter(combine)
 
 
 class ContentSettinForm(ModelForm):
@@ -154,6 +169,8 @@ class ContentSettingAdmin(admin.ModelAdmin):
         return SettingsChangeList
 
     def context_tags(self, request):
+        from .conf import get_type_by_name
+
         extra_context = {}
         selected_tags = get_selected_tags_from_params(request.GET)
 
@@ -179,6 +196,8 @@ class ContentSettingAdmin(admin.ModelAdmin):
         tags_stat = defaultdict(int)
         user_settings = UserTagSetting.get_user_settings(request.user)
         for cs in ContentSetting.objects.all():
+            if not get_type_by_name(cs.name).can_view(request.user):
+                continue
             val_tags = cs.tags_set | user_settings[cs.name]
             if selected_tags and (not val_tags or selected_tags - val_tags):
                 continue
@@ -211,7 +230,17 @@ class ContentSettingAdmin(admin.ModelAdmin):
             self.context_tags(request),
         )
 
+    def change_view(self, request, object_id, *args, **kwargs):
+        from .conf import get_type_by_name
+
+        cs = ContentSetting.objects.filter(pk=object_id).first()
+        if cs and not get_type_by_name(cs.name).can_view(request.user):
+            raise PermissionDenied
+
+        return super().change_view(request, object_id, *args, **kwargs)
+
     def history_view(self, request, object_id, extra_context=None):
+        from .conf import get_type_by_name
 
         # First check if the user can see this history.
         model = self.model
@@ -221,7 +250,9 @@ class ContentSettingAdmin(admin.ModelAdmin):
                 request, model._meta, object_id
             )
 
-        if not self.has_view_or_change_permission(request, obj):
+        if not self.has_view_or_change_permission(request, obj) or not get_type_by_name(
+            obj.name
+        ).can_view_history(request.user):
             raise PermissionDenied
 
         opts = model._meta

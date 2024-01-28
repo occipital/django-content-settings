@@ -7,6 +7,8 @@ from content_settings.types.basic import (
     SimpleHTML,
     PREVIEW_HTML,
     PREVIEW_TEXT,
+    SimplePassword,
+    URLString,
 )
 from content_settings.types.datetime import DateString
 from content_settings.types.mixins import (
@@ -121,4 +123,14 @@ INTERESTING_TEXT = mix(DictSuffixesPreviewMixin, SimpleText)(
 SIMPLE_HTML_FIELD = SimpleHTML(
     "<h1>Simple HTML</h1>",
     help="The simple html field",
+)
+
+AWESOME_PASS = SimplePassword(
+    "", help="The password of the site", view_permission=permissions.superuser
+)
+
+REFFERAL_URL = URLString(
+    "https://checkio.org",
+    view_history_permission=permissions.superuser,
+    help="url",
 )

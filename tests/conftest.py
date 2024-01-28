@@ -96,11 +96,11 @@ def webtest_user(django_app_factory):
 
 
 @pytest.fixture
-def webtest_stuff(django_app_factory):
+def webtest_staff(django_app_factory):
     from django.contrib.auth.models import Permission
 
     user, _ = get_user_model().objects.get_or_create(
-        username="teststuff", is_staff=True
+        username="teststaff", is_staff=True
     )
     for codename in ("change_contentsetting", "view_contentsetting"):
         perm = Permission.objects.get(codename=codename)
