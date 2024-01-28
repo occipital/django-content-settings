@@ -1,4 +1,4 @@
-from django.http import HttpResponseNotFound, HttpResponseForbidden, JsonResponse
+from django.http import HttpResponseNotFound, HttpResponseForbidden, HttpResponse
 from django.views.generic import View
 from content_settings.conf import content_settings
 
@@ -28,7 +28,7 @@ class FetchSettingsView(View):
     attrs = ()
 
     def get(self, request):
-        ret = {}
+        ret = []
         for val in self.attrs(request) if callable(self.attrs) else self.attrs:
             prefix, name, suffix = split_attr(val)
             assert prefix is None, "prefix is not None"
@@ -44,9 +44,19 @@ class FetchSettingsView(View):
             else:
                 setting_name = f"{name}__{suffix}"
             value = getattr(content_settings, setting_name)
-            ret[setting_name] = cs_type.json_view_value(request, value)
+            ret.append(
+                (
+                    setting_name,
+                    cs_type.json_view_value(
+                        value, suffix=suffix, request=request, name=name
+                    ),
+                )
+            )
 
-        return JsonResponse(ret)
+        return HttpResponse(
+            "{" + (",".join(f'"{name}":{value}' for name, value in ret)) + "}",
+            content_type="application/json",
+        )
 
 
 def fetch_one_setting(request, name, suffix=None):
@@ -64,4 +74,7 @@ def fetch_one_setting(request, name, suffix=None):
 
     value = getattr(content_settings, settings_name)
 
-    return JsonResponse({settings_name: cs_type.json_view_value(request, value)})
+    return HttpResponse(
+        f'{{"{settings_name}":{cs_type.json_view_value(value, suffix=suffix, request=request, name=name)}}}',
+        content_type="application/json",
+    )

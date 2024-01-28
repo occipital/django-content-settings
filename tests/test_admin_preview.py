@@ -18,23 +18,13 @@ from content_settings.types.template import required
 from content_settings.types.mixins import MakeCallMixin, mix
 
 from tests.books.models import Book
+from tests.tools import adjust_params
 
 pytestmark = [pytest.mark.django_db(transaction=True)]
 
 
 def init_books():
     Book.objects.create(title="The Poplar", description="A book about poplar trees")
-
-
-def adjust_params(params):
-    def _():
-        for v in params:
-            if len(v) == 3:
-                yield v
-            else:
-                yield v + (None,)
-
-    return list(_())
 
 
 @pytest.mark.parametrize(

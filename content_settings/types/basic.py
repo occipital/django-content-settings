@@ -3,9 +3,11 @@ from functools import cached_property
 from pprint import pformat
 from typing import Optional, Set, Tuple, Union, Any, Callable
 from collections.abc import Iterable
+from json import dumps
 
 from django import forms
 from django.utils.safestring import mark_safe
+from django.core.serializers.json import DjangoJSONEncoder
 
 from content_settings.context_managers import context_defaults_kwargs
 from content_settings.settings import CACHE_SPLITER
@@ -69,6 +71,7 @@ class SimpleString(BaseSetting):
     user_defined_slug: Optional[str] = None
     overwrite_user_defined: bool = False
     default: Union[str, required, optional] = ""
+    json_encoder = DjangoJSONEncoder
 
     def __init__(
         self, default: Optional[Union[str, required, optional]] = None, **kwargs
@@ -218,8 +221,8 @@ class SimpleString(BaseSetting):
             return None
         return self.field.to_python(value)
 
-    def json_view_value(self, request, value: Any) -> Any:
-        return value
+    def json_view_value(self, value: Any, **kwargs) -> Any:
+        return dumps(value, cls=self.json_encoder)
 
     def give_python_to_admin(self, value: str, name: str, **kwargs) -> Any:
         return self.to_python(value)
