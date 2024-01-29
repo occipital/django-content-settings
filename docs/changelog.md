@@ -2,6 +2,13 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
+## 0.7
+
+* __content generated tags__ - tags that can be generated not based on the given tags, but based on the given value.
+* `view_permission` and `view_history_permission`
+* `SimplePassword`
+* `json_view_value` returns string
+
 ### 0.6.4
 
 * `caching.get_raw_value` - new function
