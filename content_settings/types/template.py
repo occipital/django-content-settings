@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from .basic import SimpleText
 from .mixins import CallToPythonMixin, GiveCallMixin
 from .validators import call_validator
-from . import PREVIEW_TEXT, required
+from . import PREVIEW_TEXT, PREVIEW_PYTHON, required
 from ..permissions import superuser
 
 
@@ -154,6 +154,7 @@ class SimpleEval(SimpleCallTemplate):
     update_permission = staticmethod(superuser)
     help_format = "Python code that returns a value"
     tags = {"eval"}
+    admin_preview_as = PREVIEW_PYTHON
 
     def prepare_python_call(self, value):
         return {"template": compile(value, "<string>", "eval")}
@@ -178,6 +179,7 @@ class SimpleEvalNoArgs(GiveCallMixin, SimpleEval):
 
 
 class SimpleExec(SimpleCallTemplate):
+    admin_preview_as = PREVIEW_PYTHON
     update_permission = staticmethod(superuser)
     help_format = "Python code that execute and returns generated variables "
     tags = {"eval"}
