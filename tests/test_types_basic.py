@@ -110,6 +110,30 @@ def test_bool():
     assert var.give_python("1") is True
     assert var.give_python("0") is False
     assert var.give_python("") is False
+    assert var.give_python("yes") is True
+    assert var.give_python("Yes") is True
+    assert var.give_python(" Yes ") is True
+    assert var.give_python("no") is False
+    assert var.give_python("No") is False
+
+
+def test_bool_validate():
+    var = SimpleBool()
+
+    var.validate_value("1")
+    var.validate_value("0")
+    var.validate_value("")
+    var.validate_value("yes")
+    var.validate_value("Yes")
+    var.validate_value(" Yes ")
+
+    with pytest.raises(ValidationError) as error:
+        var.validate_value("Maybe")
+
+    assert (
+        error.value.message
+        == "Value cannot be 'yes', 'true', '1', 'no', 'false', '0', empty only"
+    )
 
 
 class SimpleFormat(CallToPythonMixin, SimpleString):

@@ -8,6 +8,7 @@ from json import dumps
 from django import forms
 from django.utils.safestring import mark_safe
 from django.core.serializers.json import DjangoJSONEncoder
+from django.core.exceptions import ValidationError
 
 from content_settings.context_managers import context_defaults_kwargs
 from content_settings.settings import CACHE_SPLITER
@@ -60,7 +61,7 @@ class SimpleString(BaseSetting):
     view_permission: Callable = staticmethod(staff)
     view_history_permission: Optional[Callable] = None
     help_format: str = ""
-    help: Optional[str] = None
+    help: str = ""
     value_required: bool = False
     version: str = ""
     tags: Optional[Iterable[str]] = None
@@ -168,14 +169,17 @@ class SimpleString(BaseSetting):
             if self.can_assign(name)
         }
 
-    def get_help_format(self) -> Optional[Union[str, Iterable[str]]]:
+    def get_help_format(self) -> Iterable[str]:
         yield self.help_format
 
-    def get_help(self) -> Optional[str]:
+    def get_help(self) -> str:
+        help = self.help
         help_format = "".join(self.get_help_format())
-        if help_format:
-            return f"{self.help} <br><br> {help_format}"
-        return self.help
+
+        if help and help_format:
+            return f"{help}<br><br>{help_format}"
+
+        return help or help_format
 
     def get_tags(self) -> Set[str]:
         tags = self.tags
@@ -272,6 +276,7 @@ class SimpleText(SimpleString):
 
 class SimpleHTML(SimpleText):
     admin_preview_as: str = PREVIEW_HTML
+    help_format: str = "HTML format"
 
     def give(self, value, suffix=None):
         return mark_safe(value)
@@ -280,36 +285,55 @@ class SimpleHTML(SimpleText):
 class URLString(SimpleString):
     cls_field: forms.Field = forms.URLField
     widget: forms.Widget = forms.URLInput
+    help_format: str = "URL"
     widget_attrs: dict = {"style": "max-width: 600px; width: 100%"}
 
 
 class EmailString(SimpleString):
     cls_field: forms.Field = forms.EmailField
     widget: forms.Widget = forms.EmailInput
+    help_format: str = "Email"
     widget_attrs: dict = {"style": "max-width: 600px; width: 100%"}
 
 
 class SimpleInt(SimpleString):
     admin_preview_as: str = PREVIEW_PYTHON
     cls_field: forms.Field = forms.IntegerField
-
-    def get_help_format(self):
-        yield "Any number"
+    help_format: str = "Any number"
 
 
-class SimpleBool(SimpleInt):
+class SimpleBool(SimpleString):
     admin_preview_as: str = PREVIEW_PYTHON
-    min_value: int = 0
-    max_value: int = 1
-    empty_is_none: bool = True
+    yeses: Tuple[str] = ("yes", "true", "1")
+    noes: Tuple[str] = ("no", "false", "0", "")
 
     def to_python(self, value) -> bool:
-        return bool(super().to_python(value))
+        value = value.lower().strip()
+        if value in self.yeses:
+            return True
+        if value in self.noes:
+            return False
+        return None
+
+    @property
+    def explained_accepted_values(self):
+        return [f"'{v}'" if v else "empty" for v in self.yeses + self.noes]
+
+    def validate(self, value):
+        if value is None:
+            raise ValidationError(
+                f"Value cannot be {', '.join(self.explained_accepted_values)} only"
+            )
+
+    def get_help_format(self):
+        yield "boolean (True/False) value. "
+        yield f"Accepted values: {', '.join(self.explained_accepted_values)}"
 
 
 class SimpleDecimal(SimpleString):
     admin_preview_as: str = PREVIEW_PYTHON
     cls_field: forms.Field = forms.DecimalField
+    help_format: str = "Decimal number with floating point"
 
 
 class SimplePassword(SimpleString):

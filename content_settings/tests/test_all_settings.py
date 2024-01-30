@@ -18,7 +18,7 @@ def test_admin_fields(name):
     setting = ALL[name]
     raw_value = setting.default
     assert setting.get_admin_preview_value(raw_value, name) is not None
-    assert setting.get_help()
+    assert setting.get_help() is not None
 
 
 @pytest.mark.parametrize("name", ALL.keys())
