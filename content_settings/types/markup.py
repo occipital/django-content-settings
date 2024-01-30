@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from functools import cached_property
 
 from django.core.exceptions import ValidationError
@@ -92,6 +93,19 @@ class SimpleCSV(SimpleText):
         if isinstance(self.csv_fields, dict):
             return self.csv_fields
         return {f: self.csv_fields_list_type for f in self.csv_fields}
+
+    def get_help_format(self) -> Iterable[str]:
+        yield from super().get_help_format()
+        yield "<br>Fields:"
+        for name, c_type in self.dict_csv_fields.items():
+            yield f"<br><i>{name}</i> - "
+            if c_type.default == required:
+                yield "(required) "
+            elif c_type.default == optional:
+                yield "(optional) "
+            else:
+                yield f"(default: {c_type.default if c_type.default else '<i>empty</i>'}) "
+            yield from c_type.get_help_format()
 
     def get_csv_reader(self, value):
         value = super().to_python(value)

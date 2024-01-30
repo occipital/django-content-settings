@@ -60,7 +60,7 @@ class SimpleString(BaseSetting):
     update_permission: Callable = staticmethod(staff)
     view_permission: Callable = staticmethod(staff)
     view_history_permission: Optional[Callable] = None
-    help_format: str = ""
+    help_format: str = "string"
     help: str = ""
     value_required: bool = False
     version: str = ""

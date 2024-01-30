@@ -14,7 +14,7 @@ class SimpleCallTemplate(CallToPythonMixin, SimpleText):
     template_static_includes = ("CONTENT_SETTINGS", "SETTINGS")
     template_static_data = None
     template_args_default = None
-    help_format = "Simple <a href='https://docs.djangoproject.com/en/3.2/topics/templates/' target='_blank'>Django Template</a>. Available objects:"
+    help_format = "Simple <a href='https://docs.djangoproject.com/en/3.2/topics/templates/' target='_blank'>Django Template</a>."
 
     def prepare_python_call(self, value):
         raise NotImplementedError()
@@ -36,12 +36,16 @@ class SimpleCallTemplate(CallToPythonMixin, SimpleText):
 
     def get_help_format(self):
         yield self.help_format
-        yield "<ul>"
+        yield " Available objects:<ul>"
 
-        for name in self.get_template_args_default().keys():
-            yield f"<li>{name}</li>"
+        for name, default in self.get_template_args_default().items():
+            yield f"<li>{name}"
+            if default == required:
+                yield f" - required</li>"
+            else:
+                yield f" - {repr(default)}</li>"
 
-        for name in self.get_template_static_data().keys():
+        for name in self.get_template_full_static_data().keys():
             yield f"<li>{name}</li>"
 
         yield "</ul>"
@@ -152,7 +156,7 @@ class DjangoModelTemplate(DjangoModelTemplateMixin, DjangoTemplate):
 
 class SimpleEval(SimpleCallTemplate):
     update_permission = staticmethod(superuser)
-    help_format = "Python code that returns a value"
+    help_format = "Python code that returns a value."
     tags = {"eval"}
     admin_preview_as = PREVIEW_PYTHON
 
@@ -181,7 +185,7 @@ class SimpleEvalNoArgs(GiveCallMixin, SimpleEval):
 class SimpleExec(SimpleCallTemplate):
     admin_preview_as = PREVIEW_PYTHON
     update_permission = staticmethod(superuser)
-    help_format = "Python code that execute and returns generated variables "
+    help_format = "Python code that execute and returns generated variables."
     tags = {"eval"}
     call_return = None
 
@@ -200,7 +204,7 @@ class SimpleExec(SimpleCallTemplate):
         else:
             yield f"Return Dict: <ul>"
             for name, value in self.get_call_return().items():
-                yield f"<li>{name}: {value}</li>"
+                yield f"<li>{name} - default: {value}</li>"
             yield "</ul>"
 
     def prepare_python_call(self, value):
