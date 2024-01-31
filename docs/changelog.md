@@ -4,8 +4,8 @@
 
 ### 0.7.1 help format
 
-* Default preview for Exec and Eval is Python
-* SimpleBool more possible input options
+* 📖 Default preview for Exec and Eval is Python
+* 📖 SimpleBool more possible input options
 * help_format for SplitTranslation
 * test covarage: 95%
 
