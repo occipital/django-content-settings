@@ -2,6 +2,13 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
+### 0.7.1 help format
+
+* Default preview for Exec and Eval is Python
+* SimpleBool more possible input options
+* help_format for SplitTranslation
+* test covarage: 95%
+
 ## 0.7 permissions and content tags
 
 * 📖 __content generated tags__ - tags that can be generated not based on the given tags, but based on the given value.
