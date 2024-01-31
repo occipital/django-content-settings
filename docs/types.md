@@ -52,7 +52,7 @@ Note: Validators are not used when converting text from the database to the vari
 - **EmailString**: A SimpleString that validates the input as a Email.
 - **SimpleInt**: A SimpleString that converts to an integer.
 - **SimpleDecimal**: A SimpleString that converts to a Decimal.
-- **SimpleBool**: A SimpleString that converts to a boolean. The set of avalaibale values for True and False you can change in tuples `yeses` (by default: `("yes", "true", "1")`) and `noes` (by default: `("no", "false", "0", "")`) _case insensetive_
+- **SimpleBool**: A SimpleString that converts to a boolean. The set of avalaibale values for True and False you can change in tuples `yeses` (by default: `("yes", "true", "1", "+", "ok")`) and `noes` (by default: `("no", "not", "false", "0", "-", "")`) _case insensetive_
 
 ## List Types (`content_settings.types.array`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/array.py))*
 

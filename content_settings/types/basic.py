@@ -304,8 +304,8 @@ class SimpleInt(SimpleString):
 
 class SimpleBool(SimpleString):
     admin_preview_as: str = PREVIEW_PYTHON
-    yeses: Tuple[str] = ("yes", "true", "1")
-    noes: Tuple[str] = ("no", "false", "0", "")
+    yeses: Tuple[str] = ("yes", "true", "1", "+", "ok")
+    noes: Tuple[str] = ("no", "not", "false", "0", "-", "")
 
     def to_python(self, value) -> bool:
         value = value.lower().strip()
