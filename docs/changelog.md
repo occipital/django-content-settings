@@ -4,16 +4,17 @@
 
 ### 0.7.1 help format
 
-* 📖 Default preview for Exec and Eval is Python
-* 📖 SimpleBool more possible input options
+* Default preview for Exec and Eval is Python
+* SimpleBool more possible input options
 * help_format for SplitTranslation
 * test covarage: 95%
 
 ## 0.7 permissions and content tags
 
 * 📖 __content generated tags__ - tags that can be generated not based on the given tags, but based on the given value.
-* 📖 `view_permission` and `view_history_permission`
-* 📖 `SimplePassword`
+* `CONTENT_SETTINGS_TAGS` - a list of functions that can generate tags for variable based on value
+* `view_permission` and `view_history_permission`
+* `SimplePassword`
 * `json_view_value` returns string
 
 ### 0.6.4
@@ -26,8 +27,8 @@
 
 ### 0.6.2 SimpleHTML and DjangoModelTemplateMixin
 
-* 📖 new mixin `DjangoModelTemplateMixin` and new types `DjangoModelEval` and `DjangoModelExec`
-* 📖 give for `SimpleHTML` is now marked safe, so no need to use `|safe` filter in template
+* new mixin `DjangoModelTemplateMixin` and new types `DjangoModelEval` and `DjangoModelExec`
+* give for `SimpleHTML` is now marked safe, so no need to use `|safe` filter in template
 * fix `SimpleEval` and `SimpleExec` permissions
 * fix `SimpleStringsList.comment_starts_with`
 
@@ -91,7 +92,7 @@ Minor:
 * None admin preview by default
 * `SimpleHTML` - same as SimpleText but with HTML preview
 * `EmailString` - new base type
-* `SimpleExec` and `SimpleExecNoArgs` - new types. Works in the same way as SimpleEval, but using exec instead of eval and return values based on `call_return` attribute
+* 📖 `SimpleExec` and `SimpleExecNoArgs` - new types. Works in the same way as SimpleEval, but using exec instead of eval and return values based on `call_return` attribute
 * all eval and exec types have `superuser` as default value for `update_permission`
 * `MakeCallMixin` has `call` suffix, just in case
 

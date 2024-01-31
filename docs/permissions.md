@@ -2,7 +2,12 @@
 
 ## Overview
 
-The `content_settings.permissions` *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/permissions.py))* module in Django provides functions that can be used as arguments for the `fetch_permission` and `update_permission` attributes. These functions determine the accessibility of variables based on user permissions.
+The `content_settings.permissions` *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/permissions.py))* module in Django provides functions that can be used as arguments for the  permission attributes of your types. Such as:
+
+* `fetch_permission` - permission for API access to the variables through the URLS `/content-settings/fetch/*/` and `views.FetchSettingsView`
+* `update_permission` - permission to change the variable in the admin panel
+* `view_permission` - permission to see the variable in the admin panel (it woudn't be listed for those who are not allowed)
+* `view_history_permission` - permission to see the history of changes for the variable. It is the only permission where None is allowed, in that case the permission will be taken from `view_permission`
 
 ### Functions in the Module
 
@@ -36,7 +41,6 @@ Allows access to users with a specific permission.
 has_perm('app_label.permission_codename')
 ```
 
-
 #### `and_(*funcs)`
 
 Combines multiple permission functions using a logical AND.
@@ -63,12 +67,7 @@ or_(staff, has_perm('app_label.permission_codename'))
 
 Logical NOT.
 
-
-## Usage
-
-These functions can be used to define fine-grained access control for different variables in your Django project. By assigning these functions to the `fetch_permission` and `update_permission` attributes of variables, you can control who can view and modify the content settings.
-
-### Example
+### Usage examples
 
 To set a permission where only staff members or users with a specific permission can update a variable:
 

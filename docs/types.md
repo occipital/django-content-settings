@@ -37,7 +37,7 @@ You can learn more about fields and widgets in [official Django Forms documentat
 
 Note: Validators are not used when converting text from the database to the variable object.
 
-- **update_permission** and **fetch_permission**: Access rights for changing the variable in the admin panel (detailed in a separate article).
+- **update_permission**, **fetch_permission**, **view_permission** and **view_history_permission**: Access rights for the variable (detailed in a [separate article](permissions.md)).
 - **admin_preview_as** (default: PREVIEW_TEXT): when you change values in Django Admin text field you see preview of the converted object. This attribute shows how the preview will look like. It has the followig options and all of them can be found in constants `content_settings.PREVIEW_*`:
     - `PREVIEW_TEXT` - the value will be shown as plain text inside of pre html element
     - `PREVIEW_HTML` - the value will be shown as it is without esceping
@@ -46,12 +46,13 @@ Note: Validators are not used when converting text from the database to the vari
 ### Other Basic Types (`content_settings.types.base`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py))*
 
 - **SimpleText**: Similar to SimpleString, but the input field can contain multiple lines.
-- **SimpleHTML**: Same as SimpleText, but with html preview in admin
+- **SimpleHTML**: Same as SimpleText, but with html preview in admin. _In the template no need to use `|safe` filter for that type of variable._
+- **SimplePassword**: Same as SimpleString, but hides the value of the input under the password input. If you want hide the possiblity to see certain values for the user consider using `view_permission` attribute.
 - **URLString**: A SimpleString that validates the input as a URL.
 - **EmailString**: A SimpleString that validates the input as a Email.
 - **SimpleInt**: A SimpleString that converts to an integer.
 - **SimpleDecimal**: A SimpleString that converts to a Decimal.
-- **SimpleBool**: A SimpleString that converts to a boolean. 0 or empty is False, 1 is True.
+- **SimpleBool**: A SimpleString that converts to a boolean. The set of avalaibale values for True and False you can change in tuples `yeses` (by default: `("yes", "true", "1")`) and `noes` (by default: `("no", "false", "0", "")`) _case insensetive_
 
 ## List Types (`content_settings.types.array`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/array.py))*
 
@@ -192,6 +193,7 @@ Decimal("20")
 ```
 
 - **SimpleEvalNoArgs**: the same as `SimpleEval` but without passing input args. It works the same as `DjangoTemplateNoArgs` and simply getting an attribute.
+- **DjangoModelEval**: the same as `DjangoModelTemplate` but for `SimpleEval`
 
 ### Calling Functions in Template *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/templatetags/content_settings_extras.py))*
 
