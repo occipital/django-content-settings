@@ -28,7 +28,7 @@ from content_settings.types.template import (
 from content_settings.types.array import (
     SimpleStringsList,
     TypedStringsList,
-    SplitByFirstLine,
+    SplitTranslation,
 )
 
 from tests.books.models import Book
@@ -171,6 +171,14 @@ pytestmark = [pytest.mark.django_db(transaction=True)]
             (
                 TypedStringsList(help="A value", line_type=SimpleInt()),
                 "A value<br><br>List of values with the following format:<ul><li>each line is a new value</li><li>strip spaces from the beginning and from the end of the value</li><li>remove empty values</li><li> use # to comment a line</li><li>empty values are removed</li></ul>Each line is Any number",
+            ),
+            (
+                SplitTranslation(help="A value"),
+                "A value<br><br>Translated Text. The first line can initialize the translation splitter. The initial language is EN. The first line can be '===== EN ====='. The format for the value inside the translation is: string",
+            ),
+            (
+                SplitTranslation(split_type=SimpleHTML(), help="A value"),
+                "A value<br><br>Translated Text. The first line can initialize the translation splitter. The initial language is EN. The first line can be '===== EN ====='. The format for the value inside the translation is: HTML format",
             ),
         ]
     ),

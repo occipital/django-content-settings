@@ -307,9 +307,11 @@ class SplitTranslation(SplitByFirstLine):
     split_not_found = NOT_FOUND_DEFAULT
 
     def get_help_format(self):
-        yield f"<b>With translation ({self.get_split_default_key()} by default)</b>"
-
-        yield from super().get_help_format()
+        yield "Translated Text. "
+        yield "The first line can initialize the translation splitter. "
+        yield f"The initial language is {self.split_default_key}. "
+        yield f"The first line can be '===== {self.split_default_key} ====='. "
+        yield "The format for the value inside the translation is: "
         yield from self.split_type.get_help_format()
 
     def split_default_choose(self, value):
