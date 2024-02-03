@@ -132,7 +132,7 @@ def test_bool_validate():
 
     assert (
         error.value.message
-        == "Value cannot be 'yes', 'true', '1', 'no', 'false', '0', empty only"
+        == "Value cannot be 'yes', 'true', '1', '+', 'ok', 'no', 'not', 'false', '0', '-', empty only"
     )
 
 

@@ -63,7 +63,7 @@ pytestmark = [pytest.mark.django_db(transaction=True)]
             ),
             (
                 SimpleBool(help="A value"),
-                "A value<br><br>boolean (True/False) value. Accepted values: 'yes', 'true', '1', 'no', 'false', '0', empty",
+                "A value<br><br>boolean (True/False) value. Accepted values: 'yes', 'true', '1', '+', 'ok', 'no', 'not', 'false', '0', '-', empty",
             ),
             (
                 SimpleText(help="A value"),
