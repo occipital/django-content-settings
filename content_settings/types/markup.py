@@ -4,6 +4,7 @@ from functools import cached_property
 from django.core.exceptions import ValidationError
 
 from .basic import SimpleText, PREVIEW_PYTHON, SimpleString
+from .each import EachMixin, Keys, Item
 from . import required, optional
 
 
@@ -64,48 +65,12 @@ class SimpleJSON(SimpleText):
             raise ValidationError(str(e))
 
 
-class SimpleCSV(SimpleText):
+class SimpleRawCSV(SimpleText):
     help_format = "Simple <a href='https://en.wikipedia.org/wiki/Comma-separated_values' target='_blank'>CSV format</a>"
     admin_preview_as = PREVIEW_PYTHON
     tags = {"csv"}
 
     csv_dialect = "unix"
-    csv_fields = None
-    csv_default_row = None
-    csv_fields_list_type = SimpleString(optional)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        assert self.csv_fields is not None, "csv_fields cannot be None"
-        assert isinstance(
-            self.csv_fields, (list, tuple, dict)
-        ), "csv_fields must be list, tuple or dict"
-
-        if self.csv_default_row is None:
-            self.csv_default_row = {
-                k: (v.default if v.default == required else v.to_python(v.default))
-                for k, v in self.dict_csv_fields.items()
-                if v.default != optional
-            }
-
-    @cached_property
-    def dict_csv_fields(self):
-        if isinstance(self.csv_fields, dict):
-            return self.csv_fields
-        return {f: self.csv_fields_list_type for f in self.csv_fields}
-
-    def get_help_format(self) -> Iterable[str]:
-        yield from super().get_help_format()
-        yield "<br>Fields:"
-        for name, c_type in self.dict_csv_fields.items():
-            yield f"<br><i>{name}</i> - "
-            if c_type.default == required:
-                yield "(required) "
-            elif c_type.default == optional:
-                yield "(optional) "
-            else:
-                yield f"(default: {c_type.default if c_type.default else '<i>empty</i>'}) "
-            yield from c_type.get_help_format()
 
     def get_csv_reader(self, value):
         value = super().to_python(value)
@@ -120,54 +85,35 @@ class SimpleCSV(SimpleText):
         except Exception as e:
             raise ValidationError(str(e))
 
-    def gen_to_python(self, value):
-        yield from self.gen_rows_to_python(self.get_csv_reader(value))
-
-    def gen_rows_to_python(self, csv):
-        for row in csv:
-            if not row:
-                continue
-            yield {
-                **self.csv_default_row,
-                **{
-                    name: c_type.to_python(value)
-                    for (name, c_type), value in zip(self.dict_csv_fields.items(), row)
-                },
-            }
-
-    def validate_raw_value(self, value: str) -> None:
-        super().validate_raw_value(value)
-
-        for i, row in enumerate(self.get_csv_reader(value), start=1):
-            if not row:
-                continue
-            for (name, c_type), value in zip(self.dict_csv_fields.items(), row):
-                try:
-                    c_type.validate_value(value)
-                except ValidationError as e:
-                    raise ValidationError(f"row #{i}, {name}: {e}")
-
-    def validate(self, rows):
-        super().validate(rows)
-
-        if rows is None:
-            return
-
-        for i, row in enumerate(rows, start=1):
-            for name, value in row.items():
-                if value == required:
-                    raise ValidationError(f"row #{i}, {name}: Value is required")
-
     def to_python(self, value):
-        val = self.gen_to_python(value)
-        if val is None:
-            return None
-        return list(val)
+        reader = self.get_csv_reader(value)
+        return [list(row) for row in reader if row]
 
-    def give(self, value, suffix=None):
-        if not value:
-            return value
-        return [
-            {k: self.dict_csv_fields[k].give(v, suffix) for k, v in row.items()}
-            for row in value
-        ]
+
+class KeysFromList(Keys):
+    def to_python(self, value):
+        return super().to_python({k: v for k, v in zip(self.cs_types.keys(), value)})
+
+
+class KeysFromListByList(KeysFromList):
+    def __init__(self, cs_type, keys):
+        super().__init__(**{k: cs_type for k in keys})
+
+
+class SimpleCSV(EachMixin, SimpleRawCSV):
+
+    csv_fields = None
+    csv_fields_list_type = SimpleString(optional)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        assert self.csv_fields is not None, "csv_fields cannot be None"
+        assert isinstance(
+            self.csv_fields, (list, tuple, dict)
+        ), "csv_fields must be list, tuple or dict"
+
+        self.each = Item(
+            KeysFromList(**self.csv_fields)
+            if isinstance(self.csv_fields, dict)
+            else KeysFromListByList(self.csv_fields_list_type, self.csv_fields)
+        )

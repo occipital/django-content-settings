@@ -176,7 +176,7 @@ def test_csv_fields_list_default_required():
     with pytest.raises(ValidationError) as error:
         var.validate_value("Alex")
 
-    assert error.value.messages == ["row #1, price: Value is required"]
+    assert error.value.messages == ["item #1: Missing required key price"]
 
     var.validate_value("Alex,1.2")
 
@@ -194,7 +194,7 @@ def test_csv_typed_required():
     with pytest.raises(ValidationError) as error:
         var.validate_value("Alex")
 
-    assert error.value.messages == ["row #1, balance: Value is required"]
+    assert error.value.messages == ["item #1: Missing required key balance"]
 
     var.validate_value("Alex,1.2")
 
@@ -213,7 +213,7 @@ def test_csv_value_validation():
     with pytest.raises(ValidationError) as error:
         var.validate_value("Alex, zero")
 
-    assert error.value.messages == ["row #1, price: ['Enter a number.']"]
+    assert error.value.messages == ["item #1: key price: Enter a number."]
 
 
 def test_csv_default_value():

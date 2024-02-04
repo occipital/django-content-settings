@@ -2,8 +2,16 @@ from typing import Any, Optional
 
 from django.core.exceptions import ValidationError
 
-from .basic import SimpleText, BaseSetting, PREVIEW_PYTHON, PREVIEW_TEXT, PREVIEW_NONE
+from .basic import (
+    SimpleText,
+    SimpleString,
+    BaseSetting,
+    PREVIEW_PYTHON,
+    PREVIEW_TEXT,
+    PREVIEW_NONE,
+)
 from .mixins import AdminPreviewSuffixesMixin
+from .each import EachMixin, Item
 
 
 def f_empty(value):
@@ -76,42 +84,12 @@ class SimpleStringsList(SimpleText):
         return list(self.gen_to_python(value))
 
 
-class TypedStringsList(SimpleStringsList):
-    line_type = None
+class TypedStringsList(EachMixin, SimpleStringsList):
+    line_type = SimpleString()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        assert self.line_type is not None, "line_type should be set"
-        assert isinstance(
-            self.line_type, BaseSetting
-        ), "line_type should be BaseSetting"
-
-    def validate_raw_value(self, value):
-        lines = value.split(self.split_lines)
-        for num, line in enumerate(lines, 1):
-            line = self.filter_line(line)
-            if line is None:
-                continue
-
-            try:
-                self.line_type.validate_value(line)
-            except ValidationError as e:
-                raise ValidationError(f"Line {num}: {e.message}")
-
-        return super().validate_value(value)
-
-    def gen_to_python(self, value):
-        for line in super().gen_to_python(value):
-            yield self.line_type.to_python(line)
-
-    def get_help_format(self):
-        yield from super().get_help_format()
-        yield "Each line is "
-        yield from self.line_type.get_help_format()
-
-    def give(self, value, suffix=None):
-        return [self.line_type.give(v) for v in value]
+        self.each = Item(self.line_type)
 
 
 NOT_FOUND_DEFAULT = "default"

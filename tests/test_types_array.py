@@ -139,4 +139,4 @@ def test_typed_list_validate():
             a
         """
         )
-    assert error.value.message == "Line 5: Enter a whole number."
+    assert error.value.message == "item #4: Enter a whole number."
