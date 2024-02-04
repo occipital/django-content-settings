@@ -3,7 +3,7 @@ from pprint import pformat
 from django.core.exceptions import ValidationError
 
 from .validators import call_validator
-from . import PREVIEW_NONE
+from . import PREVIEW_NONE, PREVIEW_HTML
 
 
 def mix(*cls):
@@ -86,18 +86,17 @@ class CallToPythonMixin:
         return ret
 
     def get_admin_preview_html(self, value, name, **kwargs):
-        ret = self.give_python_to_admin(value, name)
-        if not ret:
+        if not value:
             return "No preview (add at least one validator to preview_validators)"
         html = ""
-        for validator, val in ret:
+        for validator, val in value:
             if validator:
                 html += f"<div>{validator}</div>"
 
             if isinstance(val, Exception):
                 val = f"ERROR!!! {val}"
 
-            if not self.admin_preview_call and len(ret) == 1:
+            if not self.admin_preview_call and len(value) == 1:
                 html += str(val)
             else:
                 html += f"<div>{val}</div>"
@@ -105,18 +104,17 @@ class CallToPythonMixin:
         return html
 
     def get_admin_preview_text(self, value, name, **kwargs):
-        ret = self.give_python_to_admin(value, name)
-        if not ret:
+        if not value:
             return "No preview (add at least one validator to preview_validators)"
 
         def _():
-            for validator, val in ret:
+            for validator, val in value:
                 if validator:
                     yield f">>> {validator}"
 
                 if isinstance(val, Exception):
                     yield f"ERROR!!! {val}"
-                elif not self.admin_preview_call and len(ret) == 1:
+                elif not self.admin_preview_call and len(value) == 1:
                     yield str(val)
                 else:
                     yield f"<<< {pformat(val)}"
@@ -124,12 +122,10 @@ class CallToPythonMixin:
         return "\n".join(_())
 
     def get_admin_preview_python(self, value, name, **kwargs):
-        ret = self.give_python_to_admin(value, name)
-
         if self.admin_preview_call:
-            return ret
+            return value
 
-        ret = [v for _, v in ret]
+        ret = [v for _, v in value]
         if len(ret) == 1:
             return ret[0]
 
@@ -181,19 +177,43 @@ class DictSuffixesMixin:
         return self.suffixes[suffix](value)
 
 
-class AdminPreviewMixin:
+class AdminPreviewMenuMixin:
     def get_admin_preview_html_menu(self, value: str, name: str, **kwargs) -> str:
         return ""
 
+    def give_to_admin_after_menu(self, value: str, name: str, **kwargs) -> str:
+        # for cases when you need different value for preview and menu
+        return value
+
+    # get_admin_preview_html is moved to a separate function
+    # because EachMixin is using only get_admin_preview_html
     def get_admin_preview_value(self, value: str, name: str, **kwargs) -> str:
-        if self.get_admin_preview_as() == PREVIEW_NONE:
-            return ""
+        if self.get_admin_preview_as() in (PREVIEW_NONE, PREVIEW_HTML):
+            return super().get_admin_preview_value(value, name, **kwargs)
+
         return self.get_admin_preview_html_menu(
-            value, name, **kwargs
+            self.give_python_to_admin(value, name, **kwargs), name, **kwargs
         ) + super().get_admin_preview_value(value, name, **kwargs)
 
+    def get_admin_preview_html(self, value: Any, name: str, **kwargs) -> Any:
+        return self.get_admin_preview_html_menu(
+            value, name, **kwargs
+        ) + super().get_admin_preview_html(
+            self.give_to_admin_after_menu(value, name, **kwargs), name, **kwargs
+        )
 
-class AdminPreviewSuffixesMixin(AdminPreviewMixin):
+    def get_admin_preview_text(self, value: Any, name: str, **kwargs) -> Any:
+        return super().get_admin_preview_text(
+            self.give_to_admin_after_menu(value, name, **kwargs), name, **kwargs
+        )
+
+    def get_admin_preview_python(self, value: Any, name: str, **kwargs) -> Any:
+        return super().get_admin_preview_python(
+            self.give_to_admin_after_menu(value, name, **kwargs), name, **kwargs
+        )
+
+
+class AdminPreviewSuffixesMixin(AdminPreviewMenuMixin):
     admin_preview_suffixes = ()
     admin_preview_suffixes_default = "default"
 
@@ -204,7 +224,7 @@ class AdminPreviewSuffixesMixin(AdminPreviewMixin):
         return self.admin_preview_suffixes
 
     def get_admin_preview_html_menu(
-        self, value: str, name: str, suffix: Optional[str] = None, **kwargs
+        self, value: Any, name: str, suffix: Optional[str] = None, **kwargs
     ) -> str:
         suffixes = self.get_admin_preview_suffixes(value, name, **kwargs)
         if not len(suffixes):
@@ -222,10 +242,10 @@ class AdminPreviewSuffixesMixin(AdminPreviewMixin):
 
         return ret
 
-    def give_python_to_admin(
-        self, value: str, name: str, suffix: Optional[str] = None, **kwargs
-    ) -> Any:
-        return self.give_python(value, suffix)
+    def give_to_admin_after_menu(
+        self, value: Any, name: str, suffix: Optional[str] = None, **kwargs
+    ) -> str:
+        return self.give(value, suffix)
 
 
 class DictSuffixesPreviewMixin(DictSuffixesMixin, AdminPreviewSuffixesMixin):

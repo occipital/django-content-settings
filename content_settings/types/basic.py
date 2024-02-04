@@ -231,18 +231,20 @@ class SimpleString(BaseSetting):
     def give_python_to_admin(self, value: str, name: str, **kwargs) -> Any:
         return self.to_python(value)
 
-    def get_admin_preview_html(self, value: str, name: str, **kwargs) -> Any:
-        return self.give_python_to_admin(value, name, **kwargs)
+    def get_admin_preview_html(self, value: Any, name: str, **kwargs) -> Any:
+        return value
 
-    def get_admin_preview_text(self, value: str, name: str, **kwargs) -> Any:
-        return self.give_python_to_admin(value, name, **kwargs)
+    def get_admin_preview_text(self, value: Any, name: str, **kwargs) -> Any:
+        return value
 
-    def get_admin_preview_python(self, value: str, name: str, **kwargs) -> Any:
-        return self.give_python_to_admin(value, name, **kwargs)
+    def get_admin_preview_python(self, value: Any, name: str, **kwargs) -> Any:
+        return value
 
     def get_admin_preview_value(self, value: str, name: str, **kwargs) -> str:
         if self.get_admin_preview_as() == PREVIEW_NONE:
             return ""
+
+        value = self.give_python_to_admin(value, name, **kwargs)
 
         if self.get_admin_preview_as() == PREVIEW_HTML:
             return str(self.get_admin_preview_html(value, name, **kwargs))

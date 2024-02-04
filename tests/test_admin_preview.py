@@ -168,7 +168,8 @@ def init_books():
 def test_html_preview(var, value, initial):
     if initial:
         initial()
-    assert var.get_admin_preview_html(var.default, "VAR") == value
+    val = var.give_python_to_admin(var.default, "VAR")
+    assert var.get_admin_preview_html(val, "VAR") == value
 
 
 @pytest.mark.parametrize(
@@ -404,7 +405,8 @@ def test_html_preview(var, value, initial):
 def test_text_preview(var, value, initial):
     if initial:
         initial()
-    assert var.get_admin_preview_text(var.default, "VAR") == value
+    val = var.give_python_to_admin(var.default, "VAR")
+    assert var.get_admin_preview_text(val, "VAR") == value
 
 
 @pytest.mark.parametrize(
@@ -500,7 +502,8 @@ def test_text_preview(var, value, initial):
 def test_python_preview(var, value, initial):
     if initial:
         initial()
-    assert var.get_admin_preview_python(var.default, "VAR") == value
+    val = var.give_python_to_admin(var.default, "VAR")
+    assert var.get_admin_preview_python(val, "VAR") == value
 
 
 def test_python_preview_error():
@@ -510,7 +513,8 @@ def test_python_preview_error():
         admin_preview_call=False,
         template_args_default={"val": required},
     )
-    ret = var.get_admin_preview_python(var.default, "VAR")
+    val = var.give_python_to_admin(var.default, "VAR")
+    ret = var.get_admin_preview_python(val, "VAR")
     assert isinstance(ret, ValidationError)
     assert ret.message == "['Missing required argument val']"
 

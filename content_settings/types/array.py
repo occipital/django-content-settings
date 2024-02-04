@@ -228,7 +228,7 @@ class SplitByFirstLine(AdminPreviewSuffixesMixin, SimpleText):
         return self.get_split_default_key()
 
     def get_admin_preview_suffixes(self, value: str, name: str, **kwargs):
-        keys = list(self.split_value(value).keys())
+        keys = list(value.keys())
         keys.remove(self.get_split_default_key())
         return tuple(keys)
 
