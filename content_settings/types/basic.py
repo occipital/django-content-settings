@@ -6,7 +6,6 @@ from collections.abc import Iterable
 from json import dumps
 
 from django import forms
-from django.utils.safestring import mark_safe
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.exceptions import ValidationError
 
@@ -22,6 +21,7 @@ from content_settings.types import (
     required,
     optional,
 )
+from content_settings.types.mixins import HTMLMixin
 from content_settings.permissions import none, staff
 
 
@@ -274,12 +274,8 @@ class SimpleText(SimpleString):
     widget_attrs: dict = {"rows": 10, "cols": 80}
 
 
-class SimpleHTML(SimpleText):
-    admin_preview_as: str = PREVIEW_HTML
-    help_format: str = "HTML format"
-
-    def give(self, value, suffix=None):
-        return mark_safe(value)
+class SimpleHTML(HTMLMixin, SimpleText):
+    pass
 
 
 class URLString(SimpleString):

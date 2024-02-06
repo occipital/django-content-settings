@@ -3,7 +3,7 @@ from itertools import zip_longest
 from django.core.exceptions import ValidationError
 
 from .basic import SimpleText
-from .mixins import CallToPythonMixin, GiveCallMixin
+from .mixins import CallToPythonMixin, GiveCallMixin, HTMLMixin
 from .validators import call_validator
 from . import PREVIEW_TEXT, PREVIEW_PYTHON, required
 from ..permissions import superuser
@@ -112,6 +112,10 @@ class DjangoTemplate(SimpleCallTemplate):
 
 
 class DjangoTemplateNoArgs(GiveCallMixin, DjangoTemplate):
+    pass
+
+
+class DjangoTemplateHTML(HTMLMixin, DjangoTemplate):
     pass
 
 

@@ -71,7 +71,7 @@ pytestmark = [pytest.mark.django_db(transaction=True)]
             ),
             (
                 SimpleHTML(help="A value"),
-                "A value<br><br>HTML format",
+                "A value<br><br>string in HTML format",
             ),
             (
                 URLString(help="A value"),
@@ -178,7 +178,7 @@ pytestmark = [pytest.mark.django_db(transaction=True)]
             ),
             (
                 SplitTranslation(split_type=SimpleHTML(), help="A value"),
-                "A value<br><br>Translated Text. The first line can initialize the translation splitter. The initial language is EN. The first line can be '===== EN ====='. The format for the value inside the translation is: HTML format",
+                "A value<br><br>Translated Text. The first line can initialize the translation splitter. The initial language is EN. The first line can be '===== EN ====='. The format for the value inside the translation is: string in HTML format",
             ),
         ]
     ),

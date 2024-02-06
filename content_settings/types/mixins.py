@@ -1,9 +1,11 @@
 from typing import Any, Optional
 from pprint import pformat
+
 from django.core.exceptions import ValidationError
+from django.utils.safestring import mark_safe
 
 from .validators import call_validator
-from . import PREVIEW_NONE, PREVIEW_HTML
+from . import PREVIEW_HTML
 
 
 def mix(*cls):
@@ -35,6 +37,17 @@ class MinMaxValidationMixin:
 
         if self.max_value is not None:
             yield f" to {self.max_value}"
+
+
+class HTMLMixin:
+    admin_preview_as: str = PREVIEW_HTML
+
+    def get_help_format(self):
+        yield from super().get_help_format()
+        yield " in HTML format"
+
+    def give(self, value, suffix=None):
+        return mark_safe(super().give(value, suffix))
 
 
 class PositiveValidationMixin(MinMaxValidationMixin):
