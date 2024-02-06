@@ -2,6 +2,15 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
+## 0.8 EachMixin and HTMLMixin
+
+* 📖 `EachMixin`
+* 📖 `HTMLMixin` and `DjangoTemplateHTML`
+* showing type name(s) in admin panel
+* migrate can also show "adjust" in case of changing tags or/and help
+* yet another admin preview function refactoring.
+* fix quoting in text/python preview
+
 ### 0.7.1 help format
 
 * Default preview for Exec and Eval is Python
