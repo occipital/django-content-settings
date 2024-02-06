@@ -21,3 +21,6 @@ cs-test:
 
 cs-test-migrate:
 	poetry run poetry run python cs_test/manage.py migrate
+
+cs-test-shell:
+	poetry run poetry run python cs_test/manage.py shell

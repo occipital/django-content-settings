@@ -7,6 +7,10 @@
         text-decoration: underline;
         cursor: pointer;
     }
+    .field-setting_help a {
+        color: var(--link-fg);
+        cursor: pointer;
+    }
     div.subitem {
         margin-left: 10px;
     }
@@ -34,6 +38,12 @@
                     });
                 }
         });
+
+        $('.replace_with_ul').click(function(){
+            $(this).hide();
+            $(this).siblings('ul').first().show();
+        })
+        
         const genSyncedValue = function() {
             return $id.val() + '::' + ($user_defined_type.length ? $user_defined_type.val() : '') + '::' + JSON.stringify(previewParams);
         }

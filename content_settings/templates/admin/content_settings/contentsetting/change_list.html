@@ -11,9 +11,13 @@
     cursor: pointer;
     font-size: 18px;
 }
-.value_preview a {
+.value_preview a{
     color: var(--link-fg);
     text-decoration: underline;
+    cursor: pointer;
+}
+.field-setting_help a {
+    color: var(--link-fg);
     cursor: pointer;
 }
 div.subitem {
@@ -50,6 +54,11 @@ div.subitem {
         const ADD_TAG_URL = "{% url 'admin:add_tag' %}";
         const REMOVE_TAG_URL = "{% url 'admin:remove_tag' %}";
         const TAGS_URL = "{% url 'admin:context_tags' %}";
+
+        $('.replace_with_ul').click(function(){
+            $(this).hide();
+            $(this).siblings('ul').first().show();
+        })
 
         function reloadTags() {
             // loads ajax response from TAGS_URL into toolbar, using quiery string from current url

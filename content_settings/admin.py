@@ -1,5 +1,6 @@
 import urllib.parse
 from collections import defaultdict
+import inspect
 
 from django.contrib import admin
 from django.forms import ModelForm
@@ -42,6 +43,26 @@ def get_selected_tags_from_params(params):
     if TAGS_PARAM not in params:
         return set()
     return set(params[TAGS_PARAM].split(TAGS_SPLITER))
+
+
+def html_classes(name):
+    classes = "</li><li>".join(
+        f"{cls.__name__} <i>from {cls.__module__}</i>"
+        for cls in inspect.getmro(get_type_by_name(name).__class__)
+        if cls.__name__
+        and cls.__module__ != "builtins"
+        and (cls.__module__, cls.__name__)
+        not in (
+            ("content_settings.types.basic", "BaseSetting"),
+            ("content_settings.types.basic", "SimpleString"),
+        )
+    )
+    if not classes:
+        return ""
+
+    return mark_safe(
+        f"<div><a class='replace_with_ul'>...</a> <ul style='display: none; margin-top: 1.5em'><li>{classes}</li></ul></div>"
+    )
 
 
 class SettingsChangeList(ChangeList):
@@ -300,7 +321,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
         cs_type = get_type_by_name(obj.name)
         if cs_type is None or cs_type.constant:
             return "(the setting is not using)"
-        return mark_safe(obj.help)
+        return mark_safe(obj.help) + html_classes(obj.name)
 
     setting_help.short_description = "Help"
 
