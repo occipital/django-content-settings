@@ -138,13 +138,7 @@ class Keys(BaseEach):
 
     def get_admin_preview_object(self, value, *args, **kwargs):
         def pre_format(val):
-            "<pre>{}</pre>".format(
-                pformat(value)
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("&", "&amp;")
-                .replace('"', "&quot;")
-            )
+            "<pre>{}</pre>".format(pformat(value).replace("<", "&lt;"))
 
         return (
             "{"

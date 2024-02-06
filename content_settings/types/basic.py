@@ -257,12 +257,7 @@ class SimpleString(BaseSetting):
         else:
             value = pformat(self.get_admin_preview_python(value, name, **kwargs))
 
-        return "<pre>{}</pre>".format(
-            value.replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace("&", "&amp;")
-            .replace('"', "&quot;")
-        )
+        return "<pre>{}</pre>".format(value.replace("<", "&lt;"))
 
     def lazy_give(self, l_func: Callable, suffix=None) -> LazyObject:
         return LazyObject(l_func)
