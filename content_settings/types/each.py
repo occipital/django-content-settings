@@ -6,8 +6,7 @@ from . import required, optional, PREVIEW_HTML
 
 
 class BaseEach:
-    def give_python_to_admin(self, value, name, **kwargs):
-        return self.to_python(value)
+    pass
 
 
 class Item(BaseEach):
@@ -30,23 +29,32 @@ class Item(BaseEach):
                 raise ValidationError(f"item #{i}: {e.message}")
         return ret
 
+    def give_python_to_admin(self, value, name, **kwargs):
+        ret = []
+        for i, v in enumerate(value, start=1):
+            try:
+                ret.append(self.cs_type.give_python_to_admin(v, name, **kwargs))
+            except ValidationError as e:
+                raise ValidationError(f"item #{i}: {e.message}")
+        return ret
+
     def get_help_format(self):
         yield "A list of items. Each item should be: "
-        yield "<div style='margin-left: 10px;'>"
+        yield "<div class='subitem'>"
         yield from self.cs_type.get_help_format()
         yield "</div>"
 
     def give(self, value, suffix=None):
         return [self.cs_type.give(v, suffix) for v in value]
 
-    def get_admin_preview_html(self, value, *args, **kwargs):
+    def get_admin_preview_object(self, value, *args, **kwargs):
         return (
             "["
             + (
                 ",".join(
                     [
-                        "<div style='margin-left: 10px;'>"
-                        + self.cs_type.get_admin_preview_html(v, *args, **kwargs)
+                        "<div class='subitem'>"
+                        + self.cs_type.get_admin_preview_object(v, *args, **kwargs)
                         + "</div>"
                         for v in value
                     ]
@@ -91,10 +99,27 @@ class Keys(BaseEach):
 
         return ret
 
+    def give_python_to_admin(self, value, name, **kwargs):
+        ret = {}
+        for k, v in value.items():
+            if k in self.cs_types:
+                try:
+                    ret[k] = self.cs_types[k].give_python_to_admin(v, name, **kwargs)
+                except ValidationError as e:
+                    raise ValidationError(f"key {k}: {e.message}")
+            else:
+                ret[k] = v
+
+        for k, v in self.cs_types.items():
+            if k not in ret and v.default not in (optional, required):
+                ret[k] = v.give_python_to_admin(v.default, name, **kwargs)
+
+        return ret
+
     def get_help_format(self):
         yield "A dictionary. Keys: "
         for k, v in self.cs_types.items():
-            yield "<div style='margin-left: 10px;'>"
+            yield "<div class='subitem'>"
             yield f"<i>{k}</i> - "
             if v.default == required:
                 yield "(required) "
@@ -111,7 +136,7 @@ class Keys(BaseEach):
             for k, v in value.items()
         }
 
-    def get_admin_preview_html(self, value, *args, **kwargs):
+    def get_admin_preview_object(self, value, *args, **kwargs):
         def pre_format(val):
             "<pre>{}</pre>".format(
                 pformat(value)
@@ -125,7 +150,7 @@ class Keys(BaseEach):
             "{"
             + ",".join(
                 [
-                    f"<div style='margin-left: 10px;'><i>{k}</i>: {self.cs_types[k].get_admin_preview_html(v, *args, **kwargs) if k in self.cs_types else pre_format(v)}</div>"
+                    f"<div class='subitem'><i>{k}</i>: {self.cs_types[k].get_admin_preview_object(v, *args, **kwargs) if k in self.cs_types else pre_format(v)}</div>"
                     for k, v in value.items()
                 ]
             )
@@ -162,8 +187,9 @@ class EachMixin:
     def give(self, value, suffix=None):
         return self.each.give(value, suffix)
 
-    def give_python_to_admin(self, *args, **kwargs):
-        return self.each.give_python_to_admin(*args, **kwargs)
+    def give_python_to_admin(self, value, *args, **kwargs):
+        value = super().to_python(value)
+        return self.each.give_python_to_admin(value, *args, **kwargs)
 
-    def get_admin_preview_html(self, *args, **kwargs) -> str:
-        return self.each.get_admin_preview_html(*args, **kwargs)
+    def get_admin_preview_object(self, *args, **kwargs) -> str:
+        return self.each.get_admin_preview_object(*args, **kwargs)

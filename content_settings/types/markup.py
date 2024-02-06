@@ -94,6 +94,12 @@ class KeysFromList(Keys):
     def to_python(self, value):
         return super().to_python({k: v for k, v in zip(self.cs_types.keys(), value)})
 
+    def give_python_to_admin(self, value, name, **kwargs):
+        return {
+            k: cs.give_python_to_admin(v, name, **kwargs)
+            for (k, cs), v in zip(self.cs_types.items(), value)
+        }
+
 
 class KeysFromListByList(KeysFromList):
     def __init__(self, cs_type, keys):

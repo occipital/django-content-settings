@@ -240,12 +240,15 @@ class SimpleString(BaseSetting):
     def get_admin_preview_python(self, value: Any, name: str, **kwargs) -> Any:
         return value
 
-    def get_admin_preview_value(self, value: str, name: str, **kwargs) -> str:
+    def get_admin_preview_value(self, value: str, *args, **kwargs) -> str:
         if self.get_admin_preview_as() == PREVIEW_NONE:
             return ""
 
-        value = self.give_python_to_admin(value, name, **kwargs)
+        value = self.give_python_to_admin(value, *args, **kwargs)
 
+        return str(self.get_admin_preview_object(value, *args, **kwargs))
+
+    def get_admin_preview_object(self, value: str, name: str, **kwargs) -> str:
         if self.get_admin_preview_as() == PREVIEW_HTML:
             return str(self.get_admin_preview_html(value, name, **kwargs))
 

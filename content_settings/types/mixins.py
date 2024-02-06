@@ -178,39 +178,19 @@ class DictSuffixesMixin:
 
 
 class AdminPreviewMenuMixin:
-    def get_admin_preview_html_menu(self, value: str, name: str, **kwargs) -> str:
+    def get_admin_preview_html_menu(self, value: Any, name: str, **kwargs) -> str:
         return ""
 
-    def give_to_admin_after_menu(self, value: str, name: str, **kwargs) -> str:
-        # for cases when you need different value for preview and menu
-        return value
+    def get_admin_preview_object(self, value: str, name: str, **kwargs) -> str:
 
-    # get_admin_preview_html is moved to a separate function
-    # because EachMixin is using only get_admin_preview_html
-    def get_admin_preview_value(self, value: str, name: str, **kwargs) -> str:
-        if self.get_admin_preview_as() in (PREVIEW_NONE, PREVIEW_HTML):
-            return super().get_admin_preview_value(value, name, **kwargs)
-
-        return self.get_admin_preview_html_menu(
-            self.give_python_to_admin(value, name, **kwargs), name, **kwargs
-        ) + super().get_admin_preview_value(value, name, **kwargs)
-
-    def get_admin_preview_html(self, value: Any, name: str, **kwargs) -> Any:
         return self.get_admin_preview_html_menu(
             value, name, **kwargs
-        ) + super().get_admin_preview_html(
-            self.give_to_admin_after_menu(value, name, **kwargs), name, **kwargs
-        )
+        ) + self.get_admin_preview_under_menu_object(value, name, **kwargs)
 
-    def get_admin_preview_text(self, value: Any, name: str, **kwargs) -> Any:
-        return super().get_admin_preview_text(
-            self.give_to_admin_after_menu(value, name, **kwargs), name, **kwargs
-        )
-
-    def get_admin_preview_python(self, value: Any, name: str, **kwargs) -> Any:
-        return super().get_admin_preview_python(
-            self.give_to_admin_after_menu(value, name, **kwargs), name, **kwargs
-        )
+    def get_admin_preview_under_menu_object(
+        self, value: Any, name: str, **kwargs
+    ) -> str:
+        return super().get_admin_preview_object(value, name, **kwargs)
 
 
 class AdminPreviewSuffixesMixin(AdminPreviewMenuMixin):
@@ -242,10 +222,13 @@ class AdminPreviewSuffixesMixin(AdminPreviewMenuMixin):
 
         return ret
 
-    def give_to_admin_after_menu(
-        self, value: Any, name: str, suffix: Optional[str] = None, **kwargs
+    def get_admin_preview_under_menu_object(
+        self, value: Any, name: str, **kwargs
     ) -> str:
-        return self.give(value, suffix)
+        suffix = kwargs.get("suffix", None)
+        return super().get_admin_preview_under_menu_object(
+            self.give(value, suffix), name, **kwargs
+        )
 
 
 class DictSuffixesPreviewMixin(DictSuffixesMixin, AdminPreviewSuffixesMixin):

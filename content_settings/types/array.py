@@ -9,6 +9,7 @@ from .basic import (
     PREVIEW_PYTHON,
     PREVIEW_TEXT,
     PREVIEW_NONE,
+    PREVIEW_HTML,
 )
 from .mixins import AdminPreviewSuffixesMixin
 from .each import EachMixin, Item
@@ -112,6 +113,7 @@ class SplitByFirstLine(AdminPreviewSuffixesMixin, SimpleText):
     split_key_validator = None
     split_suffix = SPLIT_SUFFIX_USE_OWN
     split_suffix_value = None
+    admin_preview_as = PREVIEW_HTML
 
     def get_split_default_key(self):
         return self.split_default_key
@@ -195,12 +197,6 @@ class SplitByFirstLine(AdminPreviewSuffixesMixin, SimpleText):
             cur_iter.append(line)
 
         return {k: "\n".join(v) for k, v in ret.items()}
-
-    def get_admin_preview_as(self):
-        split_admin_preview = self.split_type.get_admin_preview_as()
-        if split_admin_preview == PREVIEW_NONE:
-            return PREVIEW_TEXT
-        return split_admin_preview
 
     def get_admin_preview_suffixes_default(self):
         return self.get_split_default_key()
@@ -296,3 +292,9 @@ class SplitTranslation(SplitByFirstLine):
         from django.utils.translation import get_language
 
         return get_language().upper().replace("-", "_")
+
+    def get_admin_preview_under_menu_object(self, value, *args, **kwargs):
+        suffix = kwargs.pop("suffix", None)
+        return self.split_type.get_admin_preview_object(
+            self.give(value, suffix), *args, **kwargs
+        )

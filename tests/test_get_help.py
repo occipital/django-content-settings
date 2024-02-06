@@ -115,7 +115,7 @@ pytestmark = [pytest.mark.django_db(transaction=True)]
             ),
             (
                 SimpleCSV(help="A value", csv_fields=["id", "name"]),
-                "A value<br><br>Simple <a href='https://en.wikipedia.org/wiki/Comma-separated_values' target='_blank'>CSV format</a>A list of items. Each item should be: <div style='margin-left: 10px;'>A dictionary. Keys: <div style='margin-left: 10px;'><i>id</i> - (optional) string</div><div style='margin-left: 10px;'><i>name</i> - (optional) string</div></div>",
+                "A value<br><br>Simple <a href='https://en.wikipedia.org/wiki/Comma-separated_values' target='_blank'>CSV format</a>A list of items. Each item should be: <div class='subitem'>A dictionary. Keys: <div class='subitem'><i>id</i> - (optional) string</div><div class='subitem'><i>name</i> - (optional) string</div></div>",
             ),
             (
                 SimpleCSV(
@@ -126,7 +126,7 @@ pytestmark = [pytest.mark.django_db(transaction=True)]
                         "description": SimpleString(optional),
                     },
                 ),
-                "A value<br><br>Simple <a href='https://en.wikipedia.org/wiki/Comma-separated_values' target='_blank'>CSV format</a>A list of items. Each item should be: <div style='margin-left: 10px;'>A dictionary. Keys: <div style='margin-left: 10px;'><i>name</i> - (required) string</div><div style='margin-left: 10px;'><i>value</i> - (default: default value) string</div><div style='margin-left: 10px;'><i>description</i> - (optional) string</div></div>",
+                "A value<br><br>Simple <a href='https://en.wikipedia.org/wiki/Comma-separated_values' target='_blank'>CSV format</a>A list of items. Each item should be: <div class='subitem'>A dictionary. Keys: <div class='subitem'><i>name</i> - (required) string</div><div class='subitem'><i>value</i> - (default: default value) string</div><div class='subitem'><i>description</i> - (optional) string</div></div>",
             ),
             (
                 SimpleCSV(
@@ -136,7 +136,7 @@ pytestmark = [pytest.mark.django_db(transaction=True)]
                         "price": SimpleDecimal("0"),
                     },
                 ),
-                "A value<br><br>Simple <a href='https://en.wikipedia.org/wiki/Comma-separated_values' target='_blank'>CSV format</a>A list of items. Each item should be: <div style='margin-left: 10px;'>A dictionary. Keys: <div style='margin-left: 10px;'><i>name</i> - (default: <i>empty</i>) string</div><div style='margin-left: 10px;'><i>price</i> - (default: 0) Decimal number with floating point</div></div>",
+                "A value<br><br>Simple <a href='https://en.wikipedia.org/wiki/Comma-separated_values' target='_blank'>CSV format</a>A list of items. Each item should be: <div class='subitem'>A dictionary. Keys: <div class='subitem'><i>name</i> - (default: <i>empty</i>) string</div><div class='subitem'><i>price</i> - (default: 0) Decimal number with floating point</div></div>",
             ),
             (
                 DjangoTemplate(help="A value"),
@@ -170,7 +170,7 @@ pytestmark = [pytest.mark.django_db(transaction=True)]
             ),
             (
                 TypedStringsList(help="A value", line_type=SimpleInt()),
-                "A value<br><br>List of values with the following format:<ul><li>each line is a new value</li><li>strip spaces from the beginning and from the end of the value</li><li>remove empty values</li><li> use # to comment a line</li><li>empty values are removed</li></ul>A list of items. Each item should be: <div style='margin-left: 10px;'>Any number</div>",
+                "A value<br><br>List of values with the following format:<ul><li>each line is a new value</li><li>strip spaces from the beginning and from the end of the value</li><li>remove empty values</li><li> use # to comment a line</li><li>empty values are removed</li></ul>A list of items. Each item should be: <div class='subitem'>Any number</div>",
             ),
             (
                 SplitTranslation(help="A value"),

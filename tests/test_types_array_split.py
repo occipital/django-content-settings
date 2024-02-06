@@ -350,7 +350,7 @@ def test_admin_preview_default(webtest_admin):
 
     assert resp.status_int == 200
     assert resp.json == {
-        "html": "<pre>This is not so long, but very interesting text</pre>",
+        "html": "<pre>'This is not so long, but very interesting text'</pre>",
     }
 
 
@@ -368,7 +368,7 @@ This is not so long, but very interesting text
 
     assert resp.status_int == 200
     assert resp.json == {
-        "html": "<pre>This is not so long, but very interesting text</pre>",
+        "html": "<pre>'This is not so long, but very interesting text'</pre>",
     }
 
 
@@ -388,7 +388,7 @@ This is not so long, but very interesting text
 
     assert resp.status_int == 200
     assert resp.json == {
-        "html": '<div> <b>EN</b>  <a class="cs_set_params" data-param-suffix="UA">UA</a> </div><pre>This is not so long, but very interesting text</pre>',
+        "html": '<div> <b>EN</b>  <a class="cs_set_params" data-param-suffix="UA">UA</a> </div><pre>\'This is not so long, but very interesting text\'</pre>',
     }
 
 
@@ -409,5 +409,5 @@ This is not so long, but very interesting text
 
     assert resp.status_int == 200
     assert resp.json == {
-        "html": '<div> <a class="cs_set_params">EN</a>  <b>UA</b> </div><pre>Це не так довго, але дуже цікавий текст</pre>',
+        "html": "<div> <a class=\"cs_set_params\">EN</a>  <b>UA</b> </div><pre>'Це не так довго, але дуже цікавий текст'</pre>",
     }

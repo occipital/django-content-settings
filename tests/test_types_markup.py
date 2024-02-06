@@ -231,6 +231,56 @@ def test_csv_default_value():
     assert var.give_python("Alex, 10") == [{"name": "Alex", "price": Decimal("10")}]
 
 
+@pytest.mark.parametrize(
+    "in_data, out_data",
+    [
+        ("Alex", [{"name": "Alex"}]),
+        ("Alex, 20", [{"name": "Alex", "age": "20"}]),
+        ("Alex, 20, fail", [{"name": "Alex", "age": "20"}]),
+        ("Alex, 20\nBob", [{"name": "Alex", "age": "20"}, {"name": "Bob"}]),
+    ],
+)
+def test_csv_list_fields(in_data, out_data):
+    var = SimpleCSV(
+        csv_fields=["name", "age"],
+    )
+    var.validate_value(in_data)
+    assert var.give_python(in_data) == out_data
+
+
+@pytest.mark.parametrize(
+    "in_data, out_data",
+    [
+        ("", "[]"),
+        (
+            "Alex",
+            "[<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Alex'</pre></div>}</div>]",
+        ),
+        (
+            "Alex\nBob",
+            "[<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Alex'</pre></div>}</div>,<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Bob'</pre></div>}</div>]",
+        ),
+        (
+            "Alex, 20\nBob",
+            "[<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Alex'</pre></div>,<div class='subitem'><i>age</i>: <pre>'20'</pre></div>}</div>,<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Bob'</pre></div>}</div>]",
+        ),
+        (
+            "Alex, 20, ignore\nBob",
+            "[<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Alex'</pre></div>,<div class='subitem'><i>age</i>: <pre>'20'</pre></div>}</div>,<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Bob'</pre></div>}</div>]",
+        ),
+        (
+            "Alex, 20, ignore\nBob\nMike,",
+            "[<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Alex'</pre></div>,<div class='subitem'><i>age</i>: <pre>'20'</pre></div>}</div>,<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Bob'</pre></div>}</div>,<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Mike'</pre></div>,<div class='subitem'><i>age</i>: <pre>''</pre></div>}</div>]",
+        ),
+    ],
+)
+def test_csv_list_fields_preview(in_data, out_data):
+    var = SimpleCSV(
+        csv_fields=["name", "age"],
+    )
+    assert var.get_admin_preview_value(in_data, "VAR") == out_data
+
+
 @pytest.mark.skipif(yaml_installed, reason="yaml is installed")
 def test_yaml_not_installed():
     with pytest.raises(AssertionError):
