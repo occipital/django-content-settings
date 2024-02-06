@@ -41,7 +41,7 @@ def test_update_version_value():
 def test_update_tags_only():
     ContentSetting.objects.filter(name="TITLE").update(tags="newtag", value="old value")
 
-    assert set_initial_values_for_db(apply=True) == [("TITLE", "update")]
+    assert set_initial_values_for_db(apply=True) == [("TITLE", "adjust")]
 
     cs = ContentSetting.objects.get(name="TITLE")
     assert cs.value == "old value"
@@ -53,7 +53,7 @@ def test_overwrite_user_defined_allowed_without_version_change():
         user_defined_type="line", value="WOW Store"
     )
 
-    assert set_initial_values_for_db(apply=True) == [("TITLE", "update")]
+    assert set_initial_values_for_db(apply=True) == [("TITLE", "adjust")]
 
     cs = ContentSetting.objects.get(name="TITLE")
     assert not cs.user_defined_type

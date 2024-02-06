@@ -187,13 +187,13 @@ def set_initial_values_for_db(apply=False):
             func()
             HistoryContentSetting.update_last_record_for_name(name)
 
-    def execute_update_obj(name, cs, **kwargs):
+    def execute_update_obj(name, cs, show="update", **kwargs):
         def _up():
             for k, v in kwargs.items():
                 setattr(cs, k, v)
             cs.save()
 
-        execute(name, "update", _up)
+        execute(name, show, _up)
 
     for k, cs_type in ALL.items():
         if cs_type.constant:
@@ -239,6 +239,7 @@ def set_initial_values_for_db(apply=False):
                     cs.name,
                     cs,
                     user_defined_type=None,
+                    show="adjust",
                 )
 
             str_tags = get_str_tags(cs_type, cs.value)
@@ -250,6 +251,7 @@ def set_initial_values_for_db(apply=False):
                     cs,
                     tags=str_tags,
                     help=str_help,
+                    show="adjust",
                 )
 
         else:
