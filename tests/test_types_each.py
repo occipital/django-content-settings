@@ -169,3 +169,25 @@ def test_preview_admin_translation():
         )
         == "[<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Song'</pre></div>,<div class='subitem'><i>translation</i>: <div> <b>EN</b>  <a class=\"cs_set_params\" data-param-suffix=\"UA\">UA</a> </div><pre>'English Shong'</pre></div>}</div>]"
     )
+
+
+def test_preview_admin_with_unknown_html():
+    var = mix(EachMixin, SimpleYAML)(
+        "",
+        each=Item(
+            Keys(
+                name=SimpleString(optional, help="The name of the song"),
+            )
+        ),
+        help="The yaml of the site",
+    )
+    assert (
+        var.get_admin_preview_value(
+            """
+- name: Song
+  translation: '<b>Translation</b>'
+""",
+            "VAR",
+        )
+        == "[<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Song'</pre></div>,<div class='subitem'><i>translation</i>: <pre>{'name': 'Song', 'translation': '&lt;b>Translation&lt;/b>'}</pre></div>}</div>]"
+    )
