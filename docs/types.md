@@ -85,6 +85,52 @@ class IntList(TypedStringsList):
 NUMBERS = IntList()
 ```
 
+#### SplitByFirstLine
+
+split a given text value into multiple values using a splitter that defined inside of the value. The result of splitting will be converted using type inside of `split_type` attribute, each value can be given under same name suffix (but lowercased), but also the returned value can be chosen by the function `split_default_chooser` attribute. The first line will be used as a splitter if value from `split_default_key` attribute is in this line. It may sound confusing, but let me show you an example:
+
+```python
+from content_settings.types.array import SplitByFirstLine
+
+MY_VAR = SplitByFirstLine(
+    split_default_key="MAIN",
+    split_type=SimpleDecimal()
+)
+
+# now the variable will works as simple Decimal, with extra suffix __main that returns the same value
+# but if you update the value in admin to:
+"""=== MAIN ===
+10.67
+=== SECOND ===
+4.12
+"""
+# your variable will work a bit different
+content_settings.MY_VAR == Decimal("10.67")
+content_settings.MY_VAR__main == Decimal("10.67")
+content_settings.MY_VAR__second == Decimal("4.12")
+
+# the first line in the value === MAIN === defines the splitter rule, which means the following value will work the same
+"""!!! MAIN !!!
+10.67
+!!! SECOND !!!
+4.12
+"""
+```
+
+It has a big variety of attributes:
+
+- **split_type** - the type which will be used for each value
+- **split_default_key** - the key which will be used for the first line
+- **split_not_found** - the function which will be used for chosing default value
+- **split_default_chooser** - what should be done if the required key not found. `NOT_FOUND_DEFAULT` - return default value, `NOT_FOUND_KEY_ERROR` raise an exception and `NOT_FOUND_VALUE` return value from **split_not_found_value**
+- **split_key_validator** - validator for the key name
+- **split_suffix** and **split_suffix_value** - rule for using suffix
+
+#### SplitTranslation
+
+same as `SplitByFirstLine` but the default value will be chosen based on current django translation `django.utils.translation.get_language`
+
+
 ## Date and Time Types (`content_settings.types.datetime`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/datetime.py))*
 
 - **DateTimeString**: Converts a string to a datetime object.
@@ -149,6 +195,7 @@ content_settings.SHORT_DESCRIPTION("Hello world", "your first line of code")
 ```
 
 - **DjangoTemplateNoArgs**: the same as `DjangoTemplate` but without input arguments and return value without calling the attribute
+- **DjangoTemplateHTML**: the mix of `DjangoTemplateNoArgs` and `HTMLMixin` - which means the returned value should be trated as valid HTML (the same as `SimpleHTML`)
 
 ```python
 # content_settings.py
@@ -194,6 +241,9 @@ Decimal("20")
 
 - **SimpleEvalNoArgs**: the same as `SimpleEval` but without passing input args. It works the same as `DjangoTemplateNoArgs` and simply getting an attribute.
 - **DjangoModelEval**: the same as `DjangoModelTemplate` but for `SimpleEval`
+- **SimpleExec** - works the same as `SimpleEval` but instead of using `exec` for the code it uses `eval`. It returns a dics of all global values after the code run. With `call_return` you can limit returned dict (for list - it is a list of limited values and for dict - it is limited values with default values)
+- **DjangoModelExec**
+- **SimpleExecNoArgs**
 
 ### Calling Functions in Template *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/templatetags/content_settings_extras.py))*
 
@@ -232,6 +282,58 @@ from content_settings.types.basic import SimpleInt, SimpleDecimal
 ROWS_PER_PAGE = mix(PositiveValidationMixin, SimpleInt)("10", help="how many rows are shown on one page")
 MAX_PRICE = mix(PositiveValidationMixin, SimpleDecimal)("9.99", help="maximum allowed price in the store")
 ```
+
+### Available Mixins
+
+- **MinMaxValidationMixin** - adds a validator that the result value is bigger or/and lower. It adds attributes `min_value` and `max_value`
+- **PositiveValidationMixin** - shortcut to for `MinMaxValidationMixin` to make sure the value is positive
+- **DictSuffixesMixin** - supports a dict of available suffixes for the variable. For example:
+
+```python
+from content_settings.types.basic import SimpleText
+from content_settings.types.mixins import DictSuffixesMixin
+
+class TruncText(, SimpleText):
+    suffixes = {
+        "trunc": lambda text, max_length=10: (text[: max_length - 3] + "...")
+        if len(text) > max_length
+        else text
+    }
+MY_VAR = TruncText("default value")
+
+# now you can get actual setting value by
+actual_value = content_settings.MY_VAR
+
+# and truncated value by
+truncated_value = content_settings.MY_VAR__trunc
+```
+
+- **CallToPythonMixin** - that makes your setting a function, which accepts attributes from the setting and from the arguments. It uses for `types.template.*` classes
+- **types.each.EachMixin** (puted into separate module as it has additional classes to support this one such as `Item` and `Keys`) - when your setting returns a list or dict or mix of those, and you want to make sure that every element is veryfied, previewed and converted using a specific content type. For example:
+
+```python
+from content_settings.types.basic import SimpleString, SimpleDecimal
+from content_settings.types.array import SimpleStringsList
+from content_settings.types.each import EachMixin, Item
+
+# this actualy part of our codebase
+# SimpleStringsList - converts text to the list of values and EachMixin converts every element into specific type
+class TypedStringsList(EachMixin, SimpleStringsList):
+    line_type = SimpleString()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.each = Item(self.line_type)
+
+# you can do a list of decimal values by
+MY_DECIMALS = TypedStringsList(line_type=SimpleDecimal())
+
+# or as a mixin
+MY_DECIMALS = mix(EachMixin, SimpleStringsList)(each=Item(SimpleDecimal()))
+```
+
+- **AdminPreviewSuffixesMixin(AdminPreviewMenuMixin)** - allows you to build menu for preview based on available suffixes
+- **DictSuffixesPreviewMixin** - basically a mix of `DictSuffixesMixin` and `AdminPreviewSuffixesMixin`
 
 ## context_defaults *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/context_managers.py))*
 

@@ -4,8 +4,8 @@
 
 ## 0.8 EachMixin and HTMLMixin
 
-* 📖 `EachMixin`
-* 📖 `HTMLMixin` and `DjangoTemplateHTML`
+* `EachMixin`
+* `HTMLMixin` and `DjangoTemplateHTML`
 * showing type name(s) in admin panel
 * migrate can also show "adjust" in case of changing tags or/and help
 * yet another admin preview function refactoring.
@@ -57,14 +57,14 @@ var = SimpleCSV(
 
 ## 0.6 I18N & suffix preview in admin
 
-* 📖 `types.mixin.AdminPreviewMixin` - build menu on top of preview
-* 📖 `types.mixin.AdminPreviewSuffixesMixin` - top menu build based on using suffixes
-* 📖 `types.mixin.DictSuffixesPreviewMixin` - mix with `DictSuffixesMixin`
+* `types.mixin.AdminPreviewMixin` - build menu on top of preview
+* `types.mixin.AdminPreviewSuffixesMixin` - top menu build based on using suffixes
+* `types.mixin.DictSuffixesPreviewMixin` - mix with `DictSuffixesMixin`
 
 ![DictSuffixesPreviewMixin](img/dict_suffixes_preview.gif)
 
-* 📖 `types.array.SplitByFirstLine` - splitting text by multiple suffixes with custom chooser of the default value
-* 📖 `types.array.SplitTranslation` - `types.array.SplitByFirstLine` with chooser by the current translation
+* `types.array.SplitByFirstLine` - splitting text by multiple suffixes with custom chooser of the default value
+* `types.array.SplitTranslation` - `types.array.SplitByFirstLine` with chooser by the current translation
 
 ![SplitTranslation](img/split_translation.png)
 
@@ -101,7 +101,7 @@ Minor:
 * None admin preview by default
 * `SimpleHTML` - same as SimpleText but with HTML preview
 * `EmailString` - new base type
-* 📖 `SimpleExec` and `SimpleExecNoArgs` - new types. Works in the same way as SimpleEval, but using exec instead of eval and return values based on `call_return` attribute
+* `SimpleExec` and `SimpleExecNoArgs` - new types. Works in the same way as SimpleEval, but using exec instead of eval and return values based on `call_return` attribute
 * all eval and exec types have `superuser` as default value for `update_permission`
 * `MakeCallMixin` has `call` suffix, just in case
 
