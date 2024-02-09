@@ -71,18 +71,6 @@ def test_with_two_decimal_values():
     assert var.to_python(text) == {"EN": Decimal("4.5"), "UA": Decimal("3.3")}
 
 
-def test_with_two_decimal_values_custom_spliter():
-    def split_values(text):
-        return dict([val.split(":") for val in text.split()])
-
-    var = SplitByFirstLine(
-        split_default_key="EN", split_type=SimpleDecimal(), split_values=split_values
-    )
-    text = "EN:4.5 UA:3.3"
-    var.validate_value(text)
-    assert var.to_python(text) == {"EN": Decimal("4.5"), "UA": Decimal("3.3")}
-
-
 def test_validate_value():
     var = SplitByFirstLine(split_default_key="EN", split_type=SimpleDecimal())
     text = """

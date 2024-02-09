@@ -105,7 +105,6 @@ SPLIT_SUFFIX_SPLIT_PARENT = "split_parent"
 
 class SplitByFirstLine(AdminPreviewSuffixesMixin, SimpleText):
     split_type = SimpleText()
-    split_values = None
     split_default_key = None
     split_default_chooser = None
     split_not_found = NOT_FOUND_DEFAULT
@@ -172,13 +171,8 @@ class SplitByFirstLine(AdminPreviewSuffixesMixin, SimpleText):
             SPLIT_SUFFIX_SPLIT_OWN,
             SPLIT_SUFFIX_SPLIT_PARENT,
         ), "split_suffix should be one of SPLIT_SUFFIX_USE_OWN, SPLIT_SUFFIX_USE_PARENT, SPLIT_SUFFIX_SPLIT_OWN, SPLIT_SUFFIX_SPLIT_PARENT, SPLIT_SUFFIX_SPLIT_FUNCTION"
-        assert self.split_values is None or callable(
-            self.split_values
-        ), "split_values should be callable or None"
 
     def split_value(self, value):
-        if self.split_values is not None:
-            return self.split_values(value)
         lines = value.split("\n")
         if (
             self.get_split_default_key() not in lines[0]
