@@ -2,6 +2,11 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
+### 0.8.1
+
+* `SplitByFirstLine.split_key_validator_failed`
+* fix preview for `each.Keys`
+
 ## 0.8 EachMixin and HTMLMixin
 
 * `EachMixin`
