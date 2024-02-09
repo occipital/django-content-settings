@@ -102,6 +102,16 @@ SPLIT_SUFFIX_USE_PARENT = "parent"
 SPLIT_SUFFIX_SPLIT_OWN = "split_own"
 SPLIT_SUFFIX_SPLIT_PARENT = "split_parent"
 
+SPLIT_FAIL_IGNORE = "ignore"
+SPLIT_FAIL_RAISE = "raise"
+
+
+def split_validator_in(values):
+    def _(value):
+        return value in values
+
+    return _
+
 
 class SplitByFirstLine(AdminPreviewSuffixesMixin, SimpleText):
     split_type = SimpleText()
@@ -110,6 +120,7 @@ class SplitByFirstLine(AdminPreviewSuffixesMixin, SimpleText):
     split_not_found = NOT_FOUND_DEFAULT
     split_not_found_value = None
     split_key_validator = None
+    split_key_validator_failed = SPLIT_FAIL_IGNORE
     split_suffix = SPLIT_SUFFIX_USE_OWN
     split_suffix_value = None
     admin_preview_as = PREVIEW_HTML
@@ -129,9 +140,6 @@ class SplitByFirstLine(AdminPreviewSuffixesMixin, SimpleText):
     def get_split_not_found_value(self):
         return self.split_not_found_value
 
-    def get_split_key_validator(self):
-        return self.split_key_validator
-
     def get_split_suffix(self):
         return self.split_suffix
 
@@ -150,9 +158,13 @@ class SplitByFirstLine(AdminPreviewSuffixesMixin, SimpleText):
         assert self.split_default_chooser is None or callable(
             self.split_default_chooser
         ), "split_default_chooser should be callable or None"
-        assert self.get_split_key_validator() is None or callable(
-            self.get_split_key_validator()
+        assert self.split_key_validator is None or callable(
+            self.split_key_validator
         ), "split_key_validator should be callable or None"
+        assert self.split_key_validator_failed in (
+            SPLIT_FAIL_IGNORE,
+            SPLIT_FAIL_RAISE,
+        ), "split_key_validator_failed should be one of SPLIT_FAIL_IGNORE, SPLIT_FAIL_RAISE"
         assert self.get_split_not_found() in (
             NOT_FOUND_DEFAULT,
             NOT_FOUND_KEY_ERROR,
@@ -172,10 +184,14 @@ class SplitByFirstLine(AdminPreviewSuffixesMixin, SimpleText):
             SPLIT_SUFFIX_SPLIT_PARENT,
         ), "split_suffix should be one of SPLIT_SUFFIX_USE_OWN, SPLIT_SUFFIX_USE_PARENT, SPLIT_SUFFIX_SPLIT_OWN, SPLIT_SUFFIX_SPLIT_PARENT, SPLIT_SUFFIX_SPLIT_FUNCTION"
 
+    def validate_split_key(self, key):
+        return self.split_key_validator is None or self.split_key_validator(key)
+
     def split_value(self, value):
-        lines = value.split("\n")
+        lines = value.splitlines()
         if (
-            self.get_split_default_key() not in lines[0]
+            not lines
+            or self.get_split_default_key() not in lines[0]
             or lines[0].count(self.get_split_default_key()) > 1
         ):
             return {self.get_split_default_key(): value}
@@ -183,10 +199,17 @@ class SplitByFirstLine(AdminPreviewSuffixesMixin, SimpleText):
         before, after = lines[0].split(self.get_split_default_key())
         ret = {self.get_split_default_key(): []}
         cur_iter = ret[self.get_split_default_key()]
-        for line in lines[1:]:
+        for num, line in enumerate(lines[1:], start=2):
             if line.startswith(before) and line.endswith(after):
-                cur_iter = ret[line[len(before) : len(line) - len(after)]] = []
-                continue
+                line_key = line[len(before) : len(line) - len(after)]
+                if self.validate_split_key(line_key):
+                    cur_iter = ret[line_key] = []
+                    continue
+
+                if self.split_key_validator_failed == SPLIT_FAIL_RAISE:
+                    raise ValidationError(
+                        f"Invalid split key: {line_key} in line {num}"
+                    )
 
             cur_iter.append(line)
 
@@ -259,11 +282,6 @@ class SplitByFirstLine(AdminPreviewSuffixesMixin, SimpleText):
                 if k == self.get_split_default_key():
                     raise
                 raise ValidationError(f"{k}: {e}")
-
-    def validate(self, values):
-        if self.get_split_key_validator() is not None:
-            for k in values.keys():
-                self.get_split_key_validator()(k)
 
     def get_help_format(self):
         yield from super().get_help_format()

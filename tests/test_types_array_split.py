@@ -9,12 +9,14 @@ from content_settings.types.basic import SimpleText, SimpleDecimal
 from content_settings.types.mixins import mix, DictSuffixesMixin
 from content_settings.types.array import (
     SplitByFirstLine,
+    split_validator_in,
     NOT_FOUND_DEFAULT,
     NOT_FOUND_KEY_ERROR,
     NOT_FOUND_VALUE,
     SPLIT_SUFFIX_USE_PARENT,
     SPLIT_SUFFIX_SPLIT_OWN,
     SPLIT_SUFFIX_SPLIT_PARENT,
+    SPLIT_FAIL_RAISE,
 )
 
 pytestmark = [pytest.mark.django_db(transaction=True)]
@@ -57,6 +59,64 @@ A Simple Line
     assert var.to_python(text) == {"EN": "A Simple Line", "UA": "Проста Лінія"}
     assert var.give_python(text) == "A Simple Line"
     assert var.give_python(text, "ua") == "Проста Лінія"
+
+
+def test_with_two_values_one_valid():
+    var = SplitByFirstLine(
+        split_default_key="EN", split_key_validator=split_validator_in(["EN", "UA"])
+    )
+    text = """
+==== EN ====
+A Simple Line
+==== UA ====
+Проста Лінія
+==== FR ====
+Une ligne simple
+    """.strip()
+    var.validate_value(text)
+    assert var.to_python(text) == {
+        "EN": "A Simple Line",
+        "UA": "Проста Лінія\n==== FR ====\nUne ligne simple",
+    }
+
+
+def test_with_two_values_one_valid_2():
+    var = SplitByFirstLine(
+        split_default_key="EN", split_key_validator=split_validator_in(["EN", "UA"])
+    )
+    text = """
+==== EN ====
+A Simple Line
+==== FR ====
+Une ligne simple
+==== UA ====
+Проста Лінія
+    """.strip()
+    var.validate_value(text)
+    assert var.to_python(text) == {
+        "EN": "A Simple Line\n==== FR ====\nUne ligne simple",
+        "UA": "Проста Лінія",
+    }
+
+
+def test_with_two_values_one_valid_raise():
+    var = SplitByFirstLine(
+        split_default_key="EN",
+        split_key_validator=split_validator_in(["EN", "UA"]),
+        split_key_validator_failed=SPLIT_FAIL_RAISE,
+    )
+    text = """
+==== EN ====
+A Simple Line
+==== UA ====
+Проста Лінія
+==== FR ====
+Une ligne simple
+    """.strip()
+    with pytest.raises(ValidationError) as err:
+        var.validate_value(text)
+
+    assert err.value.message == "Invalid split key: FR in line 5"
 
 
 def test_with_two_decimal_values():
