@@ -63,6 +63,8 @@ if USER_DEFINED_TYPES:
         instance.version = USER_DEFINED_TYPES_INITIAL[
             instance.user_defined_type
         ].version
+        if instance.tags:
+            instance.tags = instance.tags.replace("\r\n", "\n")
 
 
 @receiver(post_delete, sender=ContentSetting)

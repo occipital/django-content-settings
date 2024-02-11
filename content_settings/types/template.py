@@ -1,12 +1,14 @@
 from itertools import zip_longest
 
 from django.core.exceptions import ValidationError
+from django.utils.safestring import mark_safe
 
 from .basic import SimpleText
 from .mixins import CallToPythonMixin, GiveCallMixin, HTMLMixin
 from .validators import call_validator
-from . import PREVIEW_TEXT, PREVIEW_PYTHON, required
+from . import PREVIEW_TEXT, PREVIEW_PYTHON, PREVIEW_HTML, required
 from ..permissions import superuser
+from .validators import call_validator
 
 
 class SimpleCallTemplate(CallToPythonMixin, SimpleText):
@@ -33,6 +35,19 @@ class SimpleCallTemplate(CallToPythonMixin, SimpleText):
         if callable(self.template_static_data):
             return self.template_static_data()
         return self.template_static_data
+
+    def get_validators(self):
+        validators = super().get_validators()
+        if validators:
+            return validators
+
+        has_required_args = any(
+            v == required for v in self.get_template_args_default().values()
+        )
+        if has_required_args:
+            return ()
+
+        return (call_validator(),)
 
     def get_help_format(self):
         yield self.help_format
@@ -91,6 +106,7 @@ class SimpleCallTemplate(CallToPythonMixin, SimpleText):
 
 class DjangoTemplate(SimpleCallTemplate):
     tags = {"template"}
+    admin_preview_as = PREVIEW_TEXT
 
     def prepare_python_call(self, value):
         from django.template import Template
@@ -101,28 +117,30 @@ class DjangoTemplate(SimpleCallTemplate):
         from django.template import Context
 
         template = kwargs.pop("template")
-        return template.render(
-            Context(
-                {
-                    **self.get_template_full_static_data(),
-                    **self.prepate_input_to_dict(*args, **kwargs),
-                }
+        return (
+            template.render(
+                Context(
+                    {
+                        **self.get_template_full_static_data(),
+                        **self.prepate_input_to_dict(*args, **kwargs),
+                    }
+                )
             )
-        )
+            + ""
+        )  # to avoid returning SafeText
 
 
 class DjangoTemplateNoArgs(GiveCallMixin, DjangoTemplate):
     pass
 
 
-class DjangoTemplateHTML(HTMLMixin, DjangoTemplate):
+class DjangoTemplateHTML(HTMLMixin, DjangoTemplateNoArgs):
     pass
 
 
 class DjangoModelTemplateMixin:
     model_queryset = None
     obj_name = "object"
-    admin_preview_call = False
 
     def get_template_args_default(self):
         return {
@@ -145,17 +163,17 @@ class DjangoModelTemplateMixin:
 
         return validators
 
-    def get_preview_validators(self):
-        first_validator = self.get_first_call_validator()
-
-        if first_validator is not None:
-            return (first_validator,)
-
-        return ()
-
 
 class DjangoModelTemplate(DjangoModelTemplateMixin, DjangoTemplate):
     pass
+
+
+class DjangoModelTemplateHTML(DjangoModelTemplate):
+    admin_preview_as = PREVIEW_HTML
+
+    def give(self, value, suffix=None):
+        render_func = super().give(value, suffix)
+        return lambda *a, **k: mark_safe(render_func(*a, **k))
 
 
 class SimpleEval(SimpleCallTemplate):

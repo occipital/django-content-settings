@@ -55,9 +55,8 @@ def test_django_template_with_validator():
 def test_django_template_admin_preview_html():
     var = DjangoTemplate(
         template_args_default={"title": "Undefined"},
-        preview_validators=(call_validator("Book Store"),),
+        validators=(call_validator("Book Store"),),
         admin_preview_as=PREVIEW_HTML,
-        admin_preview_call=False,
     )
 
     assert (
@@ -69,9 +68,8 @@ def test_django_template_admin_preview_html():
 def test_django_template_admin_preview_text():
     var = DjangoTemplate(
         template_args_default={"title": "Undefined"},
-        preview_validators=(call_validator("Book Store"),),
+        validators=(call_validator("Book Store"),),
         admin_preview_as=PREVIEW_HTML,
-        admin_preview_call=False,
     )
 
     assert (
@@ -87,7 +85,7 @@ def test_django_template_admin_preview_not_found():
 
     assert (
         var.get_admin_preview_value("<h1>{{ title }}</h1>", "TITLE")
-        == "<pre>No preview (add at least one validator to preview_validators)</pre>"
+        == "<pre>&lt;h1>Undefined&lt;/h1></pre>"
     )
 
 

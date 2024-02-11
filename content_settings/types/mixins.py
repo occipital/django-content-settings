@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
 
 from .validators import call_validator
-from . import PREVIEW_HTML
+from . import PREVIEW_HTML, pre, PREVIEW_TEXT, PREVIEW_PYTHON, PREVIEW_NONE
 
 
 def mix(*cls):
@@ -39,6 +39,15 @@ class MinMaxValidationMixin:
             yield f" to {self.max_value}"
 
 
+class EmptyNoneMixin:
+    value_required = False
+
+    def to_python(self, value):
+        if value.strip() == "":
+            return None
+        return super().to_python(value)
+
+
 class HTMLMixin:
     admin_preview_as: str = PREVIEW_HTML
 
@@ -56,16 +65,16 @@ class PositiveValidationMixin(MinMaxValidationMixin):
 
 class CallToPythonMixin:
     call_func = None
-    preview_validators = None
-    admin_preview_call = True
 
     def prepare_python_call(self, value):
         return {"prepared": value}
 
     def get_preview_validators(self):
-        if self.preview_validators is None:
-            return ()
-        return self.preview_validators
+        return [
+            validator
+            for validator in self.get_validators()
+            if isinstance(validator, call_validator)
+        ]
 
     def get_call_func(self):
         return self.call_func
@@ -89,60 +98,45 @@ class CallToPythonMixin:
             return [(None, e)]
         ret = []
         for validator in self.get_preview_validators():
-            str_validator = (
-                f"{name}({str(validator)})" if self.admin_preview_call else None
-            )
+            str_validator = f"{name}({str(validator)})"
             try:
                 ret.append((str_validator, validator(value)))
             except Exception as e:
                 ret.append((str_validator, e))
         return ret
 
-    def get_admin_preview_html(self, value, name, **kwargs):
+    def get_admin_preview_object(self, value, name, **kwargs):
+        admin_preview_as = self.get_admin_preview_as()
+        if admin_preview_as == PREVIEW_NONE:
+            return ""
+
         if not value:
-            return "No preview (add at least one validator to preview_validators)"
-        html = ""
-        for validator, val in value:
-            if validator:
-                html += f"<div>{validator}</div>"
+            return "No preview (add at least one call_validator in validators)"
 
-            if isinstance(val, Exception):
-                val = f"ERROR!!! {val}"
-
-            if not self.admin_preview_call and len(value) == 1:
-                html += str(val)
+        if len(value) == 1 and admin_preview_as in (PREVIEW_TEXT, PREVIEW_HTML):
+            value = value[0][1]
+            if isinstance(value, Exception):
+                return f"ERROR!!! {value}"
+            if admin_preview_as == PREVIEW_TEXT:
+                return pre(value)
             else:
-                html += f"<div>{val}</div>"
-
-        return html
-
-    def get_admin_preview_text(self, value, name, **kwargs):
-        if not value:
-            return "No preview (add at least one validator to preview_validators)"
+                return str(value)
 
         def _():
             for validator, val in value:
-                if validator:
-                    yield f">>> {validator}"
+                yield pre(f">>> {validator}")
 
                 if isinstance(val, Exception):
                     yield f"ERROR!!! {val}"
-                elif not self.admin_preview_call and len(value) == 1:
-                    yield str(val)
                 else:
-                    yield f"<<< {pformat(val)}"
+                    if admin_preview_as == PREVIEW_TEXT:
+                        yield pre(val)
+                    elif admin_preview_as == PREVIEW_HTML:
+                        yield str(val)
+                    else:
+                        yield pre("<<< " + pformat(val))
 
         return "\n".join(_())
-
-    def get_admin_preview_python(self, value, name, **kwargs):
-        if self.admin_preview_call:
-            return value
-
-        ret = [v for _, v in value]
-        if len(ret) == 1:
-            return ret[0]
-
-        return ret
 
 
 class GiveCallMixin:
@@ -151,16 +145,17 @@ class GiveCallMixin:
     but as value you want to return not a function, but call it and return result
     """
 
-    admin_preview_call = False
-
     def get_suffixes(self):
         return ("call",) + super().get_suffixes()
 
     def get_validators(self):
         return (call_validator(),) + super().get_validators()
 
-    def get_preview_validators(self):
-        return (call_validator(),) + super().get_preview_validators()
+    def get_validators(self):
+        validators = super().get_validators()
+        if not validators:
+            return (call_validator(),)
+        return validators
 
     def give(self, value, suffix=None):
         if suffix is None:

@@ -196,7 +196,7 @@ def test_no_preivew_template(webtest_admin):
 
     assert resp.status_int == 200
     assert resp.json == {
-        "html": "No preview (add at least one validator to preview_validators)"
+        "html": "No preview (add at least one call_validator in validators)"
     }
 
 

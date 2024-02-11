@@ -1,6 +1,9 @@
 test:
 	poetry run pytest
 
+test-v:
+	poetry run pytest -vv -s
+
 test-cov:
 	poetry run pytest --cov=content_settings
 

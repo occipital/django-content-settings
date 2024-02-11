@@ -20,6 +20,7 @@ from content_settings.types import (
     PREVIEW_NONE,
     required,
     optional,
+    pre,
 )
 from content_settings.types.mixins import HTMLMixin
 from content_settings.permissions import none, staff
@@ -44,7 +45,6 @@ class SimpleString(BaseSetting):
     - version (str): The version of the setting (using for caching).
     - tags (Optional[Iterable[str]]): Optional tags associated with the setting.
     - validators (Tuple[Callable]): Validators to apply to the setting value.
-    - empty_is_none (bool): Whether an empty value should be treated as None.
     - admin_preview_as (str): The format to use for the admin preview.
     - suffixes (Tuple[str]): Suffixes that can be appended to the setting value.
     - user_defined_slug (str): it contains a slug from db If the setting is defined in DB only (should not be set in content_settings)
@@ -66,7 +66,6 @@ class SimpleString(BaseSetting):
     version: str = ""
     tags: Optional[Iterable[str]] = None
     validators: Tuple[Callable] = ()
-    empty_is_none: bool = False
     admin_preview_as: str = PREVIEW_NONE
     suffixes: Tuple[str] = ()
     user_defined_slug: Optional[str] = None
@@ -193,7 +192,7 @@ class SimpleString(BaseSetting):
         return gen_tags(self, value)
 
     def get_validators(self) -> Tuple[Callable]:
-        return self.validators + tuple(self.cls_field.default_validators)
+        return tuple(self.validators) + tuple(self.cls_field.default_validators)
 
     def get_field(self) -> forms.Field:
         return self.cls_field(
@@ -212,6 +211,8 @@ class SimpleString(BaseSetting):
         pass
 
     def validate_value(self, value: str) -> Any:
+        if self.value_required and not value:
+            raise ValidationError("This field is required")
         self.validate_raw_value(value)
         val = self.to_python(value)
         self.validate(val)
@@ -221,8 +222,6 @@ class SimpleString(BaseSetting):
             validator(value)
 
     def to_python(self, value: str) -> Any:
-        if self.empty_is_none and value.strip() == "":
-            return None
         return self.field.to_python(value)
 
     def json_view_value(self, value: Any, **kwargs) -> Any:
@@ -257,7 +256,7 @@ class SimpleString(BaseSetting):
         else:
             value = pformat(self.get_admin_preview_python(value, name, **kwargs))
 
-        return "<pre>{}</pre>".format(value.replace("<", "&lt;"))
+        return pre(value)
 
     def lazy_give(self, l_func: Callable, suffix=None) -> LazyObject:
         return LazyObject(l_func)

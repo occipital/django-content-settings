@@ -36,7 +36,7 @@ def test_simple_json():
 
 
 def test_simple_json_empty_is_none():
-    var = SimpleJSON(empty_is_none=True)
+    var = SimpleJSON()
 
     assert var.give_python("") is None
     assert var.give_python(" ") is None

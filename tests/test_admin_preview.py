@@ -16,6 +16,8 @@ from content_settings.types.array import SimpleStringsList
 from content_settings.types.validators import call_validator
 from content_settings.types.template import required
 from content_settings.types.mixins import MakeCallMixin, mix
+from content_settings.context_managers import context_defaults
+from content_settings.types import PREVIEW_HTML, PREVIEW_TEXT, PREVIEW_PYTHON
 
 from tests.books.models import Book
 from tests.tools import adjust_params
@@ -27,496 +29,409 @@ def init_books():
     Book.objects.create(title="The Poplar", description="A book about poplar trees")
 
 
-@pytest.mark.parametrize(
-    "var,value,initial",
-    adjust_params(
-        [
-            (
-                DjangoTemplateNoArgs(
-                    "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world"
-                ),
-                "Book Store is the best book store in the world",
-            ),
-            (
-                DjangoModelTemplate(
-                    "<b>{{book.title}}</b><br><i>{{book.description}}</i>",
-                    model_queryset=Book.objects.all(),
-                    obj_name="book",
-                ),
-                "<b>The Poplar</b><br><i>A book about poplar trees</i>",
-                init_books,
-            ),
-            (
-                DjangoModelEval(
-                    '{"name": object.title, "description": object.description}',
-                    model_queryset=Book.objects.all(),
-                ),
-                "{'name': 'The Poplar', 'description': 'A book about poplar trees'}",
-                init_books,
-            ),
-            (
-                SimpleString("Book Store"),
-                "Book Store",
-            ),
-            (
-                SimpleInt("1"),
-                1,
-            ),
-            (
-                SimpleStringsList("1,2,3", split_lines=","),
-                ["1", "2", "3"],
-            ),
-            (
-                DjangoTemplate(
-                    "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world"
-                ),
-                "No preview (add at least one validator to preview_validators)",
-            ),
-            (
-                DjangoTemplate(
-                    "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world",
-                    preview_validators=(call_validator(),),
-                ),
-                "<div>VAR()</div><div>Book Store is the best book store in the world</div>",
-            ),
-            (
-                DjangoTemplate(
-                    "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world",
-                    preview_validators=(call_validator(),),
-                    admin_preview_call=False,
-                ),
-                "Book Store is the best book store in the world",
-            ),
-            (
-                DjangoTemplate(
-                    "{{CONTENT_SETTINGS.TITLE}} is the {{SETTINGS.STATIC_URL}}title.png",
-                    preview_validators=(call_validator(),),
-                    admin_preview_call=False,
-                ),
-                "Book Store is the /static/title.png",
-            ),
-            (
-                DjangoTemplate(
-                    "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world",
-                    preview_validators=(call_validator(),),
-                    template_args_default={"award": "fantastic"},
-                    admin_preview_call=False,
-                ),
-                "Book Store is fantastic book store in the world",
-            ),
-            (
-                DjangoTemplate(
-                    "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world",
-                    preview_validators=(call_validator(award="fantastic"),),
-                    admin_preview_call=False,
-                ),
-                "Book Store is fantastic book store in the world",
-            ),
-            (
-                DjangoTemplate(
-                    "{{CONTENT_SETTINGS.TITLE}} is {{award}} {% if %} book store in the world",
-                    preview_validators=(call_validator(award="fantastic"),),
-                    admin_preview_call=False,
-                ),
-                "ERROR!!! Unexpected end of expression in if tag.",
-            ),
-            (
-                DjangoTemplate(
-                    "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world",
-                    preview_validators=(
-                        call_validator(),
-                        call_validator("the best"),
+with context_defaults(admin_preview_as=PREVIEW_HTML):
+
+    @pytest.mark.parametrize(
+        "var,value,initial",
+        adjust_params(
+            [
+                (
+                    DjangoTemplateNoArgs(
+                        "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world"
                     ),
-                    template_args_default={"award": "fantastic"},
-                    admin_preview_call=False,
+                    "Book Store is the best book store in the world",
                 ),
-                "<div>Book Store is fantastic book store in the world</div><div>Book Store is the best book store in the world</div>",
-            ),
-            (
-                DjangoTemplate(
-                    "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world",
-                    preview_validators=(
-                        call_validator(),
-                        call_validator("the best"),
+                (
+                    DjangoModelTemplate(
+                        "<b>{{book.title}}</b><br><i>{{book.description}}</i>",
+                        model_queryset=Book.objects.all(),
+                        obj_name="book",
                     ),
-                    template_args_default={"award": "fantastic"},
+                    "<b>The Poplar</b><br><i>A book about poplar trees</i>",
+                    init_books,
                 ),
-                "<div>VAR()</div><div>Book Store is fantastic book store in the world</div>"
-                "<div>VAR('the best')</div><div>Book Store is the best book store in the world</div>",
-            ),
-            (
-                DjangoTemplate(
-                    "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world",
-                    preview_validators=(
-                        call_validator(),
-                        call_validator(award="the best"),
+                (
+                    DjangoModelEval(
+                        '{"name": object.title, "description": object.description}',
+                        model_queryset=Book.objects.all(),
                     ),
-                    template_args_default={"award": "fantastic"},
+                    "{'name': 'The Poplar', 'description': 'A book about poplar trees'}",
+                    init_books,
                 ),
-                "<div>VAR()</div><div>Book Store is fantastic book store in the world</div>"
-                "<div>VAR(award='the best')</div><div>Book Store is the best book store in the world</div>",
-            ),
-            (
-                mix(MakeCallMixin, SimpleString)(
-                    "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world"
+                (
+                    SimpleString("Book Store"),
+                    "Book Store",
                 ),
-                "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world",
-            ),
-        ]
-    ),
-)
-def test_html_preview(var, value, initial):
-    if initial:
-        initial()
-    val = var.give_python_to_admin(var.default, "VAR")
-    assert var.get_admin_preview_html(val, "VAR") == value
+                (
+                    SimpleInt("1"),
+                    "1",
+                ),
+                (
+                    SimpleStringsList("1,2,3", split_lines=","),
+                    "['1', '2', '3']",
+                ),
+                (
+                    DjangoTemplate(
+                        "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world"
+                    ),
+                    "Book Store is the best book store in the world",
+                ),
+                (
+                    DjangoTemplate(
+                        "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world",
+                        validators=(call_validator(),),
+                    ),
+                    "Book Store is the best book store in the world",
+                ),
+                (
+                    DjangoTemplate(
+                        "{{CONTENT_SETTINGS.TITLE}} is the {{SETTINGS.STATIC_URL}}title.png",
+                        validators=(call_validator(),),
+                    ),
+                    "Book Store is the /static/title.png",
+                ),
+                (
+                    DjangoTemplate(
+                        "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world",
+                        validators=(call_validator(),),
+                        template_args_default={"award": "fantastic"},
+                    ),
+                    "Book Store is fantastic book store in the world",
+                ),
+                (
+                    DjangoTemplate(
+                        "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world",
+                        validators=(call_validator(award="fantastic"),),
+                    ),
+                    "Book Store is fantastic book store in the world",
+                ),
+                (
+                    DjangoTemplate(
+                        "{{CONTENT_SETTINGS.TITLE}} is {{award}} {% if %} book store in the world",
+                        validators=(call_validator(award="fantastic"),),
+                    ),
+                    "ERROR!!! Unexpected end of expression in if tag.",
+                ),
+                (
+                    DjangoTemplate(
+                        "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world",
+                        validators=(
+                            call_validator(),
+                            call_validator("the best"),
+                        ),
+                        template_args_default={"award": "fantastic"},
+                    ),
+                    "<pre>>>> VAR()</pre>\nBook Store is fantastic book store in the world\n<pre>>>> VAR('the best')</pre>\nBook Store is the best book store in the world",
+                ),
+                (
+                    DjangoTemplate(
+                        "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world",
+                        validators=(
+                            call_validator(),
+                            call_validator("the best"),
+                        ),
+                        template_args_default={"award": "fantastic"},
+                    ),
+                    "<pre>>>> VAR()</pre>\nBook Store is fantastic book store in the world\n<pre>>>> VAR('the best')</pre>\nBook Store is the best book store in the world",
+                ),
+                (
+                    DjangoTemplate(
+                        "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world",
+                        validators=(
+                            call_validator(),
+                            call_validator(award="the best"),
+                        ),
+                        template_args_default={"award": "fantastic"},
+                    ),
+                    "<pre>>>> VAR()</pre>\nBook Store is fantastic book store in the world\n<pre>>>> VAR(award='the best')</pre>\nBook Store is the best book store in the world",
+                ),
+                (
+                    mix(MakeCallMixin, SimpleString)(
+                        "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world"
+                    ),
+                    "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world",
+                ),
+            ]
+        ),
+    )
+    def test_html_preview(var, value, initial):
+        if initial:
+            initial()
+        val = var.give_python_to_admin(var.default, "VAR")
+        assert var.get_admin_preview_object(val, "VAR") == value
 
 
-@pytest.mark.parametrize(
-    "var,value,initial",
-    adjust_params(
-        [
-            (
-                DjangoTemplateNoArgs(
-                    "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world"
-                ),
-                "Book Store is the best book store in the world",
-            ),
-            (
-                DjangoTemplate(
-                    "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world"
-                ),
-                "No preview (add at least one validator to preview_validators)",
-            ),
-            (
-                DjangoTemplate(
-                    "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world",
-                    preview_validators=(call_validator(),),
-                ),
-                ">>> VAR()\n<<< 'Book Store is the best book store in the world'",
-            ),
-            (
-                DjangoTemplate(
-                    "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world",
-                    preview_validators=(call_validator(),),
-                    admin_preview_call=False,
-                ),
-                "Book Store is the best book store in the world",
-            ),
-            (
-                DjangoTemplate(
-                    "{{CONTENT_SETTINGS.TITLE}} is the {{SETTINGS.STATIC_URL}}title.png",
-                    preview_validators=(call_validator(),),
-                    admin_preview_call=False,
-                ),
-                "Book Store is the /static/title.png",
-            ),
-            (
-                DjangoTemplate(
-                    "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world",
-                    preview_validators=(call_validator(),),
-                    template_args_default={"award": "fantastic"},
-                    admin_preview_call=False,
-                ),
-                "Book Store is fantastic book store in the world",
-            ),
-            (
-                DjangoTemplate(
-                    "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world",
-                    preview_validators=(call_validator(award="fantastic"),),
-                    admin_preview_call=False,
-                ),
-                "Book Store is fantastic book store in the world",
-            ),
-            (
-                DjangoTemplate(
-                    "{{CONTENT_SETTINGS.TITLE}} is {{award}} {% if %} book store in the world",
-                    preview_validators=(call_validator(award="fantastic"),),
-                    admin_preview_call=False,
-                ),
-                "ERROR!!! Unexpected end of expression in if tag.",
-            ),
-            (
-                DjangoTemplate(
-                    "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world",
-                    preview_validators=(
-                        call_validator(),
-                        call_validator("the best"),
+with context_defaults(admin_preview_as=PREVIEW_TEXT):
+
+    @pytest.mark.parametrize(
+        "var,value,initial",
+        adjust_params(
+            [
+                (
+                    DjangoTemplateNoArgs(
+                        "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world"
                     ),
-                    template_args_default={"award": "fantastic"},
-                    admin_preview_call=False,
+                    "<pre>Book Store is the best book store in the world</pre>",
                 ),
-                "<<< 'Book Store is fantastic book store in the world'\n<<< 'Book Store is the best book store in the world'",
-            ),
-            (
-                DjangoTemplate(
-                    "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world",
-                    preview_validators=(
-                        call_validator(),
-                        call_validator("the best"),
+                (
+                    DjangoTemplate(
+                        "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world"
                     ),
-                    template_args_default={"award": "fantastic"},
+                    "<pre>Book Store is the best book store in the world</pre>",
                 ),
-                ">>> VAR()\n<<< 'Book Store is fantastic book store in the world'\n"
-                ">>> VAR('the best')\n<<< 'Book Store is the best book store in the world'",
-            ),
-            (
-                DjangoTemplate(
-                    "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world",
-                    preview_validators=(
-                        call_validator(),
-                        call_validator(award="the best"),
+                (
+                    DjangoTemplate(
+                        "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world",
+                        validators=(call_validator(),),
                     ),
-                    template_args_default={"award": "fantastic"},
+                    "<pre>Book Store is the best book store in the world</pre>",
                 ),
-                ">>> VAR()\n<<< 'Book Store is fantastic book store in the world'\n"
-                ">>> VAR(award='the best')\n<<< 'Book Store is the best book store in the world'",
-            ),
-            (
-                SimpleEval("1+3"),
-                "No preview (add at least one validator to preview_validators)",
-            ),
-            (
-                SimpleEvalNoArgs("1+3"),
-                "4",
-            ),
-            (
-                SimpleEval("1+3", preview_validators=(call_validator(),)),
-                ">>> VAR()\n<<< 4",
-            ),
-            (
-                SimpleEval(
-                    "1+3",
-                    preview_validators=(call_validator(),),
-                    admin_preview_call=False,
-                ),
-                "4",
-            ),
-            (
-                SimpleEval(
-                    "1+val",
-                    preview_validators=(call_validator(val=7),),
-                    admin_preview_call=False,
-                ),
-                "8",
-            ),
-            (
-                SimpleEval(
-                    "1+val",
-                    preview_validators=(call_validator(4),),
-                    admin_preview_call=False,
-                    template_args_default={"val": required},
-                ),
-                "5",
-            ),
-            (
-                SimpleEval(
-                    "1+val",
-                    preview_validators=(call_validator(),),
-                    admin_preview_call=False,
-                    template_args_default={"val": required},
-                ),
-                "ERROR!!! [\"['Missing required argument val']\"]",
-            ),
-            (
-                SimpleEval(
-                    "1+val",
-                    preview_validators=(
-                        call_validator(),
-                        call_validator(5),
+                (
+                    DjangoTemplate(
+                        "{{CONTENT_SETTINGS.TITLE}} is the {{SETTINGS.STATIC_URL}}title.png",
+                        validators=(call_validator(),),
                     ),
-                    admin_preview_call=False,
-                    template_args_default={"val": 3},
+                    "<pre>Book Store is the /static/title.png</pre>",
                 ),
-                "<<< 4\n<<< 6",
-            ),
-            (
-                SimpleEval(
-                    "1+val",
-                    preview_validators=(
-                        call_validator(),
-                        call_validator(5),
+                (
+                    DjangoTemplate(
+                        "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world",
+                        template_args_default={"award": "fantastic"},
                     ),
-                    template_args_default={"val": 3},
+                    "<pre>Book Store is fantastic book store in the world</pre>",
                 ),
-                ">>> VAR()\n<<< 4\n>>> VAR(5)\n<<< 6",
-            ),
-            (
-                SimpleEval(
-                    "SETTINGS.STATIC_URL + name + '.png'",
-                    preview_validators=(
-                        call_validator(),
-                        call_validator("face"),
+                (
+                    DjangoTemplate(
+                        "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world",
+                        validators=(call_validator(award="fantastic"),),
                     ),
-                    template_args_default={"name": "title"},
+                    "<pre>Book Store is fantastic book store in the world</pre>",
                 ),
-                ">>> VAR()\n<<< '/static/title.png'\n>>> VAR('face')\n<<< '/static/face.png'",
-            ),
-            (
-                SimpleEval(
-                    "CONTENT_SETTINGS.TITLE + ' ' + explain",
-                    preview_validators=(
-                        call_validator(),
-                        call_validator("epic"),
+                (
+                    DjangoTemplate(
+                        "{{CONTENT_SETTINGS.TITLE}} is {{award}} {% if %} book store in the world",
+                        validators=(call_validator(award="fantastic"),),
                     ),
-                    template_args_default={"explain": "the best"},
+                    "ERROR!!! Unexpected end of expression in if tag.",
                 ),
-                ">>> VAR()\n<<< 'Book Store the best'\n>>> VAR('epic')\n<<< 'Book Store epic'",
-            ),
-            (
-                SimpleEval(
-                    "CONTENT_SETTINGS.TITLE + ' ' + explain",
-                    preview_validators=(
-                        call_validator(),
-                        call_validator("epic"),
+                (
+                    DjangoTemplate(
+                        "{{CONTENT_SETTINGS.TITLE}} is {{award}} book store in the world",
+                        validators=(
+                            call_validator(),
+                            call_validator("the best"),
+                        ),
+                        template_args_default={"award": "fantastic"},
                     ),
-                    template_args_default={"explain": "the best"},
-                    template_static_includes=(),
+                    "<pre>>>> VAR()</pre>\n<pre>Book Store is fantastic book store in the world</pre>\n<pre>>>> VAR('the best')</pre>\n<pre>Book Store is the best book store in the world</pre>",
                 ),
-                ">>> VAR()\nERROR!!! [\"name 'CONTENT_SETTINGS' is not defined\"]\n>>> VAR('epic')\nERROR!!! [\"name 'CONTENT_SETTINGS' is not defined\"]",
-            ),
-            (
-                SimpleEval(
-                    "Decimal('1.2')/val",
-                    preview_validators=(
-                        call_validator(val=Decimal("2")),
-                        call_validator(Decimal("0.5")),
+                (
+                    SimpleEval("1+3"),
+                    "<pre>4</pre>",
+                ),
+                (
+                    SimpleEvalNoArgs("1+3"),
+                    "<pre>4</pre>",
+                ),
+                (
+                    SimpleEval("1+3", validators=(call_validator(),)),
+                    "<pre>4</pre>",
+                ),
+                (
+                    SimpleEval(
+                        "1+3",
+                        validators=(call_validator(),),
                     ),
-                    template_args_default={"val": Decimal("1")},
-                    template_static_data={"Decimal": Decimal},
+                    "<pre>4</pre>",
                 ),
-                ">>> VAR(val=Decimal('2'))\n<<< Decimal('0.6')\n>>> VAR(Decimal('0.5'))\n<<< Decimal('2.4')",
-            ),
-            (
-                SimpleEval(
-                    "Decimal('1.2')/val + plus",
-                    preview_validators=(
-                        call_validator(val=Decimal("2")),
-                        call_validator(Decimal("0.5")),
+                (
+                    SimpleEval(
+                        "1+val",
+                        validators=(call_validator(val=7),),
                     ),
-                    template_args_default={"val": Decimal("1")},
-                    template_static_data=lambda: {"Decimal": Decimal, "plus": 20},
+                    "<pre>8</pre>",
                 ),
-                ">>> VAR(val=Decimal('2'))\n<<< Decimal('20.6')\n>>> VAR(Decimal('0.5'))\n<<< Decimal('22.4')",
-            ),
-        ]
-    ),
-)
-def test_text_preview(var, value, initial):
-    if initial:
-        initial()
-    val = var.give_python_to_admin(var.default, "VAR")
-    assert var.get_admin_preview_text(val, "VAR") == value
+                (
+                    SimpleEval(
+                        "1+val",
+                        validators=(call_validator(4),),
+                        template_args_default={"val": required},
+                    ),
+                    "<pre>5</pre>",
+                ),
+                (
+                    SimpleEval(
+                        "1+val",
+                        validators=(call_validator(),),
+                        template_args_default={"val": required},
+                    ),
+                    "ERROR!!! [\"['Missing required argument val']\"]",
+                ),
+                (
+                    SimpleEval(
+                        "1+val",
+                        validators=(
+                            call_validator(),
+                            call_validator(5),
+                        ),
+                        template_args_default={"val": 3},
+                    ),
+                    "<pre>>>> VAR()</pre>\n<pre>4</pre>\n<pre>>>> VAR(5)</pre>\n<pre>6</pre>",
+                ),
+                (
+                    SimpleEval(
+                        "SETTINGS.STATIC_URL + name + '.png'",
+                        validators=(
+                            call_validator(),
+                            call_validator("face"),
+                        ),
+                        template_args_default={"name": "title"},
+                    ),
+                    "<pre>>>> VAR()</pre>\n<pre>/static/title.png</pre>\n<pre>>>> VAR('face')</pre>\n<pre>/static/face.png</pre>",
+                ),
+                (
+                    SimpleEval(
+                        "CONTENT_SETTINGS.TITLE + ' ' + explain",
+                        validators=(
+                            call_validator(),
+                            call_validator("epic"),
+                        ),
+                        template_args_default={"explain": "the best"},
+                    ),
+                    "<pre>>>> VAR()</pre>\n<pre>Book Store the best</pre>\n<pre>>>> VAR('epic')</pre>\n<pre>Book Store epic</pre>",
+                ),
+                (
+                    SimpleEval(
+                        "CONTENT_SETTINGS.TITLE + ' ' + explain",
+                        validators=(
+                            call_validator(),
+                            call_validator("epic"),
+                        ),
+                        template_args_default={"explain": "the best"},
+                        template_static_includes=(),
+                    ),
+                    "<pre>>>> VAR()</pre>\nERROR!!! [\"name 'CONTENT_SETTINGS' is not defined\"]\n<pre>>>> VAR('epic')</pre>\nERROR!!! [\"name 'CONTENT_SETTINGS' is not defined\"]",
+                ),
+                (
+                    SimpleEval(
+                        "Decimal('1.2')/val",
+                        validators=(
+                            call_validator(val=Decimal("2")),
+                            call_validator(Decimal("0.5")),
+                        ),
+                        template_args_default={"val": Decimal("1")},
+                        template_static_data={"Decimal": Decimal},
+                    ),
+                    "<pre>>>> VAR(val=Decimal('2'))</pre>\n<pre>0.6</pre>\n<pre>>>> VAR(Decimal('0.5'))</pre>\n<pre>2.4</pre>",
+                ),
+                (
+                    SimpleEval(
+                        "Decimal('1.2')/val + plus",
+                        validators=(
+                            call_validator(val=Decimal("2")),
+                            call_validator(Decimal("0.5")),
+                        ),
+                        template_args_default={"val": Decimal("1")},
+                        template_static_data=lambda: {"Decimal": Decimal, "plus": 20},
+                    ),
+                    "<pre>>>> VAR(val=Decimal('2'))</pre>\n<pre>20.6</pre>\n<pre>>>> VAR(Decimal('0.5'))</pre>\n<pre>22.4</pre>",
+                ),
+            ]
+        ),
+    )
+    def test_text_preview(var, value, initial):
+        if initial:
+            initial()
+        val = var.give_python_to_admin(var.default, "VAR")
+        assert var.get_admin_preview_object(val, "VAR") == value
 
 
-@pytest.mark.parametrize(
-    "var,value,initial",
-    adjust_params(
-        [
-            (
-                DjangoTemplateNoArgs(
-                    "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world"
-                ),
-                "Book Store is the best book store in the world",
-            ),
-            (
-                SimpleEval("1+3"),
-                [],
-            ),
-            (
-                SimpleEvalNoArgs("1+3"),
-                4,
-            ),
-            (
-                SimpleEval("1+3", preview_validators=(call_validator(),)),
-                [("VAR()", 4)],
-            ),
-            (
-                SimpleEval(
-                    "1+3",
-                    preview_validators=(call_validator(),),
-                    admin_preview_call=False,
-                ),
-                4,
-            ),
-            (
-                SimpleEval(
-                    "1+val",
-                    preview_validators=(call_validator(val=7),),
-                    admin_preview_call=False,
-                ),
-                8,
-            ),
-            (
-                SimpleEval(
-                    "1+val",
-                    preview_validators=(
-                        call_validator(),
-                        call_validator(5),
+with context_defaults(admin_preview_as=PREVIEW_PYTHON):
+
+    @pytest.mark.parametrize(
+        "var,value,initial",
+        adjust_params(
+            [
+                (
+                    DjangoTemplateNoArgs(
+                        "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world"
                     ),
-                    admin_preview_call=False,
-                    template_args_default={"val": 3},
+                    "<pre>>>> VAR()</pre>\n<pre>&lt;&lt;&lt; 'Book Store is the best book store in the world'</pre>",
                 ),
-                [4, 6],
-            ),
-            (
-                SimpleEval(
-                    "1+val",
-                    preview_validators=(
-                        call_validator(),
-                        call_validator(5),
+                (
+                    SimpleEval("1+3"),
+                    "<pre>>>> VAR()</pre>\n<pre>&lt;&lt;&lt; 4</pre>",
+                ),
+                (
+                    SimpleEvalNoArgs("1+3"),
+                    "<pre>>>> VAR()</pre>\n<pre>&lt;&lt;&lt; 4</pre>",
+                ),
+                (
+                    SimpleEval("1+3", validators=(call_validator(),)),
+                    "<pre>>>> VAR()</pre>\n<pre>&lt;&lt;&lt; 4</pre>",
+                ),
+                (
+                    SimpleEval(
+                        "1+val",
+                        validators=(call_validator(val=7),),
                     ),
-                    template_args_default={"val": 3},
+                    "<pre>>>> VAR(val=7)</pre>\n<pre>&lt;&lt;&lt; 8</pre>",
                 ),
-                [("VAR()", 4), ("VAR(5)", 6)],
-            ),
-            (
-                SimpleEval(
-                    "SETTINGS.STATIC_URL + name + '.png'",
-                    preview_validators=(
-                        call_validator(),
-                        call_validator("face"),
+                (
+                    SimpleEval(
+                        "1+val",
+                        validators=(
+                            call_validator(),
+                            call_validator(5),
+                        ),
+                        template_args_default={"val": 3},
                     ),
-                    template_args_default={"name": "title"},
+                    "<pre>>>> VAR()</pre>\n<pre>&lt;&lt;&lt; 4</pre>\n<pre>>>> VAR(5)</pre>\n<pre>&lt;&lt;&lt; 6</pre>",
                 ),
-                [("VAR()", "/static/title.png"), ("VAR('face')", "/static/face.png")],
-            ),
-            (
-                SimpleEval(
-                    "Decimal('1.2')/val",
-                    preview_validators=(
-                        call_validator(val=Decimal("2")),
-                        call_validator(Decimal("0.5")),
+                (
+                    SimpleEval(
+                        "SETTINGS.STATIC_URL + name + '.png'",
+                        validators=(
+                            call_validator(),
+                            call_validator("face"),
+                        ),
+                        template_args_default={"name": "title"},
                     ),
-                    template_args_default={"val": Decimal("1")},
-                    template_static_data={"Decimal": Decimal},
+                    "<pre>>>> VAR()</pre>\n<pre>&lt;&lt;&lt; '/static/title.png'</pre>\n<pre>>>> VAR('face')</pre>\n<pre>&lt;&lt;&lt; '/static/face.png'</pre>",
                 ),
-                [
-                    ("VAR(val=Decimal('2'))", Decimal("0.6")),
-                    ("VAR(Decimal('0.5'))", Decimal("2.4")),
-                ],
-            ),
-        ]
-    ),
-)
-def test_python_preview(var, value, initial):
-    if initial:
-        initial()
-    val = var.give_python_to_admin(var.default, "VAR")
-    assert var.get_admin_preview_python(val, "VAR") == value
+                (
+                    SimpleEval(
+                        "Decimal('1.2')/val",
+                        validators=(
+                            call_validator(val=Decimal("2")),
+                            call_validator(Decimal("0.5")),
+                        ),
+                        template_args_default={"val": Decimal("1")},
+                        template_static_data={"Decimal": Decimal},
+                    ),
+                    "<pre>>>> VAR(val=Decimal('2'))</pre>\n<pre>&lt;&lt;&lt; Decimal('0.6')</pre>\n<pre>>>> VAR(Decimal('0.5'))</pre>\n<pre>&lt;&lt;&lt; Decimal('2.4')</pre>",
+                ),
+            ]
+        ),
+    )
+    def test_python_preview(var, value, initial):
+        if initial:
+            initial()
+        val = var.give_python_to_admin(var.default, "VAR")
+        assert var.get_admin_preview_object(val, "VAR") == value
 
 
 def test_python_preview_error():
     var = SimpleEval(
         "1+val",
-        preview_validators=(call_validator(),),
-        admin_preview_call=False,
+        validators=(call_validator(),),
         template_args_default={"val": required},
     )
     val = var.give_python_to_admin(var.default, "VAR")
-    ret = var.get_admin_preview_python(val, "VAR")
-    assert isinstance(ret, ValidationError)
-    assert ret.message == "['Missing required argument val']"
+    ret = var.get_admin_preview_object(val, "VAR")
+    assert (
+        ret == "<pre>>>> VAR()</pre>\nERROR!!! [\"['Missing required argument val']\"]"
+    )
 
 
 """

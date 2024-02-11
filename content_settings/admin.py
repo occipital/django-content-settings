@@ -96,7 +96,6 @@ class SettingsChangeList(ChangeList):
                 combine &= Q(tags__iregex=rf"(^|\n){tag}($|\n)")
 
             q = q.filter(combine)
-
         # This is terrable
         # But I don't know how to do it better
         # I need to filter out the names user don't have permissions to see
@@ -105,7 +104,11 @@ class SettingsChangeList(ChangeList):
         return q.filter(
             ~Q(
                 name__in=[
-                    name for name in names if not get_type_by_name(name).can_view(user)
+                    name
+                    for name in names
+                    if not get_type_by_name(name)
+                    or get_type_by_name(name).constant
+                    or not get_type_by_name(name).can_view(user)
                 ]
             )
         )
@@ -116,7 +119,8 @@ class ContentSettinForm(ModelForm):
         super(ContentSettinForm, self).__init__(*args, **kwargs)
         if self.instance.name:
             cs_type = get_type_by_name(self.instance.name)
-            self.fields["value"] = cs_type.field
+            if cs_type:
+                self.fields["value"] = cs_type.field
         self.fields["value"].strip = False
 
         if "user_defined_type" in self.fields:
@@ -195,10 +199,17 @@ class ContentSettingAdmin(admin.ModelAdmin):
         extra_context = {}
         selected_tags = get_selected_tags_from_params(request.GET)
 
+        if "q" in request.GET:
+            init_q = "?q=" + urllib.parse.quote(request.GET["q"]) + "&"
+        else:
+            init_q = "?"
+
         def q_tags(tags):
             if not tags:
-                return "?"
-            return "?" + TAGS_PARAM + "=" + urllib.parse.quote(TAGS_SPLITER.join(tags))
+                return init_q
+            return (
+                init_q + TAGS_PARAM + "=" + urllib.parse.quote(TAGS_SPLITER.join(tags))
+            )
 
         def q_add_tag(tag):
             return q_tags(selected_tags | set([tag]))
@@ -216,8 +227,10 @@ class ContentSettingAdmin(admin.ModelAdmin):
 
         tags_stat = defaultdict(int)
         user_settings = UserTagSetting.get_user_settings(request.user)
-        for cs in ContentSetting.objects.all():
-            if not get_type_by_name(cs.name).can_view(request.user):
+
+        for cs in self.get_changelist_instance(request).get_queryset(request):
+            cs_type = get_type_by_name(cs.name)
+            if not cs_type or not cs_type.can_view(request.user) or cs_type.constant:
                 continue
             val_tags = cs.tags_set | user_settings[cs.name]
             if selected_tags and (not val_tags or selected_tags - val_tags):
@@ -255,7 +268,9 @@ class ContentSettingAdmin(admin.ModelAdmin):
         from .conf import get_type_by_name
 
         cs = ContentSetting.objects.filter(pk=object_id).first()
-        if cs and not get_type_by_name(cs.name).can_view(request.user):
+
+        cs_type = get_type_by_name(cs.name)
+        if cs and not cs_type or not cs_type.can_view(request.user) or cs_type.constant:
             raise PermissionDenied
 
         return super().change_view(request, object_id, *args, **kwargs)
@@ -271,9 +286,13 @@ class ContentSettingAdmin(admin.ModelAdmin):
                 request, model._meta, object_id
             )
 
-        if not self.has_view_or_change_permission(request, obj) or not get_type_by_name(
-            obj.name
-        ).can_view_history(request.user):
+        cs_type = get_type_by_name(obj.name)
+        if (
+            not self.has_view_or_change_permission(request, obj)
+            or not cs_type
+            or not cs_type.can_view_history(request.user)
+            or cs_type.constant
+        ):
             raise PermissionDenied
 
         opts = model._meta
@@ -321,7 +340,12 @@ class ContentSettingAdmin(admin.ModelAdmin):
         cs_type = get_type_by_name(obj.name)
         if cs_type is None or cs_type.constant:
             return "(the setting is not using)"
-        return mark_safe(obj.help) + html_classes(obj.name)
+
+        if obj.user_defined_type:
+            help = cs_type.get_help()
+        else:
+            help = obj.help
+        return mark_safe(help + html_classes(obj.name))
 
     setting_help.short_description = "Help"
 

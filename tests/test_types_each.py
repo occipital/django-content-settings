@@ -6,16 +6,11 @@ from django.core.exceptions import ValidationError
 from content_settings.types.basic import (
     SimpleString,
     SimpleDecimal,
-    SimpleBool,
 )
 from content_settings.types.markup import (
     SimpleJSON,
 )
-from content_settings.types.each import (
-    EachMixin,
-    Item,
-    Keys,
-)
+from content_settings.types.each import EachMixin, Item, Keys, Values
 from content_settings.types.mixins import mix
 from content_settings.types.template import DjangoTemplateNoArgs
 from content_settings.types.mixins import mix, DictSuffixesMixin
@@ -33,87 +28,99 @@ class EachJSON(EachMixin, SimpleJSON):
 
 
 @pytest.mark.parametrize(
-    "name, var, value, expected",
+    "var, value, expected",
     [
-        (
-            "simple keys decimal",
+        pytest.param(
             EachJSON(each=Keys(price=SimpleDecimal())),
             '{"name": "Book", "price": "100"}',
             {"name": "Book", "price": Decimal("100")},
+            id="simple_keys_decimal",
         ),
-        (
-            "simple keys string+decimal",
+        pytest.param(
             EachJSON(each=Keys(name=SimpleString(), price=SimpleDecimal())),
             '{"name": "Book", "price": "100"}',
             {"name": "Book", "price": Decimal("100")},
+            id="simple_keys_string_decimal",
         ),
-        (
-            "simple keys string+decimal(None)",
+        pytest.param(
             EachJSON(each=Keys(name=SimpleString(), price=SimpleDecimal())),
             '{"name": "Book"}',
             {"name": "Book", "price": None},
+            id="simple_keys_string_decimal_none",
         ),
-        (
-            "simple keys string+decimal(None)",
+        pytest.param(
             EachJSON(each=Keys(name=SimpleString(), price=SimpleDecimal(optional))),
             '{"name": "Book"}',
             {"name": "Book"},
+            id="simple_keys_string_decimal_optional",
         ),
-        (
-            "simple keys string+decimal(default)",
+        pytest.param(
             EachJSON(each=Keys(name=SimpleString(), price=SimpleDecimal("100"))),
             '{"name": "Book"}',
             {"name": "Book", "price": Decimal("100")},
+            id="simple_keys_string_decimal_default",
         ),
-        (
-            "simple keys string+decimal(required but provided)",
-            EachJSON(each=Keys(name=SimpleString(), price=SimpleDecimal(required))),
-            '{"name": "Book", "price": "100"}',
-            {"name": "Book", "price": Decimal("100")},
-        ),
-        (
-            "item simple keys string+decimal",
-            EachJSON(each=Item(Keys(name=SimpleString(), price=SimpleDecimal()))),
-            '[{"name": "Book", "price": "100"}]',
-            [{"name": "Book", "price": Decimal("100")}],
-        ),
-        (
-            "item simple keys string+decimal + one empty row",
+        pytest.param(
             EachJSON(each=Item(Keys(name=SimpleString(), price=SimpleDecimal()))),
             '[{"name": "Book", "price": "100"}, {}]',
             [{"name": "Book", "price": Decimal("100")}, {"name": "", "price": None}],
+            id="simple_keys_decimal_empty_row",
+        ),
+        pytest.param(
+            EachJSON(each=Values(SimpleDecimal())),
+            '{"book": "30", "cover": "0.5"}',
+            {"book": Decimal("30"), "cover": Decimal("0.5")},
+            id="simple_values_decimal",
+        ),
+        pytest.param(
+            EachJSON(each=Values(SimpleDecimal())),
+            "{}",
+            {},
+            id="simple_values_empty",
+        ),
+        pytest.param(
+            EachJSON(each=Values(SimpleDecimal())),
+            '"50"',
+            "50",
+            id="simple_values_not_a_dict",
+        ),
+        pytest.param(
+            EachJSON(each=Item(Values(SimpleDecimal()))),
+            '[{"book": "30", "cover": "0.5"}]',
+            [{"book": Decimal("30"), "cover": Decimal("0.5")}],
+            id="simple_item_values_decimal",
         ),
     ],
 )
-def test_each_keys_decimal(name, var, value, expected):
+def test_validate_give(var, value, expected):
     var.validate_value(value)
     assert var.give_python(value) == expected
 
 
 @pytest.mark.parametrize(
-    "name, var, value, expected",
+    "var, value, expected",
     [
-        (
-            "simple keys Enter a number",
+        pytest.param(
             EachJSON(each=Keys(price=SimpleDecimal())),
             '{"name": "Book", "price": "Zero"}',
             "key price: Enter a number.",
+            id="key_price",
         ),
-        (
-            "simple keys required",
+        pytest.param(
             EachJSON(each=Keys(price=SimpleDecimal(required))),
             '{"name": "Book"}',
             "Missing required key price",
+            id="key_required",
         ),
-        (
-            "item keys required",
+        pytest.param(
             EachJSON(each=Item(Keys(price=SimpleDecimal(required)))),
             '[{"name": "Book"}]',
             "item #1: Missing required key price",
+            id="item_missing_required",
         ),
     ],
 )
-def test_each_validate(name, var, value, expected):
+def test_each_validate(var, value, expected):
     with pytest.raises(ValidationError) as e:
         var.validate_value(value)
     assert e.value.message == expected
@@ -189,5 +196,5 @@ def test_preview_admin_with_unknown_html():
 """,
             "VAR",
         )
-        == "[<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Song'</pre></div>,<div class='subitem'><i>translation</i>: <pre>{'name': 'Song', 'translation': '&lt;b>Translation&lt;/b>'}</pre></div>}</div>]"
+        == "[<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Song'</pre></div>,<div class='subitem'><i>translation</i>: <pre>&lt;b>Translation&lt;/b></pre></div>}</div>]"
     )

@@ -30,7 +30,6 @@ TITLE = SimpleString(
 You can learn more about fields and widgets in [official Django Forms documentation](https://docs.djangoproject.com/en/dev/topics/forms/)
 
 - **value_required** (default: False): Whether the field must be filled.
-- **empty_is_none** (default: False): If the field is empty, returns None.
 - **tags** (default: None): Array of tags associated with the variable for easier navigation in admin.
 - **validators** (default: empty tuple): Additional validation functions.
 - **version** (default: ""): we will talk more about this attribute in [caching](caching.md). Updating this value trigges updating db value to default value after db migration (`python manage.py migrate`).

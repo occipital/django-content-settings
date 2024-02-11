@@ -16,6 +16,7 @@ from content_settings.types.mixins import (
     MinMaxValidationMixin,
     CallToPythonMixin,
     mix,
+    EmptyNoneMixin,
 )
 from content_settings.models import ContentSetting
 from content_settings.caching import recalc_checksums
@@ -35,7 +36,7 @@ def test_simple_string_empty_is_none():
 
     assert var.give_python("") == ""
 
-    var = SimpleString(empty_is_none=True)
+    var = mix(EmptyNoneMixin, SimpleString)()
 
     assert var.give_python("") is None
 

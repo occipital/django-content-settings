@@ -90,7 +90,11 @@ for app_config in apps.app_configs.values():
             raise
         continue
     for attr in dir(content_settings):
+        if not attr.isupper():
+            continue
+
         val = getattr(content_settings, attr)
+
         if not isinstance(val, BaseSetting):
             continue
 
@@ -98,9 +102,6 @@ for app_config in apps.app_configs.values():
 
         if attr in ALL and not ALL[attr].user_defined_slug:
             raise AssertionError("Overwriting content setting {}".format(attr))
-
-        if not attr.isupper():
-            raise AssertionError("content setting {} should be uppercase".format(attr))
 
         assert (
             not val.user_defined_slug

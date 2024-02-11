@@ -14,3 +14,7 @@ class required:
 
 class optional:
     pass
+
+
+def pre(value: str) -> str:
+    return "<pre>{}</pre>".format(str(value).replace("<", "&lt;"))

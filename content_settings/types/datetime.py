@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.utils import formats
 
 from .basic import SimpleString, PREVIEW_PYTHON
+from .mixins import EmptyNoneMixin
 
 TIMEDELTA_FORMATS = {
     "s": "seconds",
@@ -27,9 +28,8 @@ def timedelta_format(text):
     return timedelta(**delta_kwargs)
 
 
-class DateTimeString(SimpleString):
+class DateTimeString(EmptyNoneMixin, SimpleString):
     input_formats = formats.get_format_lazy("DATETIME_INPUT_FORMATS")
-    empty_is_none = True
     admin_preview_as = PREVIEW_PYTHON
 
     def get_input_formats(self):

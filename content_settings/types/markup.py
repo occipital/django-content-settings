@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 
 from .basic import SimpleText, PREVIEW_PYTHON, SimpleString
 from .each import EachMixin, Keys, Item
+from .mixins import EmptyNoneMixin
 from . import required, optional
 
 
@@ -44,7 +45,7 @@ class SimpleYAML(SimpleText):
             raise ValidationError(str(e))
 
 
-class SimpleJSON(SimpleText):
+class SimpleJSON(EmptyNoneMixin, SimpleText):
     help_format = "Simple <a href='https://en.wikipedia.org/wiki/JSON' target='_blank'>JSON format</a>"
     admin_preview_as = PREVIEW_PYTHON
     decoder_cls = None
