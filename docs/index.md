@@ -7,6 +7,8 @@
 
 # Django Content Settings
 
+[▶️ YouTube Video with dive deep ~ 2h](https://youtu.be/RNYmvv_G5zs)
+
 The `django-content-settings` module is a versatile addition to the Django ecosystem, offering users the ability to easily create and manage editable variables directly from the Django admin panel. What sets this module apart is its ability to handle variables of any type without restricting their complexity. Thanks to an integrated caching system, these variables can be used efficiently in code, irrespective of their complexity.
 
 ### Key Features

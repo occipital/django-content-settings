@@ -1,0 +1,35 @@
+{% load content_settings_extras %}
+
+<h1>{{CONTENT_SETTINGS.TITLE}}</h1>
+
+{{CONTENT_SETTINGS.AFTER_TITLE}}
+
+<p>Started at: {{CONTENT_SETTINGS.START_DATE}}</p>
+
+<p>Days without fail: {{CONTENT_SETTINGS.DAYS_WITHOUT_FAIL}}</p>
+
+Favorites:
+
+<ul>
+    {% for item in CONTENT_SETTINGS.FAVORITE_SUBJECTS %}
+        <li>{{item}}</li>
+    {% endfor %}
+</ul>
+
+Prices:
+
+<ul>
+    {% for item in CONTENT_SETTINGS.PRICES__positive %}
+        <li>{{item}}</li>
+    {% endfor %}
+</ul>
+
+{{CONTENT_SETTINGS.MY_YAML}}
+
+<p>Artists:</p>
+
+<ul>
+    {% for item in artists %}
+        <li>{% content_settings_call "ARTIST_LINE" item %}</li>
+    {% endfor %}
+</ul>

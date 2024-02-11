@@ -4,7 +4,7 @@
 .*
 *.py.bak
 cov.xml
-cs_test
+db.sqlite3
 
 
 /site/
