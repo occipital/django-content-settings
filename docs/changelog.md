@@ -2,6 +2,24 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
+## 0.9 Django Admin Panel
+
+* Fixing a lot of bugs with admin of content settings. Such as preivew, search, tags filters and cetera
+* fixing dynamic work with local changes in content settings
+* fix help text for user defined types
+* if variable constant or removed from code - admin is not allowed to see it in django admin
+* 📖 new type `DjangoModelTemplateHTML`
+* fix issue with \r\n in tags field for user defined types
+* 📖 remove attribute `empty_is_none`, we have `EmptyNoneMixin` mixin instead
+* `validators` can be tuple and list now
+* `EachMixin` now works only with expected types.
+* 📖 new class for `EachMixin` - `each.Values` - convers all values in the dict
+* fixing bugs with lazy object
+* for `CallToPythonMixin`, `preview_validators` and `admin_preview_call` are removed. Now, all of the validators, that are instance of `call_validator` will be shows in preview and settings call will be always shown if more than one validators are for preview
+* the change above requires massive refactoring for preview of template/call types
+* if `SimpleCallTemplate` doesn't have a required arguments and doesn't have validators - the system uses one validator `call_validator()`
+* `DjangoTemplateHTML(HTMLMixin, DjangoTemplate)` -> `DjangoTemplateHTML(HTMLMixin, DjangoTemplateNoArgs)`
+
 ### 0.8.1
 
 * `SplitByFirstLine.split_key_validator_failed`
