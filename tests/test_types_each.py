@@ -174,7 +174,7 @@ def test_preview_admin_translation():
 """,
             "VAR",
         )
-        == "[<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Song'</pre></div>,<div class='subitem'><i>translation</i>: <div> <b>EN</b>  <a class=\"cs_set_params\" data-param-suffix=\"UA\">UA</a> </div><pre>'English Shong'</pre></div>}</div>]"
+        == "[<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Song'</pre></div>,<div class='subitem'><i>translation</i>: <div> <b>EN</b>  <a class=\"cs_set_params\" data-param-suffix=\"UA\">UA</a> </div><pre>English Shong</pre></div>}</div>]"
     )
 
 

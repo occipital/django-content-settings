@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 
 from .basic import (
     SimpleText,
+    SimpleTextPreview,
     SimpleString,
     BaseSetting,
     PREVIEW_PYTHON,
@@ -12,7 +13,7 @@ from .basic import (
     PREVIEW_HTML,
 )
 from .mixins import AdminPreviewSuffixesMixin
-from .each import EachMixin, Item
+from .each import EachMixin, Item, Keys, Values
 
 
 def f_empty(value):
@@ -97,11 +98,6 @@ NOT_FOUND_DEFAULT = "default"
 NOT_FOUND_KEY_ERROR = "key_error"
 NOT_FOUND_VALUE = "value"
 
-SPLIT_SUFFIX_USE_OWN = "own"
-SPLIT_SUFFIX_USE_PARENT = "parent"
-SPLIT_SUFFIX_SPLIT_OWN = "split_own"
-SPLIT_SUFFIX_SPLIT_PARENT = "split_parent"
-
 SPLIT_FAIL_IGNORE = "ignore"
 SPLIT_FAIL_RAISE = "raise"
 
@@ -113,16 +109,13 @@ def split_validator_in(values):
     return _
 
 
-class SplitByFirstLine(AdminPreviewSuffixesMixin, SimpleText):
-    split_type = SimpleText()
+class SplitTextByFirstLine(SimpleText):
     split_default_key = None
     split_default_chooser = None
     split_not_found = NOT_FOUND_DEFAULT
     split_not_found_value = None
     split_key_validator = None
     split_key_validator_failed = SPLIT_FAIL_IGNORE
-    split_suffix = SPLIT_SUFFIX_USE_OWN
-    split_suffix_value = None
     admin_preview_as = PREVIEW_HTML
 
     def get_split_default_key(self):
@@ -139,12 +132,6 @@ class SplitByFirstLine(AdminPreviewSuffixesMixin, SimpleText):
 
     def get_split_not_found_value(self):
         return self.split_not_found_value
-
-    def get_split_suffix(self):
-        return self.split_suffix
-
-    def get_split_suffix_value(self):
-        return self.split_suffix_value
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -170,19 +157,6 @@ class SplitByFirstLine(AdminPreviewSuffixesMixin, SimpleText):
             NOT_FOUND_KEY_ERROR,
             NOT_FOUND_VALUE,
         ), "split_not_found should be one of NOT_FOUND_DEFAULT, NOT_FOUND_KEY_ERROR, NOT_FOUND_VALUE"
-        assert self.get_split_suffix_value() is not None or self.get_split_suffix() in (
-            SPLIT_SUFFIX_USE_OWN,
-            SPLIT_SUFFIX_USE_PARENT,
-        ), "split_suffix should be one of SPLIT_SUFFIX_USE_OWN, SPLIT_SUFFIX_SPLIT_PARENT or split_suffix_value should be set"
-        assert self.get_split_suffix_value() is None or isinstance(
-            self.get_split_suffix_value(), str
-        ), "split_suffix_value should be str or None"
-        assert self.get_split_suffix() in (
-            SPLIT_SUFFIX_USE_OWN,
-            SPLIT_SUFFIX_USE_PARENT,
-            SPLIT_SUFFIX_SPLIT_OWN,
-            SPLIT_SUFFIX_SPLIT_PARENT,
-        ), "split_suffix should be one of SPLIT_SUFFIX_USE_OWN, SPLIT_SUFFIX_USE_PARENT, SPLIT_SUFFIX_SPLIT_OWN, SPLIT_SUFFIX_SPLIT_PARENT, SPLIT_SUFFIX_SPLIT_FUNCTION"
 
     def validate_split_key(self, key):
         return self.split_key_validator is None or self.split_key_validator(key)
@@ -215,53 +189,15 @@ class SplitByFirstLine(AdminPreviewSuffixesMixin, SimpleText):
 
         return {k: "\n".join(v) for k, v in ret.items()}
 
-    def get_admin_preview_suffixes_default(self):
-        return self.get_split_default_key()
-
-    def get_admin_preview_suffixes(self, value: str, name: str, **kwargs):
-        keys = list(value.keys())
-        keys.remove(self.get_split_default_key())
-        return tuple(keys)
-
     def to_python(self, value):
-        values = self.split_value(value)
-        ret = {}
-        for k, v in values.items():
-            try:
-                ret[k] = self.split_type.to_python(v)
-            except ValidationError as e:
-                if k == self.get_split_default_key():
-                    raise
-                raise ValidationError(f"{k}: {e}")
-        return ret
-
-    def give_siffixes(self, value):
-        if value is None:
-            return None, None
-
-        if self.get_split_suffix() == SPLIT_SUFFIX_USE_OWN:
-            return value.upper(), None
-
-        if self.get_split_suffix() == SPLIT_SUFFIX_USE_PARENT:
-            return None, value
-
-        if self.get_split_suffix_value() not in value:
-            if self.get_split_suffix() == SPLIT_SUFFIX_SPLIT_OWN:
-                return value.upper(), None
-            else:
-                return None, value
-
-        suffix, parent_suffix = value.split(self.get_split_suffix_value(), 1)
-        suffix = suffix.upper()
-        return suffix, parent_suffix
+        return self.split_value(value)
 
     def give(self, value, suffix=None):
-        key, parent_suffix = self.give_siffixes(suffix)
-        if key is None:
-            key = self.split_default_choose(value)
+        if suffix is None:
+            suffix = self.split_default_choose(value)
 
         try:
-            ret_val = value[key]
+            ret_val = value[suffix.upper()]
         except KeyError:
             if self.get_split_not_found() == NOT_FOUND_KEY_ERROR:
                 raise
@@ -270,22 +206,38 @@ class SplitByFirstLine(AdminPreviewSuffixesMixin, SimpleText):
             elif self.get_split_not_found() == NOT_FOUND_VALUE:
                 ret_val = self.get_split_not_found_value()
 
-        return self.split_type.give(ret_val, parent_suffix)
+        return ret_val
 
-    def validate_raw_value(self, value):
-        values = self.split_value(value)
 
-        for k, v in values.items():
-            try:
-                self.split_type.validate_value(v)
-            except Exception as e:
-                if k == self.get_split_default_key():
-                    raise
-                raise ValidationError(f"{k}: {e}")
+class SplitByFirstLine(AdminPreviewSuffixesMixin, EachMixin, SplitTextByFirstLine):
+    split_type = SimpleTextPreview()
 
-    def get_help_format(self):
-        yield from super().get_help_format()
-        yield from self.split_type.get_help_format()
+    def get_admin_preview_suffixes_default(self):
+        return self.get_split_default_key()
+
+    def get_admin_preview_suffixes(self, value: dict, name: str, **kwargs):
+        keys = list(value.keys())
+        keys.remove(self.get_split_default_key())
+        return tuple(keys)
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        if isinstance(self.split_type, dict):
+            self.each = Keys(**self.split_type)
+        else:
+            self.each = Values(self.split_type)
+
+    def get_admin_preview_under_menu_object(self, value, name, suffix=None, **kwargs):
+        if suffix is None:
+            suffix = self.get_split_default_key()
+
+        cs_type = self.split_type
+        if isinstance(cs_type, dict):
+            cs_type = self.split_type.get(suffix, SimpleTextPreview())
+        return cs_type.get_admin_preview_object(
+            self.give(value, suffix), name, **kwargs
+        )
 
 
 class SplitTranslation(SplitByFirstLine):

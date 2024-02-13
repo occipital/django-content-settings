@@ -5,7 +5,12 @@ from django.core.exceptions import ValidationError
 from django.test import Client
 
 from content_settings.models import ContentSetting
-from content_settings.types.basic import SimpleText, SimpleDecimal
+from content_settings.types.basic import (
+    SimpleText,
+    SimpleDecimal,
+    SimpleHTML,
+    SimpleTextPreview,
+)
 from content_settings.types.mixins import mix, DictSuffixesMixin
 from content_settings.types.array import (
     SplitByFirstLine,
@@ -13,11 +18,14 @@ from content_settings.types.array import (
     NOT_FOUND_DEFAULT,
     NOT_FOUND_KEY_ERROR,
     NOT_FOUND_VALUE,
-    SPLIT_SUFFIX_USE_PARENT,
-    SPLIT_SUFFIX_SPLIT_OWN,
-    SPLIT_SUFFIX_SPLIT_PARENT,
     SPLIT_FAIL_RAISE,
 )
+from content_settings.types.each import (
+    EACH_SUFFIX_USE_PARENT,
+    EACH_SUFFIX_SPLIT_OWN,
+    EACH_SUFFIX_SPLIT_PARENT,
+)
+from content_settings.types import optional
 
 pytestmark = [pytest.mark.django_db(transaction=True)]
 
@@ -141,7 +149,7 @@ second
     """.strip()
     with pytest.raises(ValidationError) as err:
         var.validate_value(text)
-    assert err.value.message == "UA: ['Enter a number.']"
+    assert err.value.message == "key UA: Enter a number."
 
     text = """
 ==== EN ====
@@ -151,7 +159,7 @@ second
     """.strip()
     with pytest.raises(ValidationError) as err:
         var.validate_value(text)
-    assert err.value.message == "Enter a number."
+    assert err.value.message == "key EN: Enter a number."
 
 
 def test_default_chooser_two_possible():
@@ -293,7 +301,7 @@ A Simple Line
 
 
 def test_split_trunc_text_use_parent():
-    var = SplitTruncText(split_suffix=SPLIT_SUFFIX_USE_PARENT)
+    var = SplitTruncText(each_suffix_use=EACH_SUFFIX_USE_PARENT)
     text = """
 ==== EN ====
 A Simple Line
@@ -305,7 +313,9 @@ A Simple Line
 
 
 def test_split_trunc_text_split_own():
-    var = SplitTruncText(split_suffix=SPLIT_SUFFIX_SPLIT_OWN, split_suffix_value="_to_")
+    var = SplitTruncText(
+        each_suffix_use=EACH_SUFFIX_SPLIT_OWN, each_suffix_splitter="_to_"
+    )
     text = """
 ==== EN ====
 A Simple Line
@@ -321,7 +331,7 @@ A Simple Line
 
 def test_split_trunc_text_split_parent():
     var = SplitTruncText(
-        split_suffix=SPLIT_SUFFIX_SPLIT_PARENT, split_suffix_value="_to_"
+        each_suffix_use=EACH_SUFFIX_SPLIT_PARENT, each_suffix_splitter="_to_"
     )
     text = """
 ==== EN ====
@@ -398,7 +408,7 @@ def test_admin_preview_default(webtest_admin):
 
     assert resp.status_int == 200
     assert resp.json == {
-        "html": "<pre>'This is not so long, but very interesting text'</pre>",
+        "html": "<pre>This is not so long, but very interesting text</pre>",
     }
 
 
@@ -416,7 +426,7 @@ This is not so long, but very interesting text
 
     assert resp.status_int == 200
     assert resp.json == {
-        "html": "<pre>'This is not so long, but very interesting text'</pre>",
+        "html": "<pre>This is not so long, but very interesting text</pre>",
     }
 
 
@@ -436,7 +446,7 @@ This is not so long, but very interesting text
 
     assert resp.status_int == 200
     assert resp.json == {
-        "html": '<div> <b>EN</b>  <a class="cs_set_params" data-param-suffix="UA">UA</a> </div><pre>\'This is not so long, but very interesting text\'</pre>',
+        "html": '<div> <b>EN</b>  <a class="cs_set_params" data-param-suffix="UA">UA</a> </div><pre>This is not so long, but very interesting text</pre>',
     }
 
 
@@ -457,5 +467,68 @@ This is not so long, but very interesting text
 
     assert resp.status_int == 200
     assert resp.json == {
-        "html": "<div> <a class=\"cs_set_params\">EN</a>  <b>UA</b> </div><pre>'Це не так довго, але дуже цікавий текст'</pre>",
+        "html": '<div> <a class="cs_set_params">EN</a>  <b>UA</b> </div><pre>Це не так довго, але дуже цікавий текст</pre>',
     }
+
+
+class SplitEmail(SplitByFirstLine):
+    split_type = {
+        "BODY": SimpleHTML(optional),
+        "SUBJECT": SimpleTextPreview(),
+    }
+    split_default_key = "BODY"
+
+
+def test_split_email_only_body():
+    var = SplitEmail()
+    text = """
+This is Body
+"""
+    assert var.give_python(text) == "This is Body"
+    assert var.give_python(text, "subject") == ""
+
+
+def test_split_email_only_body_with_splitter():
+    var = SplitEmail()
+    text = """=== BODY ===
+This is Body
+"""
+    assert var.give_python(text) == "This is Body"
+    assert var.give_python(text, "subject") == ""
+
+
+def test_split_email_with_subject():
+    var = SplitEmail()
+    text = """=== BODY ===
+This is Body
+=== SUBJECT ===
+This is Subject
+"""
+    assert var.give_python(text) == "This is Body"
+    assert var.give_python(text, "subject") == "This is Subject"
+
+
+def test_split_email_preview_with_subject():
+    var = SplitEmail()
+    text = """=== BODY ===
+This is Body
+=== SUBJECT ===
+This is Subject
+"""
+    assert (
+        var.get_admin_preview_value(text, "VAR")
+        == '<div> <b>BODY</b>  <a class="cs_set_params" data-param-suffix="SUBJECT">SUBJECT</a> </div>This is Body'
+    )
+
+
+def test_split_email_preview_with_subject_check_subject():
+    var = SplitEmail()
+    text = """=== BODY ===
+This is Body
+=== SUBJECT ===
+This is Subject
+"""
+    assert (
+        var.get_admin_preview_value(text, "VAR", suffix="SUBJECT")
+        == '<div> <a class="cs_set_params">BODY</a>  <b>SUBJECT</b> </div><pre>This is Subject</pre>'
+    )

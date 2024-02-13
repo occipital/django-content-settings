@@ -273,6 +273,10 @@ class SimpleText(SimpleString):
     widget_attrs: dict = {"rows": 10, "cols": 80}
 
 
+class SimpleTextPreview(SimpleText):
+    admin_preview_as: str = PREVIEW_TEXT
+
+
 class SimpleHTML(HTMLMixin, SimpleText):
     pass
 

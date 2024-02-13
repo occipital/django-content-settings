@@ -239,9 +239,17 @@ class Values(BaseEach):
         )
 
 
+EACH_SUFFIX_USE_OWN = "own"
+EACH_SUFFIX_USE_PARENT = "parent"
+EACH_SUFFIX_SPLIT_OWN = "split_own"
+EACH_SUFFIX_SPLIT_PARENT = "split_parent"
+
+
 class EachMixin:
     admin_preview_as = PREVIEW_HTML
     each = None
+    each_suffix_use = EACH_SUFFIX_USE_OWN
+    each_suffix_splitter = "_by_"
 
     def process_each_validate(self, value):
         self.each.validate(value)
@@ -261,12 +269,41 @@ class EachMixin:
             return None
         return self.process_each_to_python(value)
 
+    def get_each_suffix_splitter(self):
+        return self.each_suffix_splitter
+
+    def get_each_suffix_use(self):
+        return self.each_suffix_use
+
     def get_help_format(self):
         yield from super().get_help_format()
         yield from self.each.get_help_format()
 
+    def give_siffixes(self, value):
+        if value is None:
+            return None, None
+
+        if self.get_each_suffix_use() == EACH_SUFFIX_USE_OWN:
+            return value, None
+
+        if self.get_each_suffix_use() == EACH_SUFFIX_USE_PARENT:
+            return None, value
+
+        splitter = self.get_each_suffix_splitter()
+        if splitter not in value:
+            if self.get_each_suffix_use() == EACH_SUFFIX_SPLIT_OWN:
+                return value, None
+            else:
+                return None, value
+
+        suffix, parent_suffix = value.split(splitter, 1)
+        suffix = suffix
+        return suffix, parent_suffix
+
     def give(self, value, suffix=None):
-        return self.each.give(value, suffix)
+        suffix, each_suffix = self.give_siffixes(suffix)
+        value = self.each.give(value, each_suffix)
+        return super().give(value, suffix)
 
     def give_python_to_admin(self, value, *args, **kwargs):
         value = super().to_python(value)
