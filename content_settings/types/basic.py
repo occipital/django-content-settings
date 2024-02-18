@@ -45,6 +45,7 @@ class SimpleString(BaseSetting):
     - version (str): The version of the setting (using for caching).
     - tags (Optional[Iterable[str]]): Optional tags associated with the setting.
     - validators (Tuple[Callable]): Validators to apply to the setting value.
+    - validators_raw (Tuple[Callable]): Validators to apply to the text value of the setting.
     - admin_preview_as (str): The format to use for the admin preview.
     - suffixes (Tuple[str]): Suffixes that can be appended to the setting value.
     - user_defined_slug (str): it contains a slug from db If the setting is defined in DB only (should not be set in content_settings)
@@ -66,6 +67,7 @@ class SimpleString(BaseSetting):
     version: str = ""
     tags: Optional[Iterable[str]] = None
     validators: Tuple[Callable] = ()
+    validators_raw: Tuple[Callable] = ()
     admin_preview_as: str = PREVIEW_NONE
     suffixes: Tuple[str] = ()
     user_defined_slug: Optional[str] = None
@@ -194,6 +196,9 @@ class SimpleString(BaseSetting):
     def get_validators(self) -> Tuple[Callable]:
         return tuple(self.validators) + tuple(self.cls_field.default_validators)
 
+    def get_validators_raw(self) -> Tuple[Callable]:
+        return tuple(self.validators_raw)
+
     def get_field(self) -> forms.Field:
         return self.cls_field(
             widget=self.get_widget(),
@@ -208,7 +213,8 @@ class SimpleString(BaseSetting):
             return self.widget
 
     def validate_raw_value(self, value: str) -> None:
-        pass
+        for validator in self.get_validators_raw():
+            validator(value)
 
     def validate_value(self, value: str) -> Any:
         if self.value_required and not value:
