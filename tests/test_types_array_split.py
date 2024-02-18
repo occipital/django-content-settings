@@ -25,7 +25,10 @@ from content_settings.types.each import (
     EACH_SUFFIX_SPLIT_OWN,
     EACH_SUFFIX_SPLIT_PARENT,
 )
+from content_settings.types.template import DjangoModelTemplateHTML
 from content_settings.types import optional
+
+from tests.books.models import Book
 
 pytestmark = [pytest.mark.django_db(transaction=True)]
 
@@ -531,4 +534,81 @@ This is Subject
     assert (
         var.get_admin_preview_value(text, "VAR", suffix="SUBJECT")
         == '<div> <a class="cs_set_params">BODY</a>  <b>SUBJECT</b> </div><pre>This is Subject</pre>'
+    )
+
+
+def test_split_with_django_template():
+    Book.objects.create(title="The Beatles", description="The best band")
+
+    var = SplitByFirstLine(
+        "",
+        split_type={
+            "SUBJECT": SimpleTextPreview(),
+            "BODY": DjangoModelTemplateHTML(
+                "",
+                model_queryset=Book.objects.all(),
+                obj_name="book",
+            ),
+        },
+        split_key_validator=split_validator_in(["BODY", "SUBJECT"]),
+        split_default_key="BODY",
+    )
+    text = """Hi {{book.title}}, this is Body"""
+    assert (
+        var.get_admin_preview_value(text, "VAR")
+        == '<div> <b>BODY</b>  <a class="cs_set_params" data-param-suffix="SUBJECT">SUBJECT</a> </div>Hi The Beatles, this is Body'
+    )
+
+
+def test_split_with_django_template_full():
+    Book.objects.create(title="The Beatles", description="The best band")
+
+    var = SplitByFirstLine(
+        "",
+        split_type={
+            "SUBJECT": SimpleTextPreview(),
+            "BODY": DjangoModelTemplateHTML(
+                "",
+                model_queryset=Book.objects.all(),
+                obj_name="book",
+            ),
+        },
+        split_key_validator=split_validator_in(["BODY", "SUBJECT"]),
+        split_default_key="BODY",
+    )
+    text = """=== BODY ===
+Hi {{book.title}}, this is Body
+=== SUBJECT ===
+This is Subject
+"""
+    assert (
+        var.get_admin_preview_value(text, "VAR")
+        == '<div> <b>BODY</b>  <a class="cs_set_params" data-param-suffix="SUBJECT">SUBJECT</a> </div>Hi The Beatles, this is Body'
+    )
+
+
+def test_split_with_django_template_subject():
+    Book.objects.create(title="The Beatles", description="The best band")
+
+    var = SplitByFirstLine(
+        "",
+        split_type={
+            "SUBJECT": SimpleTextPreview(""),
+            "BODY": DjangoModelTemplateHTML(
+                "",
+                model_queryset=Book.objects.all(),
+                obj_name="book",
+            ),
+        },
+        split_key_validator=split_validator_in(["BODY", "SUBJECT"]),
+        split_default_key="BODY",
+    )
+    text = """=== BODY ===
+Hi {{book.title}}, this is Body
+=== SUBJECT ===
+This is Subject - {{book.title}}
+"""
+    assert (
+        var.get_admin_preview_value(text, "VAR", suffix="SUBJECT")
+        == '<div> <a class="cs_set_params">BODY</a>  <b>SUBJECT</b> </div><pre>This is Subject - {{book.title}}</pre>'
     )

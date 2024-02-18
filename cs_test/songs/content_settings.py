@@ -3,6 +3,7 @@ from content_settings.types.basic import (
     SimpleInt,
     SimpleHTML,
     SimpleDecimal,
+    SimpleTextPreview,
 )
 from content_settings.types.datetime import DateString
 from content_settings.types.mixins import (
@@ -10,7 +11,12 @@ from content_settings.types.mixins import (
     mix,
     DictSuffixesPreviewMixin,
 )
-from content_settings.types.array import SimpleStringsList, TypedStringsList
+from content_settings.types.array import (
+    SimpleStringsList,
+    TypedStringsList,
+    SplitByFirstLine,
+    split_validator_in,
+)
 from content_settings.types.markup import SimpleYAML
 from content_settings.types.each import EachMixin, Keys
 from content_settings.types.template import DjangoTemplateHTML, DjangoModelTemplateHTML
@@ -48,4 +54,18 @@ ARTIST_LINE = DjangoModelTemplateHTML(
     "",
     model_queryset=Artist.objects.all(),
     obj_name="artist",
+)
+
+EMAIL_INTRO_TEMPLATE = SplitByFirstLine(
+    "",
+    split_type={
+        "SUBJECT": SimpleTextPreview(""),
+        "BODY": DjangoModelTemplateHTML(
+            "",
+            model_queryset=Artist.objects.all(),
+            obj_name="artist",
+        ),
+    },
+    split_key_validator=split_validator_in(["BODY", "SUBJECT"]),
+    split_default_key="BODY",
 )

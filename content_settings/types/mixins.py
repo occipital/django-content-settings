@@ -91,7 +91,7 @@ class CallToPythonMixin:
 
         return _
 
-    def give_python_to_admin(self, value, name):
+    def give_python_to_admin(self, value, name, **kwargs):
         try:
             value = self.to_python(value)
         except Exception as e:
@@ -169,7 +169,7 @@ class MakeCallMixin:
     def get_suffixes(self):
         return ("call",) + super().get_suffixes()
 
-    def give_python_to_admin(self, value, name):
+    def give_python_to_admin(self, value, name, **kwargs):
         return self.give_python(value)()
 
     def give(self, value, suffix=None):

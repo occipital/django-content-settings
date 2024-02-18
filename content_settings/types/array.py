@@ -231,13 +231,12 @@ class SplitByFirstLine(AdminPreviewSuffixesMixin, EachMixin, SplitTextByFirstLin
     def get_admin_preview_under_menu_object(self, value, name, suffix=None, **kwargs):
         if suffix is None:
             suffix = self.get_split_default_key()
-
         cs_type = self.split_type
         if isinstance(cs_type, dict):
-            cs_type = self.split_type.get(suffix, SimpleTextPreview())
-        return cs_type.get_admin_preview_object(
-            self.give(value, suffix), name, **kwargs
-        )
+            cs_type = self.split_type.get(suffix.upper(), SimpleTextPreview())
+
+        value = SplitTextByFirstLine.give(self, value, suffix)
+        return cs_type.get_admin_preview_object(value, name, **kwargs)
 
 
 class SplitTranslation(SplitByFirstLine):
@@ -256,9 +255,3 @@ class SplitTranslation(SplitByFirstLine):
         from django.utils.translation import get_language
 
         return get_language().upper().replace("-", "_")
-
-    def get_admin_preview_under_menu_object(self, value, *args, **kwargs):
-        suffix = kwargs.pop("suffix", None)
-        return self.split_type.get_admin_preview_object(
-            self.give(value, suffix), *args, **kwargs
-        )
