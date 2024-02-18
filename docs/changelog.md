@@ -2,6 +2,13 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
+## 0.10 AdminPreviewActionsMixin
+
+* `SplitByFirstLine` is now in `EachMixin`
+* 📖 `SplitByFirstLine.split_type` can be a dict with key:cs_type
+* 📖 `AdminPreviewActionsMixin`
+* 📖 new attribute `validators_raw`
+
 ## 0.9 Django Admin Panel
 
 * Fixing a lot of bugs with admin of content settings. Such as preivew, search, tags filters and cetera
