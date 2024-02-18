@@ -247,6 +247,18 @@ class SimpleString(BaseSetting):
 
         return str(self.get_admin_preview_object(value, *args, **kwargs))
 
+    def get_full_admin_preview_value(self, value: str, *args, **kwargs) -> str:
+        try:
+            self.validate_value(value)
+        except Exception as e:
+            return {
+                "error": str(e),
+            }
+
+        return {
+            "html": self.get_admin_preview_value(value, *args, **kwargs),
+        }
+
     def get_admin_preview_object(self, value: str, name: str, **kwargs) -> str:
         if self.get_admin_preview_as() == PREVIEW_HTML:
             return str(self.get_admin_preview_html(value, name, **kwargs))

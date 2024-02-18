@@ -140,6 +140,8 @@ div.subitem {
                 if ($target.hasClass('cs_set_params')) {
                     e.preventDefault();
 
+                    let isOneTime = $target.hasClass('cs_set_params_once');
+
                     previewParams[currentName] = {};
                     $.each($target.data(), function(key, value) {
                         if (key.startsWith('param')) {
@@ -148,6 +150,10 @@ div.subitem {
                         }
                     });
                     refreshPreview();
+
+                    if (isOneTime) {
+                        previewParams[currentName] = {};
+                    }
                 }
             });
 
@@ -178,6 +184,12 @@ div.subitem {
                             $('.value_preview').html('<pre style="color:red">' + value.error + '</pre>');
                         } else {
                             $('.value_preview').html(value.html);
+                        }
+                        if (value.alert) {
+                            alert(value.alert);
+                        }
+                        if (value.value) {
+                            currentInput.val(value.value);
                         }
                         currentValue = newValue;
                         currentAjax = undefined;

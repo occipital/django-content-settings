@@ -10,6 +10,7 @@ from content_settings.types.mixins import (
     MinMaxValidationMixin,
     mix,
     DictSuffixesPreviewMixin,
+    AdminPreviewActionsMixin,
 )
 from content_settings.types.array import (
     SimpleStringsList,
@@ -68,4 +69,15 @@ EMAIL_INTRO_TEMPLATE = SplitByFirstLine(
     },
     split_key_validator=split_validator_in(["BODY", "SUBJECT"]),
     split_default_key="BODY",
+)
+
+HTML_WITH_ACTIONS = mix(AdminPreviewActionsMixin, SimpleHTML)(
+    "",
+    admin_preview_actions=[
+        ("before", lambda resp, *a, **k: resp.before_html("<p>Text Before</p>")),
+        ("alert", lambda resp, *a, **k: resp.alert("Let you know, you are good")),
+        ("reset to hi", lambda resp, *a, **k: resp.value("Hello world")),
+        ("say hi", lambda resp, *a, **k: resp.html("<h1>HI</h1>")),
+    ],
+    help="Some html with actions",
 )

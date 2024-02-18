@@ -379,7 +379,11 @@ class ContentSettingAdmin(admin.ModelAdmin):
         if cs_type is None or cs_type.constant:
             return ""
 
-        return mark_safe(cs_type.get_admin_preview_value(obj.value, obj.name))
+        full_value = cs_type.get_full_admin_preview_value(obj.value, obj.name)
+        if "error" in full_value:
+            return mark_safe(f"<pre style='color: red'>{full_value['error']}</pre>")
+        if "html" in full_value:
+            return mark_safe(full_value["html"])
 
     def default_value(self, obj):
         from django.utils.html import escape
@@ -516,21 +520,11 @@ class ContentSettingAdmin(admin.ModelAdmin):
             if name.startswith("p_")
         }
 
-        try:
-            cs_type.validate_value(value)
-        except Exception as e:
-            return JsonResponse(
-                {
-                    "error": str(e),
-                }
-            )
         with content_settings_context(**other_values):
             return JsonResponse(
-                {
-                    "html": cs_type.get_admin_preview_value(
-                        value, request.POST["name"], **params
-                    ),
-                }
+                cs_type.get_full_admin_preview_value(
+                    value, request.POST["name"], **params
+                )
             )
 
 

@@ -186,8 +186,17 @@ class DictSuffixesMixin:
 
 
 class AdminPreviewMenuMixin:
+    def gen_admin_preview_html_menu_items(self, value: Any, name: str, **kwargs) -> str:
+        return
+        yield
+
     def get_admin_preview_html_menu(self, value: Any, name: str, **kwargs) -> str:
-        return ""
+        html_items = "".join(
+            self.gen_admin_preview_html_menu_items(value, name, **kwargs)
+        )
+        if not html_items:
+            return ""
+        return "<div>" + html_items + "</div>"
 
     def get_admin_preview_object(self, value: str, name: str, **kwargs) -> str:
 
@@ -201,7 +210,7 @@ class AdminPreviewMenuMixin:
         return super().get_admin_preview_object(value, name, **kwargs)
 
 
-class AdminPreviewSuffixesMixin(AdminPreviewMenuMixin):
+class AdminSuffixesMixinPreview:
     admin_preview_suffixes = ()
     admin_preview_suffixes_default = "default"
 
@@ -211,24 +220,24 @@ class AdminPreviewSuffixesMixin(AdminPreviewMenuMixin):
     def get_admin_preview_suffixes(self, value: str, name: str, **kwargs):
         return self.admin_preview_suffixes
 
-    def get_admin_preview_html_menu(
+    def gen_admin_preview_html_menu_items(
         self, value: Any, name: str, suffix: Optional[str] = None, **kwargs
     ) -> str:
         suffixes = self.get_admin_preview_suffixes(value, name, **kwargs)
         if not len(suffixes):
-            return ""
+            return
 
-        ret = "<div>"
         for suf in (None, *suffixes):
             if suf == suffix:
-                ret += f" <b>{suf or self.get_admin_preview_suffixes_default()}</b> "
+                yield f" <b>{suf or self.get_admin_preview_suffixes_default()}</b> "
             elif suf is None:
-                ret += f' <a class="cs_set_params">{self.get_admin_preview_suffixes_default()}</a> '
+                yield f' <a class="cs_set_params">{self.get_admin_preview_suffixes_default()}</a> '
             else:
-                ret += f' <a class="cs_set_params" data-param-suffix="{suf}">{suf}</a> '
-        ret += "</div>"
+                yield f' <a class="cs_set_params" data-param-suffix="{suf}">{suf}</a> '
 
-        return ret
+        yield from super().gen_admin_preview_html_menu_items(
+            value, name, suffix=suffix, **kwargs
+        )
 
     def get_admin_preview_under_menu_object(
         self, value: Any, name: str, **kwargs
@@ -237,6 +246,89 @@ class AdminPreviewSuffixesMixin(AdminPreviewMenuMixin):
         return super().get_admin_preview_under_menu_object(
             self.give(value, suffix), name, **kwargs
         )
+
+
+class AdminPreviewSuffixesMixin(AdminSuffixesMixinPreview, AdminPreviewMenuMixin):
+    pass
+
+
+class ActionResponse(dict):
+    def error(self, message):
+        self["error"] = message
+        return self
+
+    def html(self, html):
+        self["html"] = html
+        return self
+
+    def alert(self, message):
+        self["alert"] = message
+        return self
+
+    def value(self, value):
+        self["value"] = value
+        return self
+
+    def before_html(self, html):
+        self["before_html"] = html
+        return self
+
+
+class AdminActionsMixinPreview:
+    # list of tuples (name, function)
+    admin_preview_actions = None
+
+    def gen_admin_preview_html_menu_items(
+        self, value: Any, name: str, suffix: Optional[str] = None, **kwargs
+    ) -> str:
+        if self.admin_preview_actions is None:
+            return
+
+        for i, (action_name, _) in enumerate(self.admin_preview_actions):
+            yield f' <a class="cs_set_params cs_set_params_once" data-param-action="{i}">{action_name}</a> '
+
+    def get_admin_preview_function(self, *args, **kwargs):
+        if self.admin_preview_actions is None:
+            return
+
+        action_name = kwargs.get("action", None)
+        if action_name is None:
+            return
+
+        try:
+            return self.admin_preview_actions[int(action_name)][1]
+        except (IndexError, ValueError):
+            return
+
+    def process_action(self, *args, **kwargs):
+        func = self.get_admin_preview_function(*args, **kwargs)
+        if func is None:
+            return
+
+        response = ActionResponse()
+        func(response, *args, _cs_type=self, **kwargs)
+        return response
+
+    def get_full_admin_preview_value(self, *args, **kwargs) -> str:
+        response = self.process_action(*args, **kwargs)
+        if not response:
+            return super().get_full_admin_preview_value(*args, **kwargs)
+
+        response = dict(response)
+
+        before_html = response.pop("before_html", "")
+        if before_html:
+            response = {
+                **response,
+                **super().get_full_admin_preview_value(*args, **kwargs),
+            }
+            response["html"] = before_html + response["html"]
+
+        return response
+
+
+class AdminPreviewActionsMixin(AdminActionsMixinPreview, AdminPreviewMenuMixin):
+    pass
 
 
 class DictSuffixesPreviewMixin(DictSuffixesMixin, AdminPreviewSuffixesMixin):

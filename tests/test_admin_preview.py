@@ -11,11 +11,16 @@ from content_settings.types.template import (
     SimpleEvalNoArgs,
     DjangoModelEval,
 )
-from content_settings.types.basic import SimpleString, SimpleInt, EmailString
+from content_settings.types.basic import (
+    SimpleString,
+    SimpleInt,
+    EmailString,
+    SimpleHTML,
+)
 from content_settings.types.array import SimpleStringsList
 from content_settings.types.validators import call_validator
 from content_settings.types.template import required
-from content_settings.types.mixins import MakeCallMixin, mix
+from content_settings.types.mixins import MakeCallMixin, mix, AdminPreviewActionsMixin
 from content_settings.context_managers import context_defaults
 from content_settings.types import PREVIEW_HTML, PREVIEW_TEXT, PREVIEW_PYTHON
 
@@ -432,6 +437,37 @@ def test_python_preview_error():
     assert (
         ret == "<pre>>>> VAR()</pre>\nERROR!!! [\"['Missing required argument val']\"]"
     )
+
+
+class SimpleHTMLWithActions(AdminPreviewActionsMixin, SimpleHTML):
+    admin_preview_actions = [
+        ("before", lambda resp, *a, **k: resp.before_html("<p>Text Before</p>")),
+        ("alert", lambda resp, *a, **k: resp.alert("Let you know, you are good")),
+    ]
+
+
+EXPECTED_MENU = '<div> <a class="cs_set_params cs_set_params_once" data-param-action="0">before</a>  <a class="cs_set_params cs_set_params_once" data-param-action="1">alert</a> </div>'
+
+
+def test_preview_actions_menu():
+    var = SimpleHTMLWithActions("Text", help="The html goes right after the title")
+    assert var.get_full_admin_preview_value("Text", "VAR") == {
+        "html": EXPECTED_MENU + "Text"
+    }
+
+
+def test_preview_actions_menu_before():
+    var = SimpleHTMLWithActions("Text", help="The html goes right after the title")
+    assert var.get_full_admin_preview_value("Text", "VAR", action="0") == {
+        "html": "<p>Text Before</p>" + EXPECTED_MENU + "Text"
+    }
+
+
+def test_preview_actions_menu_alert():
+    var = SimpleHTMLWithActions("Text", help="The html goes right after the title")
+    assert var.get_full_admin_preview_value("Text", "VAR", action="1") == {
+        "alert": "Let you know, you are good"
+    }
 
 
 """

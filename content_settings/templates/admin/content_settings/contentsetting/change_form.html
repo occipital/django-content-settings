@@ -27,11 +27,14 @@
         const $value = $('.field-py_data div.readonly').first();
         const $label = $('.field-py_data label');
         const $user_defined_type = $('#id_user_defined_type');
+        let resetPreviewParams = false;
         var previewParams = {};
         $value.click(function(e) {
             var $target = $(e.target);
                 if ($target.hasClass('cs_set_params')) {
                     e.preventDefault();
+
+                    resetPreviewParams = $target.hasClass('cs_set_params_once');
 
                     previewParams = {};
                     $.each($target.data(), function(key, value) {
@@ -75,10 +78,19 @@
                     } else {
                         $value.html(value.html);
                     }
+                    if (value.alert) {
+                        alert(value.alert);
+                    }
+                    if (value.value) {
+                        $id.val(value.value);
+                    }
                     syncedValue = newValue;
+                    if (resetPreviewParams){ 
+                        previewParams = {};
+                    }
                 }
             })
-        }, 500)
+        }, 1000)
         $('.reset_default').click(function(){
             $id.val($(this).data('value'));
         })
