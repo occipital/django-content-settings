@@ -20,7 +20,6 @@ class Migration(migrations.Migration):
                 (
                     "id",
                     models.AutoField(
-                        auto_created=True,
                         primary_key=True,
                         serialize=False,
                         verbose_name="ID",
@@ -38,10 +37,7 @@ class Migration(migrations.Migration):
                 (
                     "id",
                     models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
+                        primary_key=True, serialize=False, verbose_name="ID"
                     ),
                 ),
                 ("created_on", models.DateTimeField(default=django.utils.timezone.now)),
@@ -91,10 +87,7 @@ class Migration(migrations.Migration):
                 (
                     "id",
                     models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
+                        primary_key=True, serialize=False, verbose_name="ID"
                     ),
                 ),
                 ("name", models.CharField(max_length=200)),

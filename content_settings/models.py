@@ -7,6 +7,7 @@ from django.conf import settings
 
 
 class ContentSetting(models.Model):
+    id = models.AutoField(primary_key=True, verbose_name="ID")
     name = models.CharField(
         max_length=200,
         unique=True,
@@ -51,6 +52,7 @@ class HistoryContentSetting(models.Model):
         (None, "unknown"),
     )
 
+    id = models.AutoField(primary_key=True, verbose_name="ID")
     created_on = models.DateTimeField(null=False, default=timezone.now)
 
     name = models.CharField(max_length=200)
