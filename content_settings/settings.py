@@ -1,16 +1,11 @@
 from django.conf import settings
 
+from . import __version__
+
 
 def get_setting(name, default=None):
     return getattr(settings, "CONTENT_SETTINGS_" + name, default)
 
-
-try:
-    import pkg_resources
-
-    VERSION = pkg_resources.get_distribution("django-content-settings").version
-except Exception:
-    VERSION = "dev"
 
 UPDATE_DB_VALUES_BY_MIGRATE = get_setting("UPDATE_DB_VALUES_BY_MIGRATE", True)
 
@@ -24,11 +19,11 @@ TAGS = get_setting(
 TAG_CHANGED = get_setting("TAG_CHANGED", "changed")
 
 CHECKSUM_KEY_PREFIX = (
-    get_setting("CHECKSUM_KEY_PREFIX", "CS_CHECKSUM_") + VERSION + "__"
+    get_setting("CHECKSUM_KEY_PREFIX", "CS_CHECKSUM_") + __version__ + "__"
 )
 
 CHECKSUM_USER_KEY_PREFIX = (
-    get_setting("CHECKSUM_KEY_PREFIX", "CS_USER_CHECKSUM_") + VERSION + "__"
+    get_setting("CHECKSUM_KEY_PREFIX", "CS_USER_CHECKSUM_") + __version__ + "__"
 )
 
 USER_TAGS = get_setting(

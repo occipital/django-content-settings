@@ -20,6 +20,7 @@ doc:
 	poetry run mkdocs serve
 
 publish:
+	poetry run python set_version.py
 	poetry publish --build
 
 cs-test:
