@@ -2,6 +2,12 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
+### 0.10.1
+
+* help_text is alternative for help attribute
+* fix warnings
+* using urls is optional
+
 ## 0.10 AdminPreviewActionsMixin
 
 * `SplitByFirstLine` is now in `EachMixin`
