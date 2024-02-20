@@ -78,6 +78,10 @@ class SimpleString(BaseSetting):
     def __init__(
         self, default: Optional[Union[str, required, optional]] = None, **kwargs
     ):
+        # optional support of help_text instead of help
+        if "help" not in kwargs and "help_text" in kwargs:
+            kwargs["help"] = kwargs.pop("help_text")
+
         for k in kwargs.keys():
             assert self.can_assign(k), "Attribute {} not found".format(k)
 

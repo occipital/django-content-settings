@@ -22,7 +22,7 @@ TITLE = SimpleString(
 #### Attributes
 
 - **default**: The first argument and the only one that can be passed without naming. It sets the default text value. *the default value for any type should always be string*
-- **help** (default: None): Description of the variable displayed in the admin panel.
+- **help** (default: None): Description of the variable displayed in the admin panel. (**help_text** can be used alternatively)
 - **cls_field** (default: django.forms.CharField): The field class in the admin panel.
 - **widget** (default: django.forms.TextInput): The widget for the field.
 - **widget_attrs** (default: None): Dictionary of attributes used when creating the widget.

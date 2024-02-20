@@ -50,6 +50,10 @@ pytestmark = [pytest.mark.django_db(transaction=True)]
                 "A value<br><br>string",
             ),
             (
+                SimpleString(help_text="A value"),
+                "A value<br><br>string",
+            ),
+            (
                 SimpleString(help="A value", help_format="A format"),
                 "A value<br><br>A format",
             ),
