@@ -12,6 +12,7 @@ from django.urls import path
 from django.http import JsonResponse
 from django.contrib.admin.utils import unquote
 from django.core.exceptions import PermissionDenied
+from django.urls.exceptions import NoReverseMatch
 from django.utils.text import capfirst
 from django.template.response import TemplateResponse
 from django.contrib.messages import add_message, ERROR
@@ -409,14 +410,13 @@ class ContentSettingAdmin(admin.ModelAdmin):
         if not obj.name:
             return ""
 
-        def get_fetch_reverse(name):
+        try:
             return reverse(
                 "content_settings:fetch_one_setting",
-                kwargs={"name": name.lower().replace("_", "-")},
+                kwargs={"name": obj.name.lower().replace("_", "-")},
             )
-
-        urls = [get_fetch_reverse(obj.name)]
-        return "\n".join(urls)
+        except NoReverseMatch:
+            return ""
 
     def get_urls(self):
         urls = super().get_urls()
