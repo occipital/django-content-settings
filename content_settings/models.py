@@ -83,7 +83,7 @@ class HistoryContentSetting(models.Model):
     class Meta:
         ordering = ("-id",)
         indexes = [
-            models.Index(fields=["name", "-id"]),
+            models.Index(fields=["name", "-id"], name="static_cont_name_d40020_idx"),
         ]
 
     @classmethod
@@ -120,6 +120,7 @@ class HistoryContentSetting(models.Model):
 
 
 class UserTagSetting(models.Model):
+    id = models.AutoField(primary_key=True, verbose_name="ID")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     tag = models.TextField()
