@@ -2,7 +2,7 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
-### 0.10.1
+### 0.10.2
 
 * help_text is alternative for help attribute
 * fix warnings
