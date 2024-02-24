@@ -4,13 +4,15 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Documentation Status](https://readthedocs.org/projects/django-content-settings/badge/?version=latest)](https://django-content-settings.readthedocs.io/en/latest/?badge=latest)
 
-# Django Content Settings
+# Django Content Settings - the most advanced admin editable setting
 
 ![Django Content Settings](https://github.com/occipital/django-content-settings/blob/master/docs/img/title.png)
 
 ## Overview
 
-[▶️ YouTube Video with dive deep ~ 2h](https://youtu.be/RNYmvv_G5zs) [📖 Full documentation](https://django-content-settings.readthedocs.io/)
+[▶️ YouTube Video with dive deep ~ 2h](https://youtu.be/RNYmvv_G5zs)
+
+[📖 Full documentation](https://django-content-settings.readthedocs.io/)
 
 The `django-content-settings` module is a versatile addition to the Django ecosystem, offering users the ability to easily create and manage editable variables directly from the Django admin panel. What sets this module apart is its ability to handle variables of any type without restricting their complexity. Thanks to an integrated caching system, these variables can be used efficiently in code, irrespective of their complexity.
 
@@ -18,7 +20,8 @@ The `django-content-settings` module is a versatile addition to the Django ecosy
 
 1. **Type-Agnostic Variable Creation**: Users can create variables of any type, making the module highly adaptable to various needs.
 2. **Editability from Django Admin Panel**: Seamless integration with the Django admin panel allows for effortless editing of variables.
-3. **Caching System**: Ensures high performance, negating the impact of variable complexity on code execution speed.
+3. **Flaxable permission model**: Every setting can have own permission rule for view, edit, fetch in API and view changes history.
+4. **Caching System**: Ensures high performance, negating the impact of variable complexity on code execution speed.
 
 ### Additional Admin Panel Functionalities
 

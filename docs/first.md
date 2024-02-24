@@ -49,7 +49,24 @@ TEMPLATES = [
 ]
 ```
 
-### Step 4: Access Variables in Templates
+### Step 4 (optional): Configure Preview on Site
+
+Add preview on site middleware to be able to see the changes live, before applying those for all users.
+
+```python
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "content_settings.middlewares.preivew_on_site", # <-- update (after AuthenticationMiddleware)
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+```
+
+### Step 5: Access Variables in Templates
 
 Now, you can use the variables in templates like this:
 
@@ -57,7 +74,7 @@ Now, you can use the variables in templates like this:
 <b>{{ CONTENT_SETTINGS.MY_VAR }}</b>
 ```
 
-### Step 5: API Access Configuration
+### Step 6 (optional): API Access Configuration
 
 To access variables through the API, update `urls.py` with the following line:
 

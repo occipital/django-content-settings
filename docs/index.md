@@ -5,7 +5,7 @@
 
 ![Django Content Settings](img/title.png)
 
-# Django Content Settings
+# Django Content Settings - the most advanced admin editable setting
 
 [▶️ YouTube Video with dive deep ~ 2h](https://youtu.be/RNYmvv_G5zs)
 
@@ -15,7 +15,9 @@ The `django-content-settings` module is a versatile addition to the Django ecosy
 
 1. **Type-Agnostic Variable Creation**: Users can create variables of any type, making the module highly adaptable to various needs.
 2. **Editability from Django Admin Panel**: Seamless integration with the Django admin panel allows for effortless editing of variables.
-3. **Caching System**: Ensures high performance, negating the impact of variable complexity on code execution speed.
+3. **Flaxable permission model**: Every setting can have own permission rule for view, edit, fetch in API and view changes history.
+4. **Preview**: Preview setting before apply and addition option to preview setting change right on site.
+5. **Caching System**: Ensures high performance, negating the impact of variable complexity on code execution speed.
 
 ### Additional Admin Panel Functionalities
 
