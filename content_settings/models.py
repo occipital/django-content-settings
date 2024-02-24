@@ -28,6 +28,9 @@ class ContentSetting(models.Model):
 
     class Meta:
         ordering = ("name",)
+        permissions = [
+            ("can_preview_on_site", "Can preview on site"),
+        ]
 
     @property
     def tags_set(self):
@@ -137,3 +140,51 @@ class UserTagSetting(models.Model):
         for name, tag in cls.objects.filter(user=user).values_list("name", "tag"):
             settings[name].add(tag)
         return settings
+
+
+class UserPreview(models.Model):
+    id = models.AutoField(primary_key=True, verbose_name="ID")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    name = models.CharField(max_length=200)
+    from_value = models.TextField()
+    value = models.TextField()
+
+    class Meta:
+        unique_together = (("user", "name"),)
+
+    def __str__(self):
+        return f"{self.user} - {self.name}"
+
+
+class UserPreviewHistory(models.Model):
+    STATUS_CREATED = 0
+    STATUS_APPLIED = 10
+    STATUS_REMOVED = 20
+    STATUS_IGNORED = 30
+
+    id = models.AutoField(primary_key=True, verbose_name="ID")
+    created_on = models.DateTimeField(null=False, default=timezone.now)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    name = models.CharField(max_length=200)
+    value = models.TextField(null=True)
+    status = models.IntegerField(
+        default=STATUS_CREATED,
+        choices=(
+            (STATUS_CREATED, "Created"),
+            (STATUS_APPLIED, "Applied"),
+            (STATUS_REMOVED, "Removed"),
+            (STATUS_IGNORED, "Ignored"),
+        ),
+    )
+
+    @classmethod
+    def user_record(cls, user, preview_setting, status=STATUS_CREATED):
+        return cls.objects.create(
+            user=user,
+            name=preview_setting.name,
+            value=preview_setting.value,
+            status=status,
+        )
+
+    def __str__(self):
+        return f"{self.user} - {self.name}"

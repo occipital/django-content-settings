@@ -42,6 +42,7 @@ def pytest_configure(config):
             "django.contrib.sessions.middleware.SessionMiddleware",
             "django.middleware.locale.LocaleMiddleware",
             "django.contrib.auth.middleware.AuthenticationMiddleware",
+            "content_settings.middleware.preivew_on_site",
             "django.contrib.messages.middleware.MessageMiddleware",
         ),
         INSTALLED_APPS=(
@@ -78,20 +79,28 @@ def reset_all_values():
 
 
 @pytest.fixture
-def webtest_admin(django_app_factory):
-    user, _ = get_user_model().objects.get_or_create(
+def testadmin():
+    return get_user_model().objects.get_or_create(
         username="testadmin", is_staff=True, is_superuser=True
-    )
+    )[0]
+
+
+@pytest.fixture
+def webtest_admin(django_app_factory, testadmin):
     web = django_app_factory(csrf_checks=False)
-    web.set_user(user)
+    web.set_user(testadmin)
     return web
 
 
 @pytest.fixture
-def webtest_user(django_app_factory):
-    user, _ = get_user_model().objects.get_or_create(username="testuser")
+def testuser():
+    return get_user_model().objects.get_or_create(username="testuser")[0]
+
+
+@pytest.fixture
+def webtest_user(django_app_factory, testuser):
     web = django_app_factory(csrf_checks=False)
-    web.set_user(user)
+    web.set_user(testuser)
     return web
 
 

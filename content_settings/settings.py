@@ -7,6 +7,8 @@ def get_setting(name, default=None):
     return getattr(settings, "CONTENT_SETTINGS_" + name, default)
 
 
+PREVIEW_ON_SITE_HREF = get_setting("PREVIEW_ON_SITE_HREF", "/")
+
 UPDATE_DB_VALUES_BY_MIGRATE = get_setting("UPDATE_DB_VALUES_BY_MIGRATE", True)
 
 TAGS = get_setting(

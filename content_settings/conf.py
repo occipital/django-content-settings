@@ -177,6 +177,9 @@ def get_str_tags(cs_type, value=None):
     return "\n".join(sorted(tags))
 
 
+# TODO: remove preview settings during migration
+
+
 def set_initial_values_for_db(apply=False):
     from content_settings.models import ContentSetting, HistoryContentSetting
 

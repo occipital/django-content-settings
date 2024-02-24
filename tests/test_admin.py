@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.core.cache import cache
 
 from content_settings.models import ContentSetting, UserTagSetting
+from content_settings.models import UserPreview, ContentSetting, UserPreviewHistory
 
 from tests.books.models import Book
 
@@ -393,3 +394,184 @@ def test_view_history_permission_staff(webtest_staff):
         f"/admin/content_settings/contentsetting/{cs.id}/history/", expect_errors=True
     )
     assert resp.status_int == 403
+
+
+def test_admin_preview_on_site(webtest_admin, webtest_user, testadmin):
+    us = UserPreview.objects.create(
+        user=testadmin,
+        name="TITLE",
+        from_value="Book Store",
+        value="New Title",
+    )
+
+    resp = webtest_user.get("/books/")
+    assert resp.status_int == 200
+    assert resp.html.find("title").text == "Book Store"
+
+    resp = webtest_admin.get("/books/")
+    assert resp.status_int == 200
+    assert resp.html.find("title").text == "New Title"
+
+    us.delete()
+
+    resp = webtest_admin.get("/books/")
+    assert resp.status_int == 200
+    assert resp.html.find("title").text == "Book Store"
+
+
+def test_admin_preview_on_site_see_the_preview(webtest_admin, testadmin):
+    us = UserPreview.objects.create(
+        user=testadmin,
+        name="TITLE",
+        from_value="Book Store",
+        value="Supper New Title",
+    )
+
+    resp = webtest_admin.get("/admin/content_settings/contentsetting/")
+    assert resp.status_int == 200
+    assert b"Preview settings" in resp.content
+    assert b"Supper New Title" in resp.content
+
+    us.delete()
+    resp = webtest_admin.get("/admin/content_settings/contentsetting/")
+    assert resp.status_int == 200
+    assert b"Preview settings" not in resp.content
+    assert b"Supper New Title" not in resp.content
+
+
+def test_admin_preview_on_site_add_from_changelist(webtest_admin, testadmin):
+    cs = ContentSetting.objects.all()[0]
+
+    resp = webtest_admin.get("/admin/content_settings/contentsetting/")
+    assert resp.status_int == 200
+
+    assert resp.forms["changelist-form"]["form-0-value"].value == cs.value
+
+    form = resp.forms["changelist-form"]
+    form["form-0-value"] = "New Password"
+    form["_preview_on_site"] = "on"
+    resp = form.submit(name="_save")
+    assert UserPreview.objects.all().count() == 1
+
+    cs.refresh_from_db()
+    assert cs.value == ""
+
+    cs_preview = UserPreview.objects.all().first()
+    assert cs_preview.name == cs.name
+    assert cs_preview.from_value == cs.value
+    assert cs_preview.value == "New Password"
+
+
+def test_admin_preview_on_site_add_from_change_page(webtest_admin, testadmin):
+    cs = ContentSetting.objects.all()[0]
+
+    resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/change/")
+    assert resp.status_int == 200
+
+    assert resp.forms["contentsetting_form"]["value"].value == cs.value
+
+    form = resp.forms["contentsetting_form"]
+    form["value"] = "New Password"
+    form["_preview_on_site"] = "on"
+    form.submit()
+    assert UserPreview.objects.all().count() == 1
+
+    cs.refresh_from_db()
+    assert cs.value == ""
+
+    cs_preview = UserPreview.objects.all().first()
+    assert cs_preview.name == cs.name
+    assert cs_preview.from_value == cs.value
+    assert cs_preview.value == "New Password"
+    assert cs_preview.user == testadmin
+
+    assert UserPreviewHistory.objects.all().count() == 1
+
+    cs_preview_history = UserPreviewHistory.objects.all().first()
+    assert cs_preview_history.name == cs.name
+    assert cs_preview_history.value == "New Password"
+    assert cs_preview_history.user == testadmin
+    assert cs_preview_history.status == UserPreviewHistory.STATUS_CREATED
+
+
+def test_admin_preview_on_site_add_from_change_page_update(webtest_admin, testadmin):
+    cs = ContentSetting.objects.all()[0]
+
+    UserPreview.objects.create(
+        user=testadmin,
+        name=cs.name,
+        from_value=cs.value,
+        value="New Password",
+    )
+
+    resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/change/")
+    assert resp.status_int == 200
+
+    assert resp.forms["contentsetting_form"]["value"].value == cs.value
+
+    form = resp.forms["contentsetting_form"]
+    form["value"] = "New Password2"
+    form["_preview_on_site"] = "on"
+    form.submit()
+    assert UserPreview.objects.all().count() == 1
+    assert UserPreviewHistory.objects.all().count() == 1
+
+    cs_preview_history = UserPreviewHistory.objects.all().first()
+    assert cs_preview_history.status == UserPreviewHistory.STATUS_CREATED
+
+
+def test_admin_preview_on_site_applied(webtest_admin, testadmin):
+    UserPreview.objects.create(
+        user=testadmin,
+        name="TITLE",
+        from_value="Book Store",
+        value="Supper New Title",
+    )
+
+    resp = webtest_admin.get(
+        "/admin/content_settings/contentsetting/apply-preview-on-site/"
+    )
+    assert resp.status_int == 302
+
+    assert UserPreview.objects.all().count() == 0
+    assert ContentSetting.objects.get(name="TITLE").value == "Supper New Title"
+
+
+def test_admin_preview_on_site_reset(webtest_admin, testadmin):
+    UserPreview.objects.create(
+        user=testadmin,
+        name="TITLE",
+        from_value="Book Store",
+        value="Supper New Title",
+    )
+
+    resp = webtest_admin.get(
+        "/admin/content_settings/contentsetting/reset-preview-on-site/"
+    )
+    assert resp.status_int == 302
+
+    assert UserPreview.objects.all().count() == 0
+    assert ContentSetting.objects.get(name="TITLE").value == "Book Store"
+
+
+def test_admin_preview_on_site_remove(webtest_admin, testadmin):
+    UserPreview.objects.create(
+        user=testadmin,
+        name="TITLE",
+        from_value="Book Store",
+        value="Supper New Title",
+    )
+    UserPreview.objects.create(
+        user=testadmin,
+        name="DESCRIPTION",
+        from_value="Book Store",
+        value="Supper New Description",
+    )
+
+    resp = webtest_admin.get(
+        "/admin/content_settings/contentsetting/remove-preview-on-site/?name=TITLE"
+    )
+    assert resp.status_int == 302
+
+    assert UserPreview.objects.all().count() == 1
+    assert UserPreview.objects.all()[0].name == "DESCRIPTION"

@@ -18,12 +18,22 @@ from django.template.response import TemplateResponse
 from django.contrib.messages import add_message, ERROR
 from django.utils.translation import gettext as _
 from django.db.models import Q
+from django.forms import modelformset_factory
+from django.http import HttpResponseRedirect
+from django.contrib import messages
+from django.shortcuts import resolve_url
+from django.shortcuts import get_object_or_404
 
-
-from .models import ContentSetting, HistoryContentSetting, UserTagSetting
+from .models import (
+    ContentSetting,
+    HistoryContentSetting,
+    UserTagSetting,
+    UserPreview,
+    UserPreviewHistory,
+)
 from .context_managers import content_settings_context
 from .conf import ALL, USER_DEFINED_TYPES_INSTANCE
-from .settings import USER_TAGS, USER_DEFINED_TYPES
+from .settings import USER_TAGS, USER_DEFINED_TYPES, PREVIEW_ON_SITE_HREF
 from .caching import get_type_by_name
 
 
@@ -157,8 +167,33 @@ class ContentSettingAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         if user_able_to_update(request.user, obj.name, obj.user_defined_type):
-            super().save_model(request, obj, form, change)
-            HistoryContentSetting.update_last_record_for_name(obj.name, request.user)
+            prev_obj = ContentSetting.objects.filter(pk=obj.pk).first()
+            if prev_obj and prev_obj.value == obj.value:
+                return
+
+            if "_preview_on_site" in request.POST:
+                try:
+                    preview_setting = UserPreview.objects.get(
+                        user=request.user, name=obj.name
+                    )
+                except UserPreview.DoesNotExist:
+                    preview_setting = UserPreview.objects.create(
+                        user=request.user,
+                        name=obj.name,
+                        value=obj.value,
+                        from_value=prev_obj.value,
+                    )
+                else:
+                    preview_setting.value = obj.value
+                    preview_setting.save()
+                UserPreviewHistory.user_record(
+                    request.user, preview_setting, UserPreviewHistory.STATUS_CREATED
+                )
+            else:
+                super().save_model(request, obj, form, change)
+                HistoryContentSetting.update_last_record_for_name(
+                    obj.name, request.user
+                )
         else:
             add_message(
                 request,
@@ -193,6 +228,12 @@ class ContentSettingAdmin(admin.ModelAdmin):
 
     def get_changelist(self, request, **kwargs):
         return SettingsChangeList
+
+    def context_preview_settings(self, request):
+        return {
+            "preview_settings": UserPreview.objects.filter(user=request.user),
+            "PREVIEW_ON_SITE_HREF": PREVIEW_ON_SITE_HREF,
+        }
 
     def context_tags(self, request):
         from .conf import get_type_by_name
@@ -255,7 +296,12 @@ class ContentSettingAdmin(admin.ModelAdmin):
 
     def changelist_view(self, request, extra_context=None):
         return super().changelist_view(
-            request, {**(extra_context or {}), **self.context_tags(request)}
+            request,
+            {
+                **(extra_context or {}),
+                **self.context_tags(request),
+                **self.context_preview_settings(request),
+            },
         )
 
     def context_tags_view(self, request):
@@ -437,8 +483,74 @@ class ContentSettingAdmin(admin.ModelAdmin):
                 self.admin_site.admin_view(self.context_tags_view),
                 name="context_tags",
             ),
+            path(
+                "apply-preview-on-site/",
+                self.admin_site.admin_view(self.apply_preview_on_site),
+                name="apply_preview_on_site",
+            ),
+            path(
+                "reset-preview-on-site/",
+                self.admin_site.admin_view(self.reset_preview_on_site),
+                name="reset_preview_on_site",
+            ),
+            path(
+                "remove-preview-on-site/",
+                self.admin_site.admin_view(self.remove_preview_on_site),
+                name="remove_preview_on_site",
+            ),
         ]
         return custom_urls + urls
+
+    def remove_preview_on_site(self, request):
+        preview_setting = get_object_or_404(
+            UserPreview, user=request.user, name=request.GET["name"]
+        )
+        UserPreviewHistory.user_record(
+            request.user, preview_setting, UserPreviewHistory.STATUS_REMOVED
+        )
+        preview_setting.delete()
+        self.message_user(request, "Preview setting removed", messages.SUCCESS)
+        return HttpResponseRedirect(
+            request.META.get("HTTP_REFERER", resolve_url("admin:index"))
+        )
+
+    def apply_preview_on_site(self, request):
+        for preview_setting in UserPreview.objects.filter(user=request.user):
+            try:
+                setting = ContentSetting.objects.get(name=preview_setting.name)
+            except ContentSetting.DoesNotExist:
+                UserPreviewHistory.user_record(
+                    request.user, preview_setting, UserPreviewHistory.STATUS_IGNORED
+                )
+            else:
+                cs_type = get_type_by_name(preview_setting.name)
+                assert cs_type.can_update(request.user)
+                cs_type.validate_value(preview_setting.value)
+
+                UserPreviewHistory.user_record(
+                    request.user, preview_setting, UserPreviewHistory.STATUS_APPLIED
+                )
+                setting.value = preview_setting.value
+                setting.save()
+
+            preview_setting.delete()
+
+        self.message_user(request, "Preview settings applied", messages.SUCCESS)
+        return HttpResponseRedirect(
+            request.META.get("HTTP_REFERER", resolve_url("admin:index"))
+        )
+
+    def reset_preview_on_site(self, request):
+        for preview_setting in UserPreview.objects.filter(user=request.user):
+            UserPreviewHistory.user_record(
+                request.user, preview_setting, UserPreviewHistory.STATUS_REMOVED
+            )
+            preview_setting.delete()
+
+        self.message_user(request, "Preview settings removed", messages.SUCCESS)
+        return HttpResponseRedirect(
+            request.META.get("HTTP_REFERER", resolve_url("admin:index"))
+        )
 
     # ajax view that creates UserTagSetting
     def add_tag(self, request):

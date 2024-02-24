@@ -4,6 +4,13 @@
 {% block extrastyle %}
   {{ block.super }}
 <style>
+#preview_table {
+    margin-top: 20px;
+}
+#preview_table pre {
+    margin: 0;
+    padding: 0;
+}
 .user_tag_hidden {
     display: none;
 }
@@ -31,9 +38,36 @@ div.subitem {
 {% endblock %}
 
 {% block result_list %}
-<div id="toolbar"><div id="tags_toolbar">
-    {% include  "admin/content_settings/contentsetting/context_tags.html" %}
-</div></div>
+<div id="toolbar">
+    <div id="tags_toolbar">
+        {% include  "admin/content_settings/contentsetting/context_tags.html" %}
+    </div>
+    {% if preview_settings %}
+    <div id="preview_table">
+        <h2>Preview settings for {{ request.user }} are enabled:</h2>
+        <table>
+            <tr>
+                <th>Setting</th>
+                <th>Value</th>
+                <th>Actions</th>
+            </tr>
+            {% for item in preview_settings %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td><pre>{{ item.value }}</pre></td>
+                <td><a href="{% url 'admin:remove_preview_on_site' %}?name={{ item.name }}">Remove</a></td>
+            </tr>
+            {% endfor %}
+        </table>
+        <p>
+            <a href="{{PREVIEW_ON_SITE_HREF}}">View On Site</a>
+            | <a href="{% url 'admin:apply_preview_on_site' %}">Apply</a>
+            | <a href="{% url 'admin:reset_preview_on_site' %}">Reset</a>
+        </p>
+        
+    </div>
+    {% endif %}
+</div>
 
 {{block.super}}
 {% endblock%}
