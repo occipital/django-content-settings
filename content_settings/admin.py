@@ -532,6 +532,9 @@ class ContentSettingAdmin(admin.ModelAdmin):
                 )
                 setting.value = preview_setting.value
                 setting.save()
+                HistoryContentSetting.update_last_record_for_name(
+                    setting.name, request.user
+                )
 
             preview_setting.delete()
 
