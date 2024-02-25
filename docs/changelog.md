@@ -4,6 +4,8 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
+### 0.11.1 hot fix for edit form
+
 ## 0.11 Preview On Site
 
 ![DictSuffixesPreviewMixin](img/preview_on_site.png)
