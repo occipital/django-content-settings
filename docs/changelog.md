@@ -1,3 +1,5 @@
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
+
 # Changelog
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)

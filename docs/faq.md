@@ -1,10 +1,12 @@
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
+
 # Frequently Asked Questions
 
 a lot of cases have been covered in [Cookbook](cookbook.md), but here I just want to cover some of the questions I've been asked from the other users
 
 ### Can I create variable in Django admin before one was created in content_settings.py?
 
-No. But we have an [issue](https://github.com/occipital/django-content-settings/issues/14) with that request.
+Yes. Check [User Defined Variables](uservar.md)
 
 ### Can I change settings in code?
 
