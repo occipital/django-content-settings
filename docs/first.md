@@ -49,9 +49,17 @@ TEMPLATES = [
 ]
 ```
 
-### Step 4 (optional): Configure Preview on Site
+### Step 4: Access Variables in Templates
 
-Add preview on site middleware to be able to see the changes live, before applying those for all users.
+Now, you can use the variables in templates like this:
+
+```html
+<b>{{ CONTENT_SETTINGS.MY_VAR }}</b>
+```
+
+### Step 5 (optional): Configure Preview on Site
+
+Add preview on site middleware `"content_settings.middlewares.preivew_on_site"` to the `settings.py` to be able to see the changes live, before applying those for all users.
 
 ```python
 MIDDLEWARE = [
@@ -64,14 +72,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-```
-
-### Step 5: Access Variables in Templates
-
-Now, you can use the variables in templates like this:
-
-```html
-<b>{{ CONTENT_SETTINGS.MY_VAR }}</b>
 ```
 
 ### Step 6 (optional): API Access Configuration
