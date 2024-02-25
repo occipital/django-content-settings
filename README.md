@@ -1,10 +1,6 @@
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
 
-[![PyPI version fury.io](https://badge.fury.io/py/django-consistency-model.svg)](https://pypi.python.org/pypi/django-content-settings/) 
-[![PyPI pyversions](https://img.shields.io/pypi/pyversions/django-consistency-model.svg)](https://pypi.python.org/pypi/django-content-settings/)
-[![PyPI - Django Version](https://img.shields.io/pypi/djversions/django-consistency-model)](https://pypi.python.org/pypi/django-content-settings/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Documentation Status](https://readthedocs.org/projects/django-content-settings/badge/?version=latest)](https://django-content-settings.readthedocs.io/en/latest/?badge=latest)
 
 # Django Content Settings - the most advanced admin editable setting
 
