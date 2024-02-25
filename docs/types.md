@@ -31,7 +31,8 @@ You can learn more about fields and widgets in [official Django Forms documentat
 
 - **value_required** (default: False): Whether the field must be filled.
 - **tags** (default: None): Array of tags associated with the variable for easier navigation in admin.
-- **validators** (default: empty tuple): Additional validation functions.
+- **validators** (default: empty tuple): Additional validation functions for the python object.
+- **validators_raw** (default: empty tuple): Additional validation functions for the raw text value.
 - **version** (default: ""): we will talk more about this attribute in [caching](caching.md). Updating this value trigges updating db value to default value after db migration (`python manage.py migrate`).
 
 Note: Validators are not used when converting text from the database to the variable object.
@@ -118,7 +119,7 @@ content_settings.MY_VAR__second == Decimal("4.12")
 
 It has a big variety of attributes:
 
-- **split_type** - the type which will be used for each value
+- **split_type** - the type which will be used for each value. You can use a dict to set a specific type for each key
 - **split_default_key** - the key which will be used for the first line
 - **split_not_found** - the function which will be used for chosing default value
 - **split_default_chooser** - what should be done if the required key not found. `NOT_FOUND_DEFAULT` - return default value, `NOT_FOUND_KEY_ERROR` raise an exception and `NOT_FOUND_VALUE` return value from **split_not_found_value**
@@ -215,6 +216,7 @@ content_settings.TITLE_IMG
 - **DjangoModelTemplate**: is a specialized class for rendering templates for individual Django model objects
     - **model_queryset**: A query set of objects that can be used as an argument. The setting only takes the first element for preview purposes in the admin panel.
     - **obj_name**: The name under which the model object is passed to the template.
+- **DjangoModelTemplateHTML**: same as *DjangoModelTemplate* but generate HTML instead
 - **SimpleEval**: is designed to store Python code as the setting's value. When the function is called, the arguments dict is passed to the code execution.
 
 Example:
@@ -287,6 +289,7 @@ MAX_PRICE = mix(PositiveValidationMixin, SimpleDecimal)("9.99", help="maximum al
 ### Available Mixins
 
 - **MinMaxValidationMixin** - adds a validator that the result value is bigger or/and lower. It adds attributes `min_value` and `max_value`
+- **EmptyNoneMixin** - set value to None it is an empty value
 - **PositiveValidationMixin** - shortcut to for `MinMaxValidationMixin` to make sure the value is positive
 - **DictSuffixesMixin** - supports a dict of available suffixes for the variable. For example:
 
@@ -310,7 +313,7 @@ truncated_value = content_settings.MY_VAR__trunc
 ```
 
 - **CallToPythonMixin** - that makes your setting a function, which accepts attributes from the setting and from the arguments. It uses for `types.template.*` classes
-- **types.each.EachMixin** (puted into separate module as it has additional classes to support this one such as `Item` and `Keys`) - when your setting returns a list or dict or mix of those, and you want to make sure that every element is veryfied, previewed and converted using a specific content type. For example:
+- **types.each.EachMixin** (puted into separate module as it has additional classes to support this one such as `Item`, `Keys` or `Values`) - when your setting returns a list or dict or mix of those, and you want to make sure that every element is veryfied, previewed and converted using a specific content type. For example:
 
 ```python
 from content_settings.types.basic import SimpleString, SimpleDecimal
@@ -335,6 +338,20 @@ MY_DECIMALS = mix(EachMixin, SimpleStringsList)(each=Item(SimpleDecimal()))
 
 - **AdminPreviewSuffixesMixin(AdminPreviewMenuMixin)** - allows you to build menu for preview based on available suffixes
 - **DictSuffixesPreviewMixin** - basically a mix of `DictSuffixesMixin` and `AdminPreviewSuffixesMixin`
+- **AdminPreviewActionsMixin** - allows you to set up the set of actions in the preview menu. The list of tuples in attribute admin_preview_actions is responsable for that. For example, the valiable you are changing is part of the email, and before apply the variable you want to see how the email is actually look like. You can also use actions change the raw text value, generate js alert and generate text before and after the preview.
+
+```python
+HTML_WITH_ACTIONS = mix(AdminPreviewActionsMixin, SimpleHTML)(
+    "",
+    admin_preview_actions=[
+        ("before", lambda resp, *a, **k: resp.before_html("<p>Text Before</p>")),
+        ("alert", lambda resp, *a, **k: resp.alert("Let you know, you are good")),
+        ("reset to hi", lambda resp, *a, **k: resp.value("Hello world")),
+        ("say hi", lambda resp, *a, **k: resp.html("<h1>HI</h1>")),
+    ],
+    help="Some html with actions",
+)
+```
 
 ## context_defaults *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/context_managers.py))*
 
