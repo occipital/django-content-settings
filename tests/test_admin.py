@@ -575,3 +575,52 @@ def test_admin_preview_on_site_remove(webtest_admin, testadmin):
 
     assert UserPreview.objects.all().count() == 1
     assert UserPreview.objects.all()[0].name == "DESCRIPTION"
+
+
+def test_add_user_defined_variable(webtest_admin, testadmin):
+    resp = webtest_admin.get("/admin/content_settings/contentsetting/add/")
+
+    form = resp.forms["contentsetting_form"]
+    form["name"] = "NEW_VARIABLE"
+    form["value"] = "New Value"
+    form["user_defined_type"] = "text"
+    form["help"] = "The Help"
+    form["tags"] = "prof_email"
+
+    resp = form.submit(name="_save")
+    cs = ContentSetting.objects.get(name="NEW_VARIABLE")
+    assert cs.value == "New Value"
+    assert cs.user_defined_type == "text"
+    assert cs.help == "The Help"
+    assert cs.tags == "prof_email"
+
+    resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/change/")
+    assert resp.status_int == 200
+    form = resp.forms["contentsetting_form"]
+
+    assert form["name"].value == "NEW_VARIABLE"
+    assert form["value"].value == "New Value"
+    assert form["user_defined_type"].value == "text"
+    assert form["help"].value == "The Help"
+    assert form["tags"].value == "prof_email"
+
+
+def test_edit_user_defined_variable(webtest_admin, testadmin):
+    cs = ContentSetting.objects.create(
+        name="NEW_VARIABLE",
+        value="New Value",
+        user_defined_type="text",
+        help="The Help",
+        tags="prof_email",
+    )
+    resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/change/")
+    assert resp.status_int == 200
+
+    form = resp.forms["contentsetting_form"]
+    assert form["tags"].value == "prof_email"
+
+    form["tags"] = "next_email"
+    resp = form.submit(name="_save")
+
+    cs.refresh_from_db()
+    assert cs.tags == "next_email"

@@ -168,7 +168,10 @@ class ContentSettingAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if user_able_to_update(request.user, obj.name, obj.user_defined_type):
             prev_obj = ContentSetting.objects.filter(pk=obj.pk).first()
-            if prev_obj and prev_obj.value == obj.value:
+            if prev_obj and not any(
+                getattr(prev_obj, name) != getattr(obj, name)
+                for name in ("value", "tags", "help", "user_defined_type", "name")
+            ):
                 return
 
             if "_preview_on_site" in request.POST:
