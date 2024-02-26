@@ -641,7 +641,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
         with content_settings_context(**other_values):
             return JsonResponse(
                 cs_type.get_full_admin_preview_value(
-                    value, request.POST["name"], **params
+                    value, request.POST["name"], user=request.user, **params
                 )
             )
 
