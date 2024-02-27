@@ -28,6 +28,30 @@ def do_update_stored_checksum(*args, **kwargs):
 
 
 @receiver(post_save, sender=ContentSetting)
+def trigger_on_change(sender, instance, created, **kwargs):
+    if created:
+        return
+
+    cs_type = get_type_by_name(instance.name)
+    if cs_type is None:
+        return
+
+    for on_change in cs_type.get_on_change():
+        on_change(instance)
+
+    on_changes = cs_type.get_on_change_commited()
+    if not on_changes:
+        return
+
+    connection = transaction.get_connection()
+    if connection.in_atomic_block:
+        transaction.on_commit(lambda: [f(instance) for f in on_changes])
+    else:
+        for on_change in on_changes:
+            on_change(instance)
+
+
+@receiver(post_save, sender=ContentSetting)
 def create_history_settings(sender, instance, created, **kwargs):
     HistoryContentSetting.objects.create(
         name=instance.name,

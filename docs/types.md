@@ -44,6 +44,8 @@ Note: Validators are not used when converting text from the database to the vari
     - `PREVIEW_TEXT` - the value will be shown as plain text inside of pre html element
     - `PREVIEW_HTML` - the value will be shown as it is without esceping
     - `PREVIEW_PYTHON` - the value will be shown as Python object using `pformat` from `pprint`
+- **on_change** (default: empty tuple): list of functions to call when the setting is changed
+- **on_change_commited** (default: empty tuple): list of functions to call when the setting is changed and commited
 
 ### Other Basic Types (`content_settings.types.base`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py))*
 

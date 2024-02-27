@@ -51,6 +51,8 @@ class SimpleString(BaseSetting):
     - user_defined_slug (str): it contains a slug from db If the setting is defined in DB only (should not be set in content_settings)
     - overwrite_user_defined (bool): Whether the setting can overwrite a user defined setting.
     - default (str): The default value for the setting.
+    - on_change: Tuple[Callable] - list of functions to call when the setting is changed
+    - on_change_commited: Tuple[Callable] - list of functions to call when the setting is changed and commited
     """
 
     constant: bool = False
@@ -74,6 +76,8 @@ class SimpleString(BaseSetting):
     overwrite_user_defined: bool = False
     default: Union[str, required, optional] = ""
     json_encoder = DjangoJSONEncoder
+    on_change: Tuple[Callable] = ()
+    on_change_commited: Tuple[Callable] = ()
 
     def __init__(
         self, default: Optional[Union[str, required, optional]] = None, **kwargs
@@ -120,6 +124,12 @@ class SimpleString(BaseSetting):
 
     def get_admin_preview_as(self) -> str:
         return self.admin_preview_as
+
+    def get_on_change(self) -> Tuple:
+        return self.on_change
+
+    def get_on_change_commited(self) -> Tuple:
+        return self.on_change_commited
 
     def init_assign_kwargs(self, kwargs):
         for k, v in kwargs.items():
