@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-content-settings"
-version = "0.11.1"
+version = "0.11.2"
 description = "Ability to easily create and manage editable variables directly from the Django admin panel"
 homepage = "https://django-content-settings.readthedocs.io/en/latest/"
 repository = "https://github.com/occipital/django-content-settings/"

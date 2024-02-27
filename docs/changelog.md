@@ -4,6 +4,11 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
+### 0.11.2
+
+* new attributes `on_change` and `on_change_commited`
+* pass user object in the preview
+
 ### 0.11.1 hot fix for edit form
 
 ## 0.11 Preview On Site
