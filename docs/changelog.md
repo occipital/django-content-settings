@@ -4,6 +4,10 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
+### 0.11.4
+
+* `from content_settings.conf import settings`
+
 ### 0.11.2
 
 * new attributes `on_change` and `on_change_commited`
