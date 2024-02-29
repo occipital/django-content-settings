@@ -80,6 +80,8 @@ In template:
 <h2>{{CONTENT_SETTINGS.TITLE}}</h2>
 ```
 
+*if you want to use `{{SETTINGS}}` as an object that unites settings and content settings, replace `"content_settings.context_processors.content_settings"` with `"content_settings.context_processors.settings"`*
+
 In API:
 
 ```bash

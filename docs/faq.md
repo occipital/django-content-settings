@@ -17,3 +17,7 @@ Feel free to [post an issue](https://github.com/occipital/django-content-setting
 ### Why are there two functions, give and to_python, when most of the time the first one just returns what it receives as input?
 
 The function give is designed to adapt data specifically for use in the project's code, while to_python converts a string value into a Python object. The key difference between these two functions is that the conversion to a Python object occurs when there are changes in the string value or at the project's startup. In contrast, adaptation happens when this data is requested (from attribute or from ).
+
+### Why it is still version 0?
+
+I'm still working on design of the module, the name of the types might be changes soon. Version 1 - will have a much more stable design
