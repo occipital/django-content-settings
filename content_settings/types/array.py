@@ -45,7 +45,7 @@ class SimpleStringsList(SimpleText):
     comment_starts_with: Optional[str] = "#"
     filter_empty: bool = True
     split_lines: str = "\n"
-    filters: Optional[Iterable[callable]] = None
+    filters: Optional[Iterable[Callable]] = None
     admin_preview_as: str = PREVIEW_PYTHON
 
     def __init__(self, *args, **kwargs) -> None:
@@ -128,7 +128,7 @@ SPLIT_FAIL_IGNORE = "ignore"
 SPLIT_FAIL_RAISE = "raise"
 
 
-def split_validator_in(values: List[str]) -> callable:
+def split_validator_in(values: List[str]) -> Callable:
     """
     Returns a validator function that checks if a given value is in the specified list of values.
     It uses for SplitTextByFirstLine.split_key_validator.
@@ -148,16 +148,23 @@ class SplitTextByFirstLine(SimpleText):
     If your defaukt key is "EN", the first line can be "===== EN =====" to initialize the separator.
     The next separator is initialized by the next line that starts with "=====", ends with "=====" and has a key in the middle.
 
+    It has the following new attributes:
+    * split_default_key: Optional[str] = None - the key which will be used for the first line
+    * split_default_chooser: Optional[Callable] = None - the function which will be used for chosing default value
+    * split_not_found - what should be done if the required key not found. `NOT_FOUND_DEFAULT` - return default value, `NOT_FOUND_KEY_ERROR` raise an exception and `NOT_FOUND_VALUE` return value from split_not_found_value
+    * split_not_found_value: Any = None - value that will be returned if the required key not found and split_not_found is `NOT_FOUND_VALUE`
+    * split_key_validator: Optional[Callable[[str], bool]] = None - function that validates a key. You can use a function `split_validator_in` for validator value
+    * split_key_validator_failed: str = SPLIT_FAIL_IGNORE - what should be done if the key is not valid. `SPLIT_FAIL_IGNORE` - just use line with unvalid key as value for the previous key. `SPLIT_FAIL_RAISE` - raise `ValidationError`
 
     """
 
-    split_default_key = None
-    split_default_chooser = None
-    split_not_found = NOT_FOUND_DEFAULT
-    split_not_found_value = None
-    split_key_validator = None
-    split_key_validator_failed = SPLIT_FAIL_IGNORE
-    admin_preview_as = PREVIEW_HTML
+    split_default_key: Optional[str] = None
+    split_default_chooser: Optional[Callable[[str], str]] = None
+    split_not_found: str = NOT_FOUND_DEFAULT
+    split_not_found_value: Any = None
+    split_key_validator: Optional[Callable[[str], bool]] = None
+    split_key_validator_failed: str = SPLIT_FAIL_IGNORE
+    admin_preview_as: str = PREVIEW_HTML
 
     def get_split_default_key(self):
         return self.split_default_key
@@ -199,10 +206,13 @@ class SplitTextByFirstLine(SimpleText):
             NOT_FOUND_VALUE,
         ), "split_not_found should be one of NOT_FOUND_DEFAULT, NOT_FOUND_KEY_ERROR, NOT_FOUND_VALUE"
 
-    def validate_split_key(self, key):
+    def is_split_key_valid(self, key: str) -> bool:
         return self.split_key_validator is None or self.split_key_validator(key)
 
-    def split_value(self, value):
+    def split_value(self, value: str) -> dict[str, str]:
+        """
+        The main function of the type. Split the value into a dictionary of values.
+        """
         lines = value.splitlines()
         if (
             not lines
@@ -217,7 +227,7 @@ class SplitTextByFirstLine(SimpleText):
         for num, line in enumerate(lines[1:], start=2):
             if line.startswith(before) and line.endswith(after):
                 line_key = line[len(before) : len(line) - len(after)]
-                if self.validate_split_key(line_key):
+                if self.is_split_key_valid(line_key):
                     cur_iter = ret[line_key] = []
                     continue
 
@@ -251,6 +261,12 @@ class SplitTextByFirstLine(SimpleText):
 
 
 class SplitByFirstLine(AdminPreviewSuffixesMixin, EachMixin, SplitTextByFirstLine):
+    """
+    The same as SplitTextByFirstLine, but results are converted to the specified type.
+
+    split_type attribute is used to specify the type of the values. It can be a dict to specify the type for each key.
+    """
+
     split_type = SimpleTextPreview()
 
     def get_admin_preview_suffixes_default(self):
@@ -281,6 +297,10 @@ class SplitByFirstLine(AdminPreviewSuffixesMixin, EachMixin, SplitTextByFirstLin
 
 
 class SplitTranslation(SplitByFirstLine):
+    """
+    SplitByFirstLine where the default value will be chosen by the current language
+    """
+
     split_default_key = "EN"
     split_not_found = NOT_FOUND_DEFAULT
 

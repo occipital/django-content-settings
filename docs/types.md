@@ -125,10 +125,8 @@ It has a big variety of attributes:
 
 - **split_type** - the type which will be used for each value. You can use a dict to set a specific type for each key
 - **split_default_key** - the key which will be used for the first line
-- **split_not_found** - the function which will be used for chosing default value
-- **split_default_chooser** - what should be done if the required key not found. `NOT_FOUND_DEFAULT` - return default value, `NOT_FOUND_KEY_ERROR` raise an exception and `NOT_FOUND_VALUE` return value from **split_not_found_value**
-- **split_key_validator** - validator for the key name
-- **split_suffix** and **split_suffix_value** - rule for using suffix
+- **split_default_chooser** - the function which will be used for chosing default value
+- **split_not_found** - what should be done if the required key not found. `NOT_FOUND_DEFAULT` - return default value, `NOT_FOUND_KEY_ERROR` raise an exception and `NOT_FOUND_VALUE` return value from **split_not_found_value**
 - **split_key_validator** - function that validates a key. You can use a function `split_validator_in` for validator value
 - **split_key_validator_failed** - two passible values `SPLIT_FAIL_IGNORE`(default) and `SPLIT_FAIL_RAISE`. What should the system do if validation is failed. `SPLIT_FAIL_IGNORE` - just use line with unvalid key as value for the previous key. `SPLIT_FAIL_RAISE` - raise `ValidationError`
 
