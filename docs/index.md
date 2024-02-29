@@ -65,6 +65,15 @@ from content_settings.conf import content_settings
 content_settings.TITLE
 ```
 
+or use object `settings` that unites content settings and django settings in one place
+
+```python
+
+from content_settings.conf import settings
+
+settings.TITLE
+```
+
 In template:
 
 ```html
