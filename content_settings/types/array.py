@@ -1,4 +1,5 @@
-from typing import Any, Optional
+from typing import Any, Optional, List, Callable, Generator, Iterable
+from collections.abc import Iterable
 
 from django.core.exceptions import ValidationError
 
@@ -16,15 +17,15 @@ from .mixins import AdminPreviewSuffixesMixin
 from .each import EachMixin, Item, Keys, Values
 
 
-def f_empty(value):
+def f_empty(value: str) -> Optional[str]:
     value = value.strip()
     if not value:
         return None
     return value
 
 
-def f_comment(prefix):
-    def _(value):
+def f_comment(prefix: str) -> Callable[[str], Optional[str]]:
+    def _(value: str) -> Optional[str]:
         if value.strip().startswith(prefix):
             return None
         return value
@@ -33,17 +34,39 @@ def f_comment(prefix):
 
 
 class SimpleStringsList(SimpleText):
-    comment_starts_with = "#"
-    filter_empty = True
-    split_lines = "\n"
-    filters = None
-    admin_preview_as = PREVIEW_PYTHON
+    """
+    Split a text into a list of strings.
+    * comment_starts_with (default: #): if not None, the lines that start with this string are removed
+    * filter_empty (default: True): if True, empty lines are removed
+    * split_lines (default: \n): the string that separates the lines
+    * filters (default: None): a list of additional filters to apply to the lines.
+    """
+
+    comment_starts_with: Optional[str] = "#"
+    filter_empty: bool = True
+    split_lines: str = "\n"
+    filters: Optional[Iterable[callable]] = None
+    admin_preview_as: str = PREVIEW_PYTHON
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        assert isinstance(self.comment_starts_with, (str, type(None)))
+        assert isinstance(self.filter_empty, bool)
+        assert isinstance(self.split_lines, str)
+        assert isinstance(self.filters, (Iterable, type(None)))
 
     def get_filters(self):
+        """
+        Get the filters based on the current configuration.
+        * If filters is not None, it is returned.
+        * If filter_empty is True, f_empty is added to the filters.
+        * If comment_starts_with is not None, f_comment is added to the filters.
+        """
         if self.filters is not None:
-            return self.filters
+            filters = [*self.filters]
+        else:
+            filters = []
 
-        filters = []
         if self.filter_empty:
             filters.append(f_empty)
 
@@ -52,7 +75,7 @@ class SimpleStringsList(SimpleText):
 
         return filters
 
-    def get_help_format(self):
+    def get_help_format(self) -> Generator[str, None, None]:
         yield "List of values with the following format:"
         yield "<ul>"
         if self.split_lines == "\n":
@@ -67,14 +90,17 @@ class SimpleStringsList(SimpleText):
             yield "<li>empty values are removed</li>"
         yield "</ul>"
 
-    def filter_line(self, line):
+    def filter_line(self, line: str) -> str:
         for f in self.get_filters():
             line = f(line)
             if line is None:
                 break
         return line
 
-    def gen_to_python(self, value):
+    def gen_to_python(self, value: str) -> Generator[str, None, None]:
+        """
+        Converts a string value into a generator of filtered lines.
+        """
         lines = value.split(self.split_lines)
         for line in lines:
             line = self.filter_line(line)
@@ -82,7 +108,7 @@ class SimpleStringsList(SimpleText):
             if line is not None:
                 yield line
 
-    def to_python(self, value):
+    def to_python(self, value: str) -> List[str]:
         return list(self.gen_to_python(value))
 
 
@@ -102,14 +128,29 @@ SPLIT_FAIL_IGNORE = "ignore"
 SPLIT_FAIL_RAISE = "raise"
 
 
-def split_validator_in(values):
-    def _(value):
+def split_validator_in(values: List[str]) -> callable:
+    """
+    Returns a validator function that checks if a given value is in the specified list of values.
+    It uses for SplitTextByFirstLine.split_key_validator.
+    """
+
+    def _(value: str) -> bool:
         return value in values
 
     return _
 
 
 class SplitTextByFirstLine(SimpleText):
+    """
+    Split text by the separator that can be found in the first line.
+    The result is a dictionary where the keys are the separators and the values are the text after the separator.
+
+    If your defaukt key is "EN", the first line can be "===== EN =====" to initialize the separator.
+    The next separator is initialized by the next line that starts with "=====", ends with "=====" and has a key in the middle.
+
+
+    """
+
     split_default_key = None
     split_default_chooser = None
     split_not_found = NOT_FOUND_DEFAULT
