@@ -298,14 +298,34 @@ class ContentSettingAdmin(admin.ModelAdmin):
         return extra_context
 
     def changelist_view(self, request, extra_context=None):
-        return super().changelist_view(
-            request,
-            {
-                **(extra_context or {}),
-                **self.context_tags(request),
-                **self.context_preview_settings(request),
-            },
-        )
+        def key_value_from_request():
+            total_forms = int(request.POST["form-TOTAL_FORMS"])
+
+            for i in range(total_forms):
+                yield ContentSetting.objects.get(
+                    id=request.POST[f"form-{i}-id"]
+                ).name, request.POST[f"form-{i}-value"]
+
+        super_changelist = super().changelist_view
+
+        def gen_response():
+            return super_changelist(
+                request,
+                {
+                    **(extra_context or {}),
+                    **self.context_tags(request),
+                    **self.context_preview_settings(request),
+                },
+            )
+
+        if not request.method == "POST" or "_save" not in request.POST:
+            return gen_response()
+
+        with content_settings_context(
+            _raise_errors=False,
+            **{name: value for name, value in key_value_from_request()},
+        ):
+            return gen_response()
 
     def context_tags_view(self, request):
         return TemplateResponse(

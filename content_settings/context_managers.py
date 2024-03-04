@@ -125,6 +125,7 @@ def context_defaults_kwargs(kwargs=None):
 
 class content_settings_context(ContextDecorator):
     def __init__(self, **values) -> None:
+        self.raise_errors = values.pop("_raise_errors", True)
         super().__init__()
         self.values_to_update = values
         self.prev_values = {}
@@ -133,7 +134,11 @@ class content_settings_context(ContextDecorator):
         from content_settings.caching import set_new_value
 
         for name, new_value in self.values_to_update.items():
-            self.prev_values[name] = set_new_value(name, new_value)
+            try:
+                self.prev_values[name] = set_new_value(name, new_value)
+            except:
+                if self.raise_errors:
+                    raise
 
     def __exit__(self, *exc):
         from content_settings.caching import set_new_value
