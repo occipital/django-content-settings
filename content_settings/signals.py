@@ -29,6 +29,9 @@ def do_update_stored_checksum(*args, **kwargs):
 
 @receiver(post_save, sender=ContentSetting)
 def trigger_on_change(sender, instance, created, **kwargs):
+    """
+    Trigger on_change and on_change_commited for the content setting
+    """
     if created:
         return
 

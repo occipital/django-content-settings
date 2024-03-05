@@ -71,13 +71,19 @@ class SimpleString(BaseSetting):
     user_defined_slug: Optional[str] = None
     overwrite_user_defined: bool = False
     default: Union[str, required, optional] = ""
-    json_encoder = DjangoJSONEncoder
+    json_encoder: type = DjangoJSONEncoder
     on_change: Tuple[Callable] = ()
     on_change_commited: Tuple[Callable] = ()
 
     def __init__(
         self, default: Optional[Union[str, required, optional]] = None, **kwargs
     ):
+        """
+        The init function accepts initial attributes for the content setting type.
+        It can assing any attribute that is defined in the class. (The exception is help_text instead of help)
+
+        All of the changes for type instance can only be done inside of __init__ method. The other methods should not change self object.
+        """
         # optional support of help_text instead of help
         if "help" not in kwargs and "help_text" in kwargs:
             kwargs["help"] = kwargs.pop("help_text")
@@ -102,66 +108,10 @@ class SimpleString(BaseSetting):
             self.get_admin_preview_as() in PREVIEW
         ), f"admin_preview_as should be one of {PREVIEW}"
 
-    def can_view(self, user):
-        return self.view_permission(user)
-
-    def can_view_history(self, user):
-        return (
-            self.can_view(user)
-            if self.view_history_permission is None
-            else self.view_history_permission(user)
-        )
-
-    def can_update(self, user):
-        return self.update_permission(user)
-
-    def can_fetch(self, user):
-        return self.fetch_permission(user)
-
-    def get_admin_preview_as(self) -> str:
-        return self.admin_preview_as
-
-    def get_on_change(self) -> Tuple:
-        return self.on_change
-
-    def get_on_change_commited(self) -> Tuple:
-        return self.on_change_commited
-
-    def init_assign_kwargs(self, kwargs):
-        for k, v in kwargs.items():
-            if not self.can_assign(k):
-                raise ValueError("Attribute {} not found".format(k))
-            if hasattr(self, "init__{}".format(k)):
-                getattr(self, "init__{}".format(k))(v)
-            else:
-                setattr(self, k, v)
-
-    def init__tags(self, tags: Union[None, str, Iterable[str]]) -> None:
-        if not tags:
-            return
-
-        if isinstance(tags, str):
-            tags = {tags}
-        else:
-            tags = set(tags)
-
-        self.tags = tags if self.tags is None else self.tags | tags
-
-    @cached_property
-    def field(self) -> forms.Field:
-        return self.get_field()
-
-    def get_suffixes(self) -> Tuple:
-        return self.suffixes
-
-    def can_suffix(self, suffix: Optional[str]) -> bool:
-        return suffix is None or suffix in self.get_suffixes()
-
-    def can_assign(self, name: str) -> bool:
-        return hasattr(self, name)
-
     def update_defaults_context(self, kwargs: dict) -> dict:
-        # initiate default values
+        """
+        Updates kwargs from the context_defaults_kwargs with the values that can be assigned to the instance.
+        """
         context_defaults = {
             name: value
             for name, value in context_defaults_kwargs().items()
@@ -180,10 +130,132 @@ class SimpleString(BaseSetting):
             if self.can_assign(name)
         }
 
+    def init_assign_kwargs(self, kwargs):
+        """
+        Assign the attributes from the kwargs to the instance.
+
+        Use init__{attribute_name} method if it exists, otherwise use setattr
+        """
+        for k, v in kwargs.items():
+            if not self.can_assign(k):
+                raise ValueError("Attribute {} not found".format(k))
+            if hasattr(self, "init__{}".format(k)):
+                getattr(self, "init__{}".format(k))(v)
+            else:
+                setattr(self, k, v)
+
+    def init__tags(self, tags: Union[None, str, Iterable[str]]) -> None:
+        """
+        Assign the tags to the instance from kwargs.
+        """
+        if not tags:
+            return
+
+        if isinstance(tags, str):
+            tags = {tags}
+        else:
+            tags = set(tags)
+
+        self.tags = tags if self.tags is None else self.tags | tags
+
+    def can_view(self, user):
+        """
+        Return True if the user has permission to view the setting in the django admin panel.
+
+        Use view_permission attribute
+        """
+        return self.view_permission(user)
+
+    def can_view_history(self, user):
+        """
+        Return True if the user has permission to view the setting changing history in the django admin panel.
+
+        Use view_history_permission attribute, but if it is None, use can_view
+        """
+        return (
+            self.can_view(user)
+            if self.view_history_permission is None
+            else self.view_history_permission(user)
+        )
+
+    def can_update(self, user):
+        """
+        Return True if the user has permission to update the setting in the django admin panel.
+
+        Use update_permission attribute
+        """
+        return self.update_permission(user)
+
+    def can_fetch(self, user):
+        """
+        Return True if the user has permission to fetch the setting value using API.
+
+        Use fetch_permission attribute
+        """
+        return self.fetch_permission(user)
+
+    def get_admin_preview_as(self) -> str:
+        """
+        Return the format (PREVIEW Enum) to use for the admin preview.
+
+        Use admin_preview_as attribute
+        """
+        return self.admin_preview_as
+
+    def get_on_change(self) -> Tuple[Callable]:
+        """
+        Return the list of functions to call when the setting is changed.
+
+        Use on_change attribute
+        """
+        return self.on_change
+
+    def get_on_change_commited(self) -> Tuple[Callable]:
+        """
+        Return the list of functions to call when the setting is changed and commited.
+        Uses for syncing data or triggering emails.
+
+        Use on_change_commited attribute
+        """
+        return self.on_change_commited
+
+    @cached_property
+    def field(self) -> forms.Field:
+        """
+        the form field
+        """
+        return self.get_field()
+
+    def get_suffixes(self) -> Tuple:
+        """
+        Return the list of suffixes that can be used
+        """
+        return self.suffixes
+
+    def can_suffix(self, suffix: Optional[str]) -> bool:
+        """
+        Return True if the suffix is valid for the setting.
+        """
+        return suffix is None or suffix in self.get_suffixes()
+
+    def can_assign(self, name: str) -> bool:
+        """
+        Return True if the attribute can be assigned to the instance.
+        """
+        return hasattr(self, name)
+
     def get_help_format(self) -> Iterable[str]:
+        """
+        Generate help for the specific type.
+
+        The help of the format goes after the help for the specific setting and expalins the format of the setting.
+        """
         yield self.help_format
 
     def get_help(self) -> str:
+        """
+        Generate help for the specific setting (includes format help)
+        """
         help = self.help
         help_format = "".join(self.get_help_format())
 
@@ -193,23 +265,40 @@ class SimpleString(BaseSetting):
         return help or help_format
 
     def get_tags(self) -> Set[str]:
+        """
+        Return the tags associated with the setting.
+        """
         tags = self.tags
         if tags is None:
             tags = set()
         return set(tags)
 
     def get_content_tags(self, value: str) -> Set[str]:
+        """
+        Generate tags based on current type and value.
+
+        Uses CONTENT_SETTINGS_TAGS for generating, but overriding the method allows you to change the behavior for the specific type.
+        """
         from content_settings.conf import gen_tags
 
         return gen_tags(self, value)
 
-    def get_validators(self) -> Tuple[Callable]:
+    def get_validators(self) -> Tuple[Callable[[Any], None]]:
+        """
+        Return the list of validators to apply to the setting python value.
+        """
         return tuple(self.validators) + tuple(self.cls_field.default_validators)
 
     def get_validators_raw(self) -> Tuple[Callable]:
+        """
+        Return the list of validators to apply to the setting text value.
+        """
         return tuple(self.validators_raw)
 
     def get_field(self) -> forms.Field:
+        """
+        Generate the form field for the setting. Which will be used in the django admin panel.
+        """
         return self.cls_field(
             widget=self.get_widget(),
             validators=(self.validate_value,),
@@ -217,16 +306,25 @@ class SimpleString(BaseSetting):
         )
 
     def get_widget(self) -> forms.Widget:
+        """
+        Generate the form widget for the setting. Which will be used in the django admin panel.
+        """
         if isclass(self.widget) and self.widget_attrs is not None:
             return self.widget(attrs=self.widget_attrs)
         else:
             return self.widget
 
     def validate_raw_value(self, value: str) -> None:
+        """
+        Validate the text value of the setting.
+        """
         for validator in self.get_validators_raw():
             validator(value)
 
     def validate_value(self, value: str) -> Any:
+        """
+        Full validation of the setting text value.
+        """
         if self.value_required and not value:
             raise ValidationError("This field is required")
         self.validate_raw_value(value)
@@ -234,28 +332,54 @@ class SimpleString(BaseSetting):
         self.validate(val)
 
     def validate(self, value):
+        """
+        Validate the setting python value.
+        """
         for validator in self.get_validators():
             validator(value)
 
     def to_python(self, value: str) -> Any:
+        """
+        Converts text value to python value.
+        """
         return self.field.to_python(value)
 
     def json_view_value(self, value: Any, **kwargs) -> Any:
+        """
+        Converts the setting python value to JSON.
+        """
         return dumps(value, cls=self.json_encoder)
 
     def give_python_to_admin(self, value: str, name: str, **kwargs) -> Any:
+        """
+        Converts the setting text value to setting admin value that will be used for rendering admin preview.
+        """
         return self.to_python(value)
 
     def get_admin_preview_html(self, value: Any, name: str, **kwargs) -> Any:
+        """
+        Generate the admin preview for PREVIEW.HTML format.
+        """
         return value
 
     def get_admin_preview_text(self, value: Any, name: str, **kwargs) -> Any:
+        """
+        Generate the admin preview for PREVIEW.TEXT format.
+        """
         return value
 
     def get_admin_preview_python(self, value: Any, name: str, **kwargs) -> Any:
+        """
+        Generate the admin preview for PREVIEW.PYTHON format.
+        """
         return value
 
     def get_admin_preview_value(self, value: str, *args, **kwargs) -> str:
+        """
+        Generate the admin preview for the setting based on the admin_preview_as attribute (or get_admin_preview_as method).
+
+        Using text value of the setting.
+        """
         if self.get_admin_preview_as() == PREVIEW.NONE:
             return ""
 
@@ -264,6 +388,9 @@ class SimpleString(BaseSetting):
         return str(self.get_admin_preview_object(value, *args, **kwargs))
 
     def get_full_admin_preview_value(self, value: str, *args, **kwargs) -> str:
+        """
+        Generate data for json response for preview
+        """
         try:
             self.validate_value(value)
         except Exception as e:
@@ -275,7 +402,12 @@ class SimpleString(BaseSetting):
             "html": self.get_admin_preview_value(value, *args, **kwargs),
         }
 
-    def get_admin_preview_object(self, value: str, name: str, **kwargs) -> str:
+    def get_admin_preview_object(self, value: Any, name: str, **kwargs) -> str:
+        """
+        Generate the admin preview for the setting based on the admin_preview_as attribute (or get_admin_preview_as method).
+
+        Using admin value of the setting.
+        """
         if self.get_admin_preview_as() == PREVIEW.HTML:
             return str(self.get_admin_preview_html(value, name, **kwargs))
 
@@ -287,9 +419,19 @@ class SimpleString(BaseSetting):
         return pre(value)
 
     def lazy_give(self, l_func: Callable, suffix=None) -> LazyObject:
+        """
+        Return the LazyObject that will be used for the setting value.
+
+        This value will be returned using lazy prefix in the content_settings.
+        """
         return LazyObject(l_func)
 
-    def give(self, value, suffix: Optional[str] = None):
+    def give(self, value: Any, suffix: Optional[str] = None):
+        """
+        The will be returned as the content_settings attribute using python value of the setting.
+
+        Suffix can be used.
+        """
         return value
 
     def give_python(self, value: str, suffix=None) -> Any:
