@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "django-content-settings"
-version = "0.11.4"
-description = "Ability to easily create and manage editable variables directly from the Django admin panel"
+version = "0.12"
+description = "DCS - the most advanced admin editable setting"
 homepage = "https://django-content-settings.readthedocs.io/en/latest/"
 repository = "https://github.com/occipital/django-content-settings/"
 authors = ["oduvan <a.lyabah@checkio.org>"]

@@ -4,6 +4,12 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
+## 0.12
+
+* internal constants refactoring to Enums.
+* validation changes on the list view using `content_settings_context`
+* Admin: fix delete link
+
 ### 0.11.4
 
 * `from content_settings.conf import settings`
