@@ -5,8 +5,7 @@ from content_settings.types.basic import (
     SimpleBool,
     SimpleDecimal,
     SimpleHTML,
-    PREVIEW_HTML,
-    PREVIEW_TEXT,
+    PREVIEW,
     SimplePassword,
     URLString,
 )
@@ -92,7 +91,7 @@ BOOK_RICH_DESCRIPTION = DjangoModelTemplate(
     "<b>{{book.title}}</b><br><i>{{book.description}}</i>",
     model_queryset=Book.objects.all(),
     obj_name="book",
-    admin_preview_as=PREVIEW_HTML,
+    admin_preview_as=PREVIEW.HTML,
     help="The description of the book",
 )
 
@@ -115,7 +114,7 @@ INTERESTING_TEXT = mix(DictSuffixesPreviewMixin, SimpleText)(
         if len(text) > max_length
         else text
     },
-    admin_preview_as=PREVIEW_TEXT,
+    admin_preview_as=PREVIEW.TEXT,
     fetch_permission=permissions.any,
     help="The interesting text",
 )

@@ -1,5 +1,6 @@
 from typing import Any, Optional, List, Callable, Generator, Iterable
 from collections.abc import Iterable
+from enum import Enum, auto
 
 from django.core.exceptions import ValidationError
 
@@ -7,11 +8,7 @@ from .basic import (
     SimpleText,
     SimpleTextPreview,
     SimpleString,
-    BaseSetting,
-    PREVIEW_PYTHON,
-    PREVIEW_TEXT,
-    PREVIEW_NONE,
-    PREVIEW_HTML,
+    PREVIEW,
 )
 from .mixins import AdminPreviewSuffixesMixin
 from .each import EachMixin, Item, Keys, Values
@@ -46,7 +43,7 @@ class SimpleStringsList(SimpleText):
     filter_empty: bool = True
     split_lines: str = "\n"
     filters: Optional[Iterable[Callable]] = None
-    admin_preview_as: str = PREVIEW_PYTHON
+    admin_preview_as: PREVIEW = PREVIEW.PYTHON
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -120,12 +117,15 @@ class TypedStringsList(EachMixin, SimpleStringsList):
         self.each = Item(self.line_type)
 
 
-NOT_FOUND_DEFAULT = "default"
-NOT_FOUND_KEY_ERROR = "key_error"
-NOT_FOUND_VALUE = "value"
+class NOT_FOUND(Enum):
+    DEFAULT = auto()
+    KEY_ERROR = auto()
+    VALUE = auto()
 
-SPLIT_FAIL_IGNORE = "ignore"
-SPLIT_FAIL_RAISE = "raise"
+
+class SPLIT_FAIL(Enum):
+    IGNORE = auto()
+    RAISE = auto()
 
 
 def split_validator_in(values: List[str]) -> Callable:
@@ -151,20 +151,20 @@ class SplitTextByFirstLine(SimpleText):
     It has the following new attributes:
     * split_default_key: Optional[str] = None - the key which will be used for the first line
     * split_default_chooser: Optional[Callable] = None - the function which will be used for chosing default value
-    * split_not_found - what should be done if the required key not found. `NOT_FOUND_DEFAULT` - return default value, `NOT_FOUND_KEY_ERROR` raise an exception and `NOT_FOUND_VALUE` return value from split_not_found_value
-    * split_not_found_value: Any = None - value that will be returned if the required key not found and split_not_found is `NOT_FOUND_VALUE`
+    * split_not_found - what should be done if the required key not found. `NOT_FOUND.DEFAULT` - return default value, `NOT_FOUND.KEY_ERROR` raise an exception and `NOT_FOUND.VALUE` return value from split_NOT_FOUND.VALUE
+    * split_not_found_value: Any = None - value that will be returned if the required key not found and split_not_found is `NOT_FOUND.VALUE`
     * split_key_validator: Optional[Callable[[str], bool]] = None - function that validates a key. You can use a function `split_validator_in` for validator value
-    * split_key_validator_failed: str = SPLIT_FAIL_IGNORE - what should be done if the key is not valid. `SPLIT_FAIL_IGNORE` - just use line with unvalid key as value for the previous key. `SPLIT_FAIL_RAISE` - raise `ValidationError`
+    * split_key_validator_failed: str = SPLIT_FAIL.IGNORE - what should be done if the key is not valid. `SPLIT_FAIL.IGNORE` - just use line with unvalid key as value for the previous key. `SPLIT_FAIL.RAISE` - raise `ValidationError`
 
     """
 
     split_default_key: Optional[str] = None
     split_default_chooser: Optional[Callable[[str], str]] = None
-    split_not_found: str = NOT_FOUND_DEFAULT
+    split_not_found: NOT_FOUND = NOT_FOUND.DEFAULT
     split_not_found_value: Any = None
     split_key_validator: Optional[Callable[[str], bool]] = None
-    split_key_validator_failed: str = SPLIT_FAIL_IGNORE
-    admin_preview_as: str = PREVIEW_HTML
+    split_key_validator_failed: SPLIT_FAIL = SPLIT_FAIL.IGNORE
+    admin_preview_as: PREVIEW = PREVIEW.HTML
 
     def get_split_default_key(self):
         return self.split_default_key
@@ -197,14 +197,14 @@ class SplitTextByFirstLine(SimpleText):
             self.split_key_validator
         ), "split_key_validator should be callable or None"
         assert self.split_key_validator_failed in (
-            SPLIT_FAIL_IGNORE,
-            SPLIT_FAIL_RAISE,
-        ), "split_key_validator_failed should be one of SPLIT_FAIL_IGNORE, SPLIT_FAIL_RAISE"
+            SPLIT_FAIL.IGNORE,
+            SPLIT_FAIL.RAISE,
+        ), "split_key_validator_failed should be one of SPLIT_FAIL.IGNORE, SPLIT_FAIL.RAISE"
         assert self.get_split_not_found() in (
-            NOT_FOUND_DEFAULT,
-            NOT_FOUND_KEY_ERROR,
-            NOT_FOUND_VALUE,
-        ), "split_not_found should be one of NOT_FOUND_DEFAULT, NOT_FOUND_KEY_ERROR, NOT_FOUND_VALUE"
+            NOT_FOUND.DEFAULT,
+            NOT_FOUND.KEY_ERROR,
+            NOT_FOUND.VALUE,
+        ), "split_not_found should be one of NOT_FOUND.DEFAULT, NOT_FOUND.KEY_ERROR, NOT_FOUND.VALUE"
 
     def is_split_key_valid(self, key: str) -> bool:
         return self.split_key_validator is None or self.split_key_validator(key)
@@ -231,7 +231,7 @@ class SplitTextByFirstLine(SimpleText):
                     cur_iter = ret[line_key] = []
                     continue
 
-                if self.split_key_validator_failed == SPLIT_FAIL_RAISE:
+                if self.split_key_validator_failed == SPLIT_FAIL.RAISE:
                     raise ValidationError(
                         f"Invalid split key: {line_key} in line {num}"
                     )
@@ -250,11 +250,11 @@ class SplitTextByFirstLine(SimpleText):
         try:
             ret_val = value[suffix.upper()]
         except KeyError:
-            if self.get_split_not_found() == NOT_FOUND_KEY_ERROR:
+            if self.get_split_not_found() == NOT_FOUND.KEY_ERROR:
                 raise
-            elif self.get_split_not_found() == NOT_FOUND_DEFAULT:
+            elif self.get_split_not_found() == NOT_FOUND.DEFAULT:
                 ret_val = value[self.get_split_default_key()]
-            elif self.get_split_not_found() == NOT_FOUND_VALUE:
+            elif self.get_split_not_found() == NOT_FOUND.VALUE:
                 ret_val = self.get_split_not_found_value()
 
         return ret_val
@@ -302,7 +302,7 @@ class SplitTranslation(SplitByFirstLine):
     """
 
     split_default_key = "EN"
-    split_not_found = NOT_FOUND_DEFAULT
+    split_not_found = NOT_FOUND.DEFAULT
 
     def get_help_format(self):
         yield "Translated Text. "

@@ -18,7 +18,6 @@ from django.template.response import TemplateResponse
 from django.contrib.messages import add_message, ERROR
 from django.utils.translation import gettext as _
 from django.db.models import Q
-from django.forms import modelformset_factory
 from django.http import HttpResponseRedirect
 from django.contrib import messages
 from django.shortcuts import resolve_url

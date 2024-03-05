@@ -2,7 +2,7 @@ from datetime import datetime, time, timedelta
 from django.core.exceptions import ValidationError
 from django.utils import formats
 
-from .basic import SimpleString, PREVIEW_PYTHON
+from .basic import SimpleString, PREVIEW
 from .mixins import EmptyNoneMixin
 
 TIMEDELTA_FORMATS = {
@@ -30,7 +30,7 @@ def timedelta_format(text):
 
 class DateTimeString(EmptyNoneMixin, SimpleString):
     input_formats = formats.get_format_lazy("DATETIME_INPUT_FORMATS")
-    admin_preview_as = PREVIEW_PYTHON
+    admin_preview_as = PREVIEW.PYTHON
 
     def get_input_formats(self):
         if isinstance(self.input_formats, str):
@@ -83,7 +83,7 @@ class TimeString(DateTimeString):
 
 
 class SimpleTimedelta(SimpleString):
-    admin_preview_as = PREVIEW_PYTHON
+    admin_preview_as = PREVIEW.PYTHON
 
     def get_help_format(self):
         yield "Time Delta Format"

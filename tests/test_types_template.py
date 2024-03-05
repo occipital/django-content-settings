@@ -10,7 +10,7 @@ from content_settings.types.template import (
     SimpleExec,
 )
 from content_settings.types.validators import call_validator
-from content_settings.types import PREVIEW_HTML
+from content_settings.types import PREVIEW
 
 from tests.books.models import Book
 
@@ -56,7 +56,7 @@ def test_django_template_admin_preview_html():
     var = DjangoTemplate(
         template_args_default={"title": "Undefined"},
         validators=(call_validator("Book Store"),),
-        admin_preview_as=PREVIEW_HTML,
+        admin_preview_as=PREVIEW.HTML,
     )
 
     assert (
@@ -69,7 +69,7 @@ def test_django_template_admin_preview_text():
     var = DjangoTemplate(
         template_args_default={"title": "Undefined"},
         validators=(call_validator("Book Store"),),
-        admin_preview_as=PREVIEW_HTML,
+        admin_preview_as=PREVIEW.HTML,
     )
 
     assert (

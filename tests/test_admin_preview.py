@@ -22,7 +22,7 @@ from content_settings.types.validators import call_validator
 from content_settings.types.template import required
 from content_settings.types.mixins import MakeCallMixin, mix, AdminPreviewActionsMixin
 from content_settings.context_managers import context_defaults
-from content_settings.types import PREVIEW_HTML, PREVIEW_TEXT, PREVIEW_PYTHON
+from content_settings.types import PREVIEW
 
 from tests.books.models import Book
 from tests.tools import adjust_params
@@ -34,7 +34,7 @@ def init_books():
     Book.objects.create(title="The Poplar", description="A book about poplar trees")
 
 
-with context_defaults(admin_preview_as=PREVIEW_HTML):
+with context_defaults(admin_preview_as=PREVIEW.HTML):
 
     @pytest.mark.parametrize(
         "var,value,initial",
@@ -166,7 +166,7 @@ with context_defaults(admin_preview_as=PREVIEW_HTML):
         assert var.get_admin_preview_object(val, "VAR") == value
 
 
-with context_defaults(admin_preview_as=PREVIEW_TEXT):
+with context_defaults(admin_preview_as=PREVIEW.TEXT):
 
     @pytest.mark.parametrize(
         "var,value,initial",
@@ -351,7 +351,7 @@ with context_defaults(admin_preview_as=PREVIEW_TEXT):
         assert var.get_admin_preview_object(val, "VAR") == value
 
 
-with context_defaults(admin_preview_as=PREVIEW_PYTHON):
+with context_defaults(admin_preview_as=PREVIEW.PYTHON):
 
     @pytest.mark.parametrize(
         "var,value,initial",

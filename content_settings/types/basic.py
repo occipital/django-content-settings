@@ -13,11 +13,7 @@ from content_settings.context_managers import context_defaults_kwargs
 from content_settings.settings import CACHE_SPLITER
 from content_settings.types.lazy import LazyObject
 from content_settings.types import (
-    PREVIEW_ALL,
-    PREVIEW_HTML,
-    PREVIEW_TEXT,
-    PREVIEW_PYTHON,
-    PREVIEW_NONE,
+    PREVIEW,
     required,
     optional,
     pre,
@@ -46,7 +42,7 @@ class SimpleString(BaseSetting):
     - tags (Optional[Iterable[str]]): Optional tags associated with the setting.
     - validators (Tuple[Callable]): Validators to apply to the setting value.
     - validators_raw (Tuple[Callable]): Validators to apply to the text value of the setting.
-    - admin_preview_as (str): The format to use for the admin preview.
+    - admin_preview_as (PREVIEW): The format to use for the admin preview.
     - suffixes (Tuple[str]): Suffixes that can be appended to the setting value.
     - user_defined_slug (str): it contains a slug from db If the setting is defined in DB only (should not be set in content_settings)
     - overwrite_user_defined (bool): Whether the setting can overwrite a user defined setting.
@@ -70,7 +66,7 @@ class SimpleString(BaseSetting):
     tags: Optional[Iterable[str]] = None
     validators: Tuple[Callable] = ()
     validators_raw: Tuple[Callable] = ()
-    admin_preview_as: str = PREVIEW_NONE
+    admin_preview_as: PREVIEW = PREVIEW.NONE
     suffixes: Tuple[str] = ()
     user_defined_slug: Optional[str] = None
     overwrite_user_defined: bool = False
@@ -103,8 +99,8 @@ class SimpleString(BaseSetting):
             CACHE_SPLITER not in self.version
         ), f"Version should not contain CACHE_SPLITER:{CACHE_SPLITER}"
         assert (
-            self.get_admin_preview_as() in PREVIEW_ALL
-        ), f"admin_preview_as should be in {PREVIEW_ALL}"
+            self.get_admin_preview_as() in PREVIEW
+        ), f"admin_preview_as should be one of {PREVIEW}"
 
     def can_view(self, user):
         return self.view_permission(user)
@@ -260,7 +256,7 @@ class SimpleString(BaseSetting):
         return value
 
     def get_admin_preview_value(self, value: str, *args, **kwargs) -> str:
-        if self.get_admin_preview_as() == PREVIEW_NONE:
+        if self.get_admin_preview_as() == PREVIEW.NONE:
             return ""
 
         value = self.give_python_to_admin(value, *args, **kwargs)
@@ -280,10 +276,10 @@ class SimpleString(BaseSetting):
         }
 
     def get_admin_preview_object(self, value: str, name: str, **kwargs) -> str:
-        if self.get_admin_preview_as() == PREVIEW_HTML:
+        if self.get_admin_preview_as() == PREVIEW.HTML:
             return str(self.get_admin_preview_html(value, name, **kwargs))
 
-        if self.get_admin_preview_as() == PREVIEW_TEXT:
+        if self.get_admin_preview_as() == PREVIEW.TEXT:
             value = str(self.get_admin_preview_text(value, name, **kwargs))
         else:
             value = pformat(self.get_admin_preview_python(value, name, **kwargs))
@@ -306,7 +302,7 @@ class SimpleText(SimpleString):
 
 
 class SimpleTextPreview(SimpleText):
-    admin_preview_as: str = PREVIEW_TEXT
+    admin_preview_as: PREVIEW = PREVIEW.TEXT
 
 
 class SimpleHTML(HTMLMixin, SimpleText):
@@ -328,13 +324,13 @@ class EmailString(SimpleString):
 
 
 class SimpleInt(SimpleString):
-    admin_preview_as: str = PREVIEW_PYTHON
+    admin_preview_as: PREVIEW = PREVIEW.PYTHON
     cls_field: forms.Field = forms.IntegerField
     help_format: str = "Any number"
 
 
 class SimpleBool(SimpleString):
-    admin_preview_as: str = PREVIEW_PYTHON
+    admin_preview_as: PREVIEW = PREVIEW.PYTHON
     yeses: Tuple[str] = ("yes", "true", "1", "+", "ok")
     noes: Tuple[str] = ("no", "not", "false", "0", "-", "")
 
@@ -362,11 +358,11 @@ class SimpleBool(SimpleString):
 
 
 class SimpleDecimal(SimpleString):
-    admin_preview_as: str = PREVIEW_PYTHON
+    admin_preview_as: PREVIEW = PREVIEW.PYTHON
     cls_field: forms.Field = forms.DecimalField
     help_format: str = "Decimal number with floating point"
 
 
 class SimplePassword(SimpleString):
-    admin_preview_as: str = PREVIEW_NONE
+    admin_preview_as: PREVIEW = PREVIEW.NONE
     widget_attrs: dict = {"type": "password"}

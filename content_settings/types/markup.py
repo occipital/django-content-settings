@@ -1,9 +1,6 @@
-from collections.abc import Iterable
-from functools import cached_property
-
 from django.core.exceptions import ValidationError
 
-from .basic import SimpleText, PREVIEW_PYTHON, SimpleString
+from .basic import SimpleText, PREVIEW, SimpleString
 from .each import EachMixin, Keys, Item
 from .mixins import EmptyNoneMixin
 from . import required, optional
@@ -11,7 +8,7 @@ from . import required, optional
 
 class SimpleYAML(SimpleText):
     help_format = "Simple <a href='https://en.wikipedia.org/wiki/YAML' target='_blank'>YAML format</a>"
-    admin_preview_as = PREVIEW_PYTHON
+    admin_preview_as = PREVIEW.PYTHON
     yaml_loader = None
     tags = {"yaml"}
 
@@ -47,7 +44,7 @@ class SimpleYAML(SimpleText):
 
 class SimpleJSON(EmptyNoneMixin, SimpleText):
     help_format = "Simple <a href='https://en.wikipedia.org/wiki/JSON' target='_blank'>JSON format</a>"
-    admin_preview_as = PREVIEW_PYTHON
+    admin_preview_as = PREVIEW.PYTHON
     decoder_cls = None
     tags = {"json"}
 
@@ -68,7 +65,7 @@ class SimpleJSON(EmptyNoneMixin, SimpleText):
 
 class SimpleRawCSV(SimpleText):
     help_format = "Simple <a href='https://en.wikipedia.org/wiki/Comma-separated_values' target='_blank'>CSV format</a>"
-    admin_preview_as = PREVIEW_PYTHON
+    admin_preview_as = PREVIEW.PYTHON
     tags = {"csv"}
 
     csv_dialect = "unix"

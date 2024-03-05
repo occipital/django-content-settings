@@ -6,13 +6,13 @@ from django.utils.safestring import mark_safe
 from .basic import SimpleText
 from .mixins import CallToPythonMixin, GiveCallMixin, HTMLMixin
 from .validators import call_validator
-from . import PREVIEW_TEXT, PREVIEW_PYTHON, PREVIEW_HTML, required
+from . import PREVIEW, required
 from ..permissions import superuser
 from .validators import call_validator
 
 
 class SimpleCallTemplate(CallToPythonMixin, SimpleText):
-    admin_preview_as = PREVIEW_TEXT
+    admin_preview_as: PREVIEW = PREVIEW.TEXT
     template_static_includes = ("CONTENT_SETTINGS", "SETTINGS")
     template_static_data = None
     template_args_default = None
@@ -106,7 +106,7 @@ class SimpleCallTemplate(CallToPythonMixin, SimpleText):
 
 class DjangoTemplate(SimpleCallTemplate):
     tags = {"template"}
-    admin_preview_as = PREVIEW_TEXT
+    admin_preview_as: PREVIEW = PREVIEW.TEXT
 
     def prepare_python_call(self, value):
         from django.template import Template
@@ -169,7 +169,7 @@ class DjangoModelTemplate(DjangoModelTemplateMixin, DjangoTemplate):
 
 
 class DjangoModelTemplateHTML(DjangoModelTemplate):
-    admin_preview_as = PREVIEW_HTML
+    admin_preview_as: PREVIEW = PREVIEW.HTML
 
     def give(self, value, suffix=None):
         render_func = super().give(value, suffix)
@@ -180,7 +180,7 @@ class SimpleEval(SimpleCallTemplate):
     update_permission = staticmethod(superuser)
     help_format = "Python code that returns a value."
     tags = {"eval"}
-    admin_preview_as = PREVIEW_PYTHON
+    admin_preview_as: PREVIEW = PREVIEW.PYTHON
 
     def prepare_python_call(self, value):
         return {"template": compile(value, "<string>", "eval")}
@@ -205,7 +205,7 @@ class SimpleEvalNoArgs(GiveCallMixin, SimpleEval):
 
 
 class SimpleExec(SimpleCallTemplate):
-    admin_preview_as = PREVIEW_PYTHON
+    admin_preview_as: PREVIEW = PREVIEW.PYTHON
     update_permission = staticmethod(superuser)
     help_format = "Python code that execute and returns generated variables."
     tags = {"eval"}

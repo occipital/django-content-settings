@@ -2,10 +2,8 @@ import pytest
 import re
 
 from django.test import Client
-from django.contrib.auth import get_user_model
 
 from content_settings.models import ContentSetting
-from content_settings.context_managers import content_settings_context
 from content_settings.types.template import DjangoTemplateNoArgs
 from content_settings.caching import check_update, recalc_checksums
 from content_settings.conf import set_initial_values_for_db

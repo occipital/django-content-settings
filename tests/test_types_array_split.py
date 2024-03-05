@@ -15,16 +15,10 @@ from content_settings.types.mixins import mix, DictSuffixesMixin
 from content_settings.types.array import (
     SplitByFirstLine,
     split_validator_in,
-    NOT_FOUND_DEFAULT,
-    NOT_FOUND_KEY_ERROR,
-    NOT_FOUND_VALUE,
-    SPLIT_FAIL_RAISE,
+    NOT_FOUND,
+    SPLIT_FAIL,
 )
-from content_settings.types.each import (
-    EACH_SUFFIX_USE_PARENT,
-    EACH_SUFFIX_SPLIT_OWN,
-    EACH_SUFFIX_SPLIT_PARENT,
-)
+from content_settings.types.each import EACH_SUFFIX
 from content_settings.types.template import DjangoModelTemplateHTML
 from content_settings.types import optional
 
@@ -114,7 +108,7 @@ def test_with_two_values_one_valid_raise():
     var = SplitByFirstLine(
         split_default_key="EN",
         split_key_validator=split_validator_in(["EN", "UA"]),
-        split_key_validator_failed=SPLIT_FAIL_RAISE,
+        split_key_validator_failed=SPLIT_FAIL.RAISE,
     )
     text = """
 ==== EN ====
@@ -203,8 +197,8 @@ A Simple Line
     assert var.give_python(text) == "A Simple Line"
 
 
-def test_split_not_found_default():
-    var = SplitByFirstLine(split_default_key="EN", split_not_found=NOT_FOUND_DEFAULT)
+def test_split_NOT_FOUND_DEFAULT():
+    var = SplitByFirstLine(split_default_key="EN", split_not_found=NOT_FOUND.DEFAULT)
     text = """
 ==== EN ====
 A Simple Line
@@ -214,10 +208,10 @@ A Simple Line
     assert var.give_python(text, "ff") == "A Simple Line"
 
 
-def test_split_not_found_value():
+def test_split_NOT_FOUND_VALUE():
     var = SplitByFirstLine(
         split_default_key="EN",
-        split_not_found=NOT_FOUND_VALUE,
+        split_not_found=NOT_FOUND.VALUE,
         split_not_found_value="Not Found",
     )
     text = """
@@ -229,8 +223,8 @@ A Simple Line
     assert var.give_python(text, "ff") == "Not Found"
 
 
-def test_split_not_found_key_error():
-    var = SplitByFirstLine(split_default_key="EN", split_not_found=NOT_FOUND_KEY_ERROR)
+def test_split_NOT_FOUND_KEY_ERROR():
+    var = SplitByFirstLine(split_default_key="EN", split_not_found=NOT_FOUND.KEY_ERROR)
     text = """
 ==== EN ====
 A Simple Line
@@ -304,7 +298,7 @@ A Simple Line
 
 
 def test_split_trunc_text_use_parent():
-    var = SplitTruncText(each_suffix_use=EACH_SUFFIX_USE_PARENT)
+    var = SplitTruncText(each_suffix_use=EACH_SUFFIX.USE_PARENT)
     text = """
 ==== EN ====
 A Simple Line
@@ -317,7 +311,7 @@ A Simple Line
 
 def test_split_trunc_text_split_own():
     var = SplitTruncText(
-        each_suffix_use=EACH_SUFFIX_SPLIT_OWN, each_suffix_splitter="_to_"
+        each_suffix_use=EACH_SUFFIX.SPLIT_OWN, each_suffix_splitter="_to_"
     )
     text = """
 ==== EN ====
@@ -334,7 +328,7 @@ A Simple Line
 
 def test_split_trunc_text_split_parent():
     var = SplitTruncText(
-        each_suffix_use=EACH_SUFFIX_SPLIT_PARENT, each_suffix_splitter="_to_"
+        each_suffix_use=EACH_SUFFIX.SPLIT_PARENT, each_suffix_splitter="_to_"
     )
     text = """
 ==== EN ====

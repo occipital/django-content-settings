@@ -1,11 +1,11 @@
-PREVIEW_HTML = "html"
-PREVIEW_TEXT = "text"
-PREVIEW_PYTHON = "python"
-PREVIEW_NONE = "none"
+from enum import Enum, auto
 
-PREVIEW_ALL = [
-    value for name, value in globals().items() if name.startswith("PREVIEW_")
-]
+
+class PREVIEW(Enum):
+    HTML = auto()
+    TEXT = auto()
+    PYTHON = auto()
+    NONE = auto()
 
 
 class required:

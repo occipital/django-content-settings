@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
 
 from .validators import call_validator
-from . import PREVIEW_HTML, pre, PREVIEW_TEXT, PREVIEW_PYTHON, PREVIEW_NONE
+from . import PREVIEW, pre
 
 
 def mix(*cls):
@@ -49,7 +49,7 @@ class EmptyNoneMixin:
 
 
 class HTMLMixin:
-    admin_preview_as: str = PREVIEW_HTML
+    admin_preview_as: PREVIEW = PREVIEW.HTML
 
     def get_help_format(self):
         yield from super().get_help_format()
@@ -107,17 +107,17 @@ class CallToPythonMixin:
 
     def get_admin_preview_object(self, value, name, **kwargs):
         admin_preview_as = self.get_admin_preview_as()
-        if admin_preview_as == PREVIEW_NONE:
+        if admin_preview_as == PREVIEW.NONE:
             return ""
 
         if not value:
             return "No preview (add at least one call_validator in validators)"
 
-        if len(value) == 1 and admin_preview_as in (PREVIEW_TEXT, PREVIEW_HTML):
+        if len(value) == 1 and admin_preview_as in (PREVIEW.TEXT, PREVIEW.HTML):
             value = value[0][1]
             if isinstance(value, Exception):
                 return f"ERROR!!! {value}"
-            if admin_preview_as == PREVIEW_TEXT:
+            if admin_preview_as == PREVIEW.TEXT:
                 return pre(value)
             else:
                 return str(value)
@@ -129,9 +129,9 @@ class CallToPythonMixin:
                 if isinstance(val, Exception):
                     yield f"ERROR!!! {val}"
                 else:
-                    if admin_preview_as == PREVIEW_TEXT:
+                    if admin_preview_as == PREVIEW.TEXT:
                         yield pre(val)
-                    elif admin_preview_as == PREVIEW_HTML:
+                    elif admin_preview_as == PREVIEW.HTML:
                         yield str(val)
                     else:
                         yield pre("<<< " + pformat(val))

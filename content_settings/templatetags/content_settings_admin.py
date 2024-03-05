@@ -1,6 +1,4 @@
 from django import template
-from content_settings.conf import content_settings
-from django.utils.html import escape
 
 from content_settings.models import UserTagSetting
 

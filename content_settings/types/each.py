@@ -1,8 +1,8 @@
-from pprint import pformat
+from enum import Enum, auto
 
 from django.core.exceptions import ValidationError
 
-from . import required, optional, PREVIEW_HTML, pre
+from . import required, optional, PREVIEW, pre
 
 
 class BaseEach:
@@ -239,16 +239,17 @@ class Values(BaseEach):
         )
 
 
-EACH_SUFFIX_USE_OWN = "own"
-EACH_SUFFIX_USE_PARENT = "parent"
-EACH_SUFFIX_SPLIT_OWN = "split_own"
-EACH_SUFFIX_SPLIT_PARENT = "split_parent"
+class EACH_SUFFIX(Enum):
+    USE_OWN = auto()
+    USE_PARENT = auto()
+    SPLIT_OWN = auto()
+    SPLIT_PARENT = auto()
 
 
 class EachMixin:
-    admin_preview_as = PREVIEW_HTML
+    admin_preview_as = PREVIEW.HTML
     each = None
-    each_suffix_use = EACH_SUFFIX_USE_OWN
+    each_suffix_use: EACH_SUFFIX = EACH_SUFFIX.USE_OWN
     each_suffix_splitter = "_by_"
 
     def process_each_validate(self, value):
@@ -283,15 +284,15 @@ class EachMixin:
         if value is None:
             return None, None
 
-        if self.get_each_suffix_use() == EACH_SUFFIX_USE_OWN:
+        if self.get_each_suffix_use() == EACH_SUFFIX.USE_OWN:
             return value, None
 
-        if self.get_each_suffix_use() == EACH_SUFFIX_USE_PARENT:
+        if self.get_each_suffix_use() == EACH_SUFFIX.USE_PARENT:
             return None, value
 
         splitter = self.get_each_suffix_splitter()
         if splitter not in value:
-            if self.get_each_suffix_use() == EACH_SUFFIX_SPLIT_OWN:
+            if self.get_each_suffix_use() == EACH_SUFFIX.SPLIT_OWN:
                 return value, None
             else:
                 return None, value

@@ -40,10 +40,10 @@ You can learn more about fields and widgets in [official Django Forms documentat
 Note: Validators are not used when converting text from the database to the variable object.
 
 - **update_permission**, **fetch_permission**, **view_permission** and **view_history_permission**: Access rights for the variable (detailed in a [separate article](permissions.md)).
-- **admin_preview_as** (default: PREVIEW_TEXT): when you change values in Django Admin text field you see preview of the converted object. This attribute shows how the preview will look like. It has the followig options and all of them can be found in constants `content_settings.PREVIEW_*`:
-    - `PREVIEW_TEXT` - the value will be shown as plain text inside of pre html element
-    - `PREVIEW_HTML` - the value will be shown as it is without esceping
-    - `PREVIEW_PYTHON` - the value will be shown as Python object using `pformat` from `pprint`
+- **admin_preview_as** (default: PREVIEW.TEXT): when you change values in Django Admin text field you see preview of the converted object. This attribute shows how the preview will look like. It has the followig options and all of them can be found in constants `content_settings.PREVIEW_*`:
+    - `PREVIEW.TEXT` - the value will be shown as plain text inside of pre html element
+    - `PREVIEW.HTML` - the value will be shown as it is without esceping
+    - `PREVIEW.PYTHON` - the value will be shown as Python object using `pformat` from `pprint`
 - **on_change** (default: empty tuple): list of functions to call when the setting is changed
 - **on_change_commited** (default: empty tuple): list of functions to call when the setting is changed and commited
 
@@ -126,9 +126,9 @@ It has a big variety of attributes:
 - **split_type** - the type which will be used for each value. You can use a dict to set a specific type for each key
 - **split_default_key** - the key which will be used for the first line
 - **split_default_chooser** - the function which will be used for chosing default value
-- **split_not_found** - what should be done if the required key not found. `NOT_FOUND_DEFAULT` - return default value, `NOT_FOUND_KEY_ERROR` raise an exception and `NOT_FOUND_VALUE` return value from **split_not_found_value**
+- **split_not_found** - what should be done if the required key not found. `NOT_FOUND.DEFAULT` - return default value, `NOT_FOUND.KEY_ERROR` raise an exception and `NOT_FOUND.VALUE` return value from **split_not_found_value**
 - **split_key_validator** - function that validates a key. You can use a function `split_validator_in` for validator value
-- **split_key_validator_failed** - two passible values `SPLIT_FAIL_IGNORE`(default) and `SPLIT_FAIL_RAISE`. What should the system do if validation is failed. `SPLIT_FAIL_IGNORE` - just use line with unvalid key as value for the previous key. `SPLIT_FAIL_RAISE` - raise `ValidationError`
+- **split_key_validator_failed** - two passible values `SPLIT_FAIL.IGNORE`(default) and `SPLIT_FAIL.RAISE`. What should the system do if validation is failed. `SPLIT_FAIL.IGNORE` - just use line with unvalid key as value for the previous key. `SPLIT_FAIL.RAISE` - raise `ValidationError`
 
 #### SplitTranslation
 
