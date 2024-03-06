@@ -4,6 +4,14 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
+### 0.12.1
+
+* 📖 SimpleExecNoCall
+* 📖 GiveOneKeyMixin
+* 📖 SimpleExecOneKey
+* 📖 SimpleExecOneKeyNoCall
+* 📖 STATIC_INCLUDES.UNITED_SETTINGS
+
 ## 0.12
 
 * internal constants refactoring to Enums.
