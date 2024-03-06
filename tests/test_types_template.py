@@ -8,6 +8,8 @@ from content_settings.types.template import (
     SimpleEvalNoArgs,
     required,
     SimpleExec,
+    SimpleExecNoCall,
+    SimpleExecOneKeyNoCall,
 )
 from content_settings.types.validators import call_validator
 from content_settings.types import PREVIEW
@@ -233,3 +235,25 @@ result = value - fee
     assert len(globs) > 3
     assert globs["fee"] == Decimal("10.0")
     assert globs["result"] == Decimal("90.0")
+
+
+def test_exec_no_call():
+    var = SimpleExecNoCall()
+
+    value = """
+name = 'Alex'
+nationality = 'Ukrainian'
+    """
+    globs = var.give_python(value)
+    assert globs["name"] == "Alex"
+    assert globs["nationality"] == "Ukrainian"
+
+
+def test_exec_one_key_no_call():
+    var = SimpleExecOneKeyNoCall(one_key_name="result")
+
+    value = """
+result="Name"
+"""
+
+    assert var.give_python(value) == "Name"

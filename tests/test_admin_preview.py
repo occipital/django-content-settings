@@ -1,8 +1,6 @@
 import pytest
 from decimal import Decimal
 
-from django.core.exceptions import ValidationError
-
 from content_settings.types.template import (
     DjangoTemplateNoArgs,
     DjangoModelTemplate,
@@ -14,12 +12,11 @@ from content_settings.types.template import (
 from content_settings.types.basic import (
     SimpleString,
     SimpleInt,
-    EmailString,
     SimpleHTML,
 )
 from content_settings.types.array import SimpleStringsList
 from content_settings.types.validators import call_validator
-from content_settings.types.template import required
+from content_settings.types.template import required, STATIC_INCLUDES
 from content_settings.types.mixins import MakeCallMixin, mix, AdminPreviewActionsMixin
 from content_settings.context_managers import context_defaults
 from content_settings.types import PREVIEW
@@ -302,6 +299,18 @@ with context_defaults(admin_preview_as=PREVIEW.TEXT):
                             call_validator("epic"),
                         ),
                         template_args_default={"explain": "the best"},
+                    ),
+                    "<pre>>>> VAR()</pre>\n<pre>Book Store the best</pre>\n<pre>>>> VAR('epic')</pre>\n<pre>Book Store epic</pre>",
+                ),
+                (
+                    SimpleEval(
+                        "SETTINGS.TITLE + ' ' + explain",
+                        validators=(
+                            call_validator(),
+                            call_validator("epic"),
+                        ),
+                        template_args_default={"explain": "the best"},
+                        template_static_includes=(STATIC_INCLUDES.UNITED_SETTINGS,),
                     ),
                     "<pre>>>> VAR()</pre>\n<pre>Book Store the best</pre>\n<pre>>>> VAR('epic')</pre>\n<pre>Book Store epic</pre>",
                 ),

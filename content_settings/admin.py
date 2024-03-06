@@ -31,7 +31,7 @@ from .models import (
     UserPreviewHistory,
 )
 from .context_managers import content_settings_context
-from .conf import ALL, USER_DEFINED_TYPES_INSTANCE
+from .conf import USER_DEFINED_TYPES_INSTANCE
 from .settings import USER_TAGS, USER_DEFINED_TYPES, PREVIEW_ON_SITE_HREF
 from .caching import get_type_by_name
 

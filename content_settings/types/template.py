@@ -1,4 +1,6 @@
 from itertools import zip_longest
+from typing import Any, Tuple
+from enum import Enum, auto
 
 from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
@@ -11,10 +13,52 @@ from ..permissions import superuser
 from .validators import call_validator
 
 
-class SimpleCallTemplate(CallToPythonMixin, SimpleText):
-    admin_preview_as: PREVIEW = PREVIEW.TEXT
-    template_static_includes = ("CONTENT_SETTINGS", "SETTINGS")
+class STATIC_INCLUDES(Enum):
+    CONTENT_SETTINGS = auto()
+    SETTINGS = auto()
+    UNITED_SETTINGS = auto()
+
+
+class StaticDataMixin:
+    template_static_includes: Tuple[STATIC_INCLUDES] = (
+        STATIC_INCLUDES.CONTENT_SETTINGS,
+        STATIC_INCLUDES.SETTINGS,
+    )
     template_static_data = None
+
+    def get_template_static_data(self):
+        if not self.template_static_data:
+            return {}
+        if callable(self.template_static_data):
+            return self.template_static_data()
+        return self.template_static_data
+
+    def get_template_full_static_data(self):
+        ret = {}
+
+        if STATIC_INCLUDES.CONTENT_SETTINGS in self.template_static_includes:
+            from content_settings.conf import content_settings
+
+            ret["CONTENT_SETTINGS"] = content_settings
+
+        if STATIC_INCLUDES.UNITED_SETTINGS in self.template_static_includes:
+            from content_settings.conf import settings
+
+            ret["SETTINGS"] = settings
+
+        elif STATIC_INCLUDES.SETTINGS in self.template_static_includes:
+            from django.conf import settings
+
+            ret["SETTINGS"] = settings
+
+        return {
+            **ret,
+            **self.get_template_static_data(),
+        }
+
+
+class SimpleCallTemplate(CallToPythonMixin, StaticDataMixin, SimpleText):
+    admin_preview_as: PREVIEW = PREVIEW.TEXT
     template_args_default = None
     help_format = "Simple <a href='https://docs.djangoproject.com/en/3.2/topics/templates/' target='_blank'>Django Template</a>."
 
@@ -28,13 +72,6 @@ class SimpleCallTemplate(CallToPythonMixin, SimpleText):
         if not self.template_args_default:
             return {}
         return self.template_args_default
-
-    def get_template_static_data(self):
-        if not self.template_static_data:
-            return {}
-        if callable(self.template_static_data):
-            return self.template_static_data()
-        return self.template_static_data
 
     def get_validators(self):
         validators = super().get_validators()
@@ -84,24 +121,6 @@ class SimpleCallTemplate(CallToPythonMixin, SimpleText):
                 raise ValidationError(f"Missing required argument {name}")
 
         return kwargs
-
-    def get_template_full_static_data(self):
-        ret = {}
-
-        if "CONTENT_SETTINGS" in self.template_static_includes:
-            from content_settings.conf import content_settings
-
-            ret["CONTENT_SETTINGS"] = content_settings
-
-        if "SETTINGS" in self.template_static_includes:
-            from django.conf import settings
-
-            ret["SETTINGS"] = settings
-
-        return {
-            **ret,
-            **self.get_template_static_data(),
-        }
 
 
 class DjangoTemplate(SimpleCallTemplate):
@@ -210,6 +229,7 @@ class SimpleExec(SimpleCallTemplate):
     help_format = "Python code that execute and returns generated variables."
     tags = {"eval"}
     call_return = None
+    allow_import = False
 
     def get_call_return(self):
         if self.call_return is None:
@@ -237,8 +257,10 @@ class SimpleExec(SimpleCallTemplate):
         globs = {
             **self.get_template_full_static_data(),
             **self.prepate_input_to_dict(*args, **kwargs),
-            "__import__": None,
         }
+
+        if not self.allow_import:
+            globs["__import__"] = None
 
         exec(template, globs)
         call_return = self.get_call_return()
@@ -253,4 +275,68 @@ class DjangoModelExec(DjangoModelTemplateMixin, SimpleExec):
 
 
 class SimpleExecNoArgs(GiveCallMixin, SimpleExec):
+    pass
+
+
+class SimpleExecNoCall(StaticDataMixin, SimpleText):
+    admin_preview_as: PREVIEW = PREVIEW.PYTHON
+    update_permission = staticmethod(superuser)
+    help_format = "Python code that execute and generates environment variables."
+    tags = {"eval"}
+    call_return = None
+    allow_import = False
+
+    def get_help_format(self):
+        yield self.help_format
+        yield " Available objects:<ul>"
+
+        for name in self.get_template_full_static_data().keys():
+            yield f"<li>{name}</li>"
+
+        yield "</ul>"
+
+    def get_call_return(self):
+        if self.call_return is None:
+            return None
+        if isinstance(self.call_return, dict):
+            return self.call_return
+
+        return {name: None for name in self.call_return}
+
+    def to_python(self, value: str) -> Any:
+        value = compile(value, "<string>", "exec")
+
+        globs = {
+            **self.get_template_full_static_data(),
+        }
+
+        if not self.allow_import:
+            globs["__import__"] = None
+
+        exec(value, globs)
+        call_return = self.get_call_return()
+
+        if call_return is None:
+            return globs
+        return {k: globs.get(k, v) for k, v in call_return.items()}
+
+
+class GiveOneKeyMixin:
+    one_key_name: str = "result"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if hasattr(self, "call_return"):
+            self.call_return = {self.one_key_name: required}
+        self.one_key_name = self.one_key_name.lower()
+
+    def give(self, value, suffix=None):
+        return super().give(value, suffix)[self.one_key_name]
+
+
+class SimpleExecOneKey(GiveOneKeyMixin, SimpleExec):
+    pass
+
+
+class SimpleExecOneKeyNoCall(GiveOneKeyMixin, SimpleExecNoCall):
     pass

@@ -331,7 +331,7 @@ class SimpleString(BaseSetting):
         val = self.to_python(value)
         self.validate(val)
 
-    def validate(self, value):
+    def validate(self, value: Any):
         """
         Validate the setting python value.
         """
@@ -353,6 +353,9 @@ class SimpleString(BaseSetting):
     def give_python_to_admin(self, value: str, name: str, **kwargs) -> Any:
         """
         Converts the setting text value to setting admin value that will be used for rendering admin preview.
+
+        By default it uses to_python method, but it make sense to override it for some types, for example callable types,
+        where you want to show the result of the call in the preview.
         """
         return self.to_python(value)
 
