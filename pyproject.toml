@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-content-settings"
-version = "0.12.1"
+version = "0.12.2"
 description = "DCS - the most advanced admin editable setting"
 homepage = "https://django-content-settings.readthedocs.io/en/latest/"
 repository = "https://github.com/occipital/django-content-settings/"
@@ -24,8 +24,8 @@ license = "MIT"
 packages = [{include = "content_settings"}]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<=3.12"
-django = ">=3.2,<=5.0"
+python = ">=3.8"
+django = ">=3.2"
 
 
 [tool.poetry.group.test.dependencies]
