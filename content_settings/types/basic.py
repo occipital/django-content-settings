@@ -28,6 +28,8 @@ class BaseSetting:
 
 class SimpleString(BaseSetting):
     """
+    A very basic class that returns the string value, the same as a given value.
+
      Attributes:
     - constant (bool): Whether the setting is constant (can not be changed).
     - cls_field (forms.CharField): The form field class to use for the setting.
@@ -442,19 +444,35 @@ class SimpleString(BaseSetting):
 
 
 class SimpleText(SimpleString):
+    """
+    Multiline text setting type.
+    """
+
     widget: forms.Widget = forms.Textarea
     widget_attrs: dict = {"rows": 10, "cols": 80}
 
 
 class SimpleTextPreview(SimpleText):
+    """
+    Multiline text setting type with preview. By default SimpleText and SimpleString don't have preview, but for showing preview in EachMixin, we need to have preview for each type.
+    """
+
     admin_preview_as: PREVIEW = PREVIEW.TEXT
 
 
 class SimpleHTML(HTMLMixin, SimpleText):
+    """
+    Multiline HTML setting type.
+    """
+
     pass
 
 
 class URLString(SimpleString):
+    """
+    URL setting type.
+    """
+
     cls_field: forms.Field = forms.URLField
     widget: forms.Widget = forms.URLInput
     help_format: str = "URL"
@@ -462,6 +480,10 @@ class URLString(SimpleString):
 
 
 class EmailString(SimpleString):
+    """
+    Email setting type.
+    """
+
     cls_field: forms.Field = forms.EmailField
     widget: forms.Widget = forms.EmailInput
     help_format: str = "Email"
@@ -469,12 +491,23 @@ class EmailString(SimpleString):
 
 
 class SimpleInt(SimpleString):
+    """
+    Integer setting type.
+    """
+
     admin_preview_as: PREVIEW = PREVIEW.PYTHON
     cls_field: forms.Field = forms.IntegerField
     help_format: str = "Any number"
 
 
 class SimpleBool(SimpleString):
+    """
+    Boolean setting type.
+    Attributes:
+    - yeses (Tuple[str]): Accepted values for True.
+    - noes (Tuple[str]): Accepted values for False.
+    """
+
     admin_preview_as: PREVIEW = PREVIEW.PYTHON
     yeses: Tuple[str] = ("yes", "true", "1", "+", "ok")
     noes: Tuple[str] = ("no", "not", "false", "0", "-", "")
@@ -503,11 +536,20 @@ class SimpleBool(SimpleString):
 
 
 class SimpleDecimal(SimpleString):
+    """
+    Decimal setting type.
+    """
+
     admin_preview_as: PREVIEW = PREVIEW.PYTHON
     cls_field: forms.Field = forms.DecimalField
     help_format: str = "Decimal number with floating point"
 
 
 class SimplePassword(SimpleString):
+    """
+    Password setting type. It is not possible to fetch the value using API. In the admin panel, the value is hidden.
+    """
+
     admin_preview_as: PREVIEW = PREVIEW.NONE
     widget_attrs: dict = {"type": "password"}
+    fetch_permission: Callable = staticmethod(none)
