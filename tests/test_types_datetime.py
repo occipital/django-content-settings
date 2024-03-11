@@ -36,7 +36,7 @@ def test_date():
 
 
 def test_date_input_format():
-    var = DateString("", input_formats="%d/%m/%Y")
+    var = DateString("", date_formats="%d/%m/%Y")
 
     assert var.give_python("03/01/2020") == date(2020, 1, 3)
 

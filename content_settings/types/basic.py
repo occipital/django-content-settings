@@ -1,3 +1,7 @@
+"""
+The most basic types for the content settings. SimpleString is used as the base for all other types. 
+"""
+
 from inspect import isclass
 from functools import cached_property
 from pprint import pformat

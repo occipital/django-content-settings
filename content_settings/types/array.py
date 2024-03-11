@@ -1,3 +1,7 @@
+"""
+Types that convert a string into a list of values.
+"""
+
 from typing import Any, Optional, List, Callable, Generator, Iterable
 from collections.abc import Iterable
 from enum import Enum, auto
