@@ -5,7 +5,7 @@ from typing import Any, List, Tuple, Union
 
 from datetime import datetime, time, timedelta
 from django.core.exceptions import ValidationError
-from django.utils import formats
+from django.utils import formats as django_formats
 from django.forms.utils import from_current_timezone
 
 from .basic import SimpleString, PREVIEW
@@ -101,7 +101,9 @@ class DateTimeString(ProcessInputFormats):
     - `datetime_formats` - list (or a single string) of formats to use for conversion. As a default it uses `DATETIME_INPUT_FORMATS` from `django.conf.settings`
     """
 
-    datetime_formats: TFormats = formats.get_format_lazy("DATETIME_INPUT_FORMATS")
+    datetime_formats: TFormats = list(
+        django_formats.get_format_lazy("DATETIME_INPUT_FORMATS")
+    )
 
     class Meta:
         input_formats_field = "datetime_formats"
@@ -118,7 +120,7 @@ class DateString(ProcessInputFormats):
     - `date_formats` - list (or a single string) of formats to use for conversion. As a default it uses `DATE_INPUT_FORMATS` from `django.conf.settings`
     """
 
-    date_formats: TFormats = formats.get_format_lazy("DATE_INPUT_FORMATS")
+    date_formats: TFormats = list(django_formats.get_format_lazy("DATE_INPUT_FORMATS"))
 
     class Meta:
         input_formats_field = "date_formats"
@@ -135,7 +137,7 @@ class TimeString(DateTimeString):
     - `time_formats` - list (or a single string) of formats to use for conversion. As a default it uses `TIME_INPUT_FORMATS` from `django.conf.settings`
     """
 
-    time_formats: TFormats = formats.get_format_lazy("TIME_INPUT_FORMATS")
+    time_formats: TFormats = list(django_formats.get_format_lazy("TIME_INPUT_FORMATS"))
 
     class Meta:
         input_formats_field = "time_formats"
