@@ -18,3 +18,7 @@ class optional:
 
 def pre(value: str) -> str:
     return "<pre>{}</pre>".format(str(value).replace("<", "&lt;"))
+
+
+class BaseSetting:
+    pass

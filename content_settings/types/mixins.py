@@ -1,5 +1,6 @@
-from typing import Any, Optional
+from typing import Any, Optional, Union, Dict, Callable
 from pprint import pformat
+from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
@@ -7,14 +8,30 @@ from django.utils.safestring import mark_safe
 from .validators import call_validator
 from . import PREVIEW, pre
 
+TNumber = Union[int, float, Decimal]
+
 
 def mix(*cls):
+    """
+    Returns a mix of types. Mixins should go first and the last one should be the main type.
+
+    Example:
+    mix(HTMLMixin, SimpleInt)
+    """
     return type("", cls, {})
 
 
 class MinMaxValidationMixin:
-    min_value = None
-    max_value = None
+    """
+    Mixin that validates that value is between min_value and max_value.
+
+    Attributes:
+    min_value: Minimum value. If None, then no minimum value.
+    max_value: Maximum value. If None, then no maximum value.
+    """
+
+    min_value: Optional[TNumber] = None
+    max_value: Optional[TNumber] = None
 
     def validate(self, value):
         super().validate(value)
@@ -40,6 +57,10 @@ class MinMaxValidationMixin:
 
 
 class EmptyNoneMixin:
+    """
+    Mixin for types that returns None if value is empty string.
+    """
+
     value_required = False
 
     def to_python(self, value):
@@ -49,6 +70,11 @@ class EmptyNoneMixin:
 
 
 class HTMLMixin:
+    """
+    Mixin for types that should be displayed in HTML format.
+    And also returned content should be marked as safe.
+    """
+
     admin_preview_as: PREVIEW = PREVIEW.HTML
 
     def get_help_format(self):
@@ -60,10 +86,18 @@ class HTMLMixin:
 
 
 class PositiveValidationMixin(MinMaxValidationMixin):
+    """
+    Mixin that validates that value is positive.
+    """
+
     min_value = 0
 
 
 class CallToPythonMixin:
+    """
+    Mixin for callable types, or types that should be called to get the value.
+    """
+
     call_func = None
 
     def prepare_python_call(self, value):
@@ -141,8 +175,7 @@ class CallToPythonMixin:
 
 class GiveCallMixin:
     """
-    for Template-like classes, when to_python should return a function,
-    but as value you want to return not a function, but call it and return result
+    Mixin for callable types, but result of the call without artuments should be returned.
     """
 
     def get_suffixes(self):
@@ -166,6 +199,12 @@ class GiveCallMixin:
 
 
 class MakeCallMixin:
+    """
+    Mixin for non-callable python objects will be returned as callable given.
+
+    Can be usefull when you change callable types to a simple type but don't want to change the code that uses that type.
+    """
+
     def get_suffixes(self):
         return ("call",) + super().get_suffixes()
 
@@ -177,7 +216,11 @@ class MakeCallMixin:
 
 
 class DictSuffixesMixin:
-    suffixes = {}
+    """
+    Mixin that adds suffixes to the type using dictionary of functions.
+    """
+
+    suffixes: Dict[str, Callable[[Any], Any]] = {}
 
     def give(self, value, suffix=None):
         if suffix is None:
@@ -186,6 +229,10 @@ class DictSuffixesMixin:
 
 
 class AdminPreviewMenuMixin:
+    """
+    Mixin that adds a menu to the admin preview.
+    """
+
     def gen_admin_preview_html_menu_items(self, value: Any, name: str, **kwargs) -> str:
         return
         yield
@@ -249,6 +296,10 @@ class AdminSuffixesMixinPreview:
 
 
 class AdminPreviewSuffixesMixin(AdminSuffixesMixinPreview, AdminPreviewMenuMixin):
+    """
+    Mixin shows links to preview different suffixes of the value in the admin preview.
+    """
+
     pass
 
 
@@ -275,7 +326,10 @@ class ActionResponse(dict):
 
 
 class AdminActionsMixinPreview:
-    # list of tuples (name, function)
+    """
+    Mixin that adds actions to the admin preview.
+    """
+
     admin_preview_actions = None
 
     def gen_admin_preview_html_menu_items(

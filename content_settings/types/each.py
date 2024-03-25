@@ -1,30 +1,37 @@
+"""
+EachMixin is the main mixin of the module, which allows types to have subtypes, that check, preview and converts the structure of the value.
+
+For example `array.TypedStringsList`
+"""
+
 from enum import Enum, auto
+from typing import Union, Any
 
 from django.core.exceptions import ValidationError
 
-from . import required, optional, PREVIEW, pre
+from . import required, optional, PREVIEW, pre, BaseSetting
 
 
 class BaseEach:
-    def is_each(self, value):
+    def is_each(self, value: Any):
         return True
 
-    def validate(self, value):
+    def validate(self, value: Any):
         if not self.is_each(value):
             return
         self.each_validate(value)
 
-    def to_python(self, value):
+    def to_python(self, value: Any):
         if not self.is_each(value):
             return value
         return self.each_to_python(value)
 
-    def give(self, value, suffix=None):
+    def give(self, value: Any, suffix=None):
         if not self.is_each(value):
             return value
         return self.each_give(value, suffix)
 
-    def give_python_to_admin(self, value, name, **kwargs):
+    def give_python_to_admin(self, value: Any, name, **kwargs):
         if not self.is_each(value):
             return value
         return self.each_give_python_to_admin(value, name, **kwargs)
@@ -35,11 +42,18 @@ class BaseEach:
         return self.each_get_admin_preview_object(value, *args, **kwargs)
 
 
+TCSType = Union[BaseEach, BaseSetting]
+
+
 class Item(BaseEach):
-    def __init__(self, cs_type):
+    """
+    Converts each element of the array into a specific type `cs_type`
+    """
+
+    def __init__(self, cs_type: TCSType):
         self.cs_type = cs_type
 
-    def is_each(self, value):
+    def is_each(self, value: Any):
         return isinstance(value, (list, tuple))
 
     def each_validate(self, value):
@@ -94,7 +108,11 @@ class Item(BaseEach):
 
 
 class Keys(BaseEach):
-    def __init__(self, **kwargs):
+    """
+    Converts values of the specific keys into specific types `cs_types`
+    """
+
+    def __init__(self, **kwargs: dict[str, TCSType]):
         self.cs_types = kwargs
 
     def is_each(self, value):
@@ -182,7 +200,11 @@ class Keys(BaseEach):
 
 
 class Values(BaseEach):
-    def __init__(self, cs_type):
+    """
+    Converts each value of the given dict into `cs_type`
+    """
+
+    def __init__(self, cs_type: TCSType):
         self.cs_type = cs_type
 
     def is_each(self, value):
@@ -247,10 +269,18 @@ class EACH_SUFFIX(Enum):
 
 
 class EachMixin:
-    admin_preview_as = PREVIEW.HTML
-    each = None
+    """
+    Attributes:
+
+    - `each` - the type of the subvalues.
+    - `each_suffix_use` - how to use the suffixes. Can be `USE_OWN`, `USE_PARENT`, `SPLIT_OWN`, `SPLIT_PARENT`
+    - `each_suffix_splitter` - the string that separates the suffixes. Applicable only when `each_suffix_use` is `SPLIT_OWN` or `SPLIT_PARENT`
+    """
+
+    admin_preview_as: PREVIEW = PREVIEW.HTML
+    each: BaseEach = None
     each_suffix_use: EACH_SUFFIX = EACH_SUFFIX.USE_OWN
-    each_suffix_splitter = "_by_"
+    each_suffix_splitter: str = "_by_"
 
     def process_each_validate(self, value):
         self.each.validate(value)

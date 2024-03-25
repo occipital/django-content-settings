@@ -7,6 +7,10 @@ from . import required, optional
 
 
 class SimpleYAML(SimpleText):
+    """
+    YAML content settings type. Requires yaml module.
+    """
+
     help_format = "Simple <a href='https://en.wikipedia.org/wiki/YAML' target='_blank'>YAML format</a>"
     admin_preview_as = PREVIEW.PYTHON
     yaml_loader = None
@@ -43,6 +47,10 @@ class SimpleYAML(SimpleText):
 
 
 class SimpleJSON(EmptyNoneMixin, SimpleText):
+    """
+    JSON content settings type.
+    """
+
     help_format = "Simple <a href='https://en.wikipedia.org/wiki/JSON' target='_blank'>JSON format</a>"
     admin_preview_as = PREVIEW.PYTHON
     decoder_cls = None
@@ -64,6 +72,10 @@ class SimpleJSON(EmptyNoneMixin, SimpleText):
 
 
 class SimpleRawCSV(SimpleText):
+    """
+    Type that converts simple CSV to list of lists.
+    """
+
     help_format = "Simple <a href='https://en.wikipedia.org/wiki/Comma-separated_values' target='_blank'>CSV format</a>"
     admin_preview_as = PREVIEW.PYTHON
     tags = {"csv"}
@@ -105,7 +117,6 @@ class KeysFromListByList(KeysFromList):
 
 
 class SimpleCSV(EachMixin, SimpleRawCSV):
-
     csv_fields = None
     csv_fields_list_type = SimpleString(optional)
 
