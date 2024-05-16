@@ -6,9 +6,9 @@
 
 # Django Content Settings - the most advanced admin editable setting
 
-[▶️ YouTube Video with dive deep ~ 2h](https://youtu.be/RNYmvv_G5zs)
-
 The `django-content-settings` module is a versatile addition to the Django ecosystem, offering users the ability to easily create and manage editable variables directly from the Django admin panel. What sets this module apart is its ability to handle variables of any type without restricting their complexity. Thanks to an integrated caching system, these variables can be used efficiently in code, irrespective of their complexity.
+
+With `django-content-settings` allows you to store variables with specific functionality in your code, that can be validated and previed in your django admin panel. The validators, previewers and all of the logic is stored in the setting definition.
 
 ### Key Features
 
@@ -110,3 +110,5 @@ Simple as that, we have a lot of *setting types* you can use `SimpleText`, `Simp
 It is also very fast thanks to our caching system. [Read more about it](https://django-content-settings.readthedocs.io/en/latest/caching/).
 
 Some fancy things you can find in our [cookbook](https://django-content-settings.readthedocs.io/en/latest/cookbook/).
+
+[▶️ YouTube Video with dive deep ~ 2h](https://youtu.be/RNYmvv_G5zs)

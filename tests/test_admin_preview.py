@@ -15,7 +15,11 @@ from content_settings.types.basic import (
     SimpleHTML,
 )
 from content_settings.types.array import SimpleStringsList
-from content_settings.types.validators import call_validator
+from content_settings.types.validators import (
+    call_validator,
+    gen_args_call_validator,
+    gen_kwargs_call_validator,
+)
 from content_settings.types.template import required, STATIC_INCLUDES
 from content_settings.types.mixins import MakeCallMixin, mix, AdminPreviewActionsMixin
 from content_settings.context_managers import context_defaults
@@ -332,6 +336,18 @@ with context_defaults(admin_preview_as=PREVIEW.TEXT):
                         validators=(
                             call_validator(val=Decimal("2")),
                             call_validator(Decimal("0.5")),
+                        ),
+                        template_args_default={"val": Decimal("1")},
+                        template_static_data={"Decimal": Decimal},
+                    ),
+                    "<pre>>>> VAR(val=Decimal('2'))</pre>\n<pre>0.6</pre>\n<pre>>>> VAR(Decimal('0.5'))</pre>\n<pre>2.4</pre>",
+                ),
+                (
+                    SimpleEval(
+                        "Decimal('1.2')/val",
+                        validators=(
+                            gen_kwargs_call_validator(lambda: dict(val=Decimal("2"))),
+                            gen_args_call_validator(lambda: [Decimal("0.5")]),
                         ),
                         template_args_default={"val": Decimal("1")},
                         template_static_data={"Decimal": Decimal},
