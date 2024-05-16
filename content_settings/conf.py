@@ -7,6 +7,7 @@ from django.conf import settings as django_settings
 from .types.basic import BaseSetting
 from .caching import get_value, get_type_by_name, get_all_names
 from .settings import USER_DEFINED_TYPES, TAGS
+from .store import add_app_name
 
 USER_DEFINED_TYPES_INSTANCE = {}
 USER_DEFINED_TYPES_INITIAL = {}
@@ -31,21 +32,31 @@ if USER_DEFINED_TYPES:
         USER_DEFINED_TYPES_NAME[slug] = name
 
 
-CALL_TAGS = []
-for func_tag in TAGS:
-    if isinstance(func_tag, str):
-        func_tag = import_object(func_tag)
-    elif callable(func_tag):
-        pass
-    else:
-        raise AssertionError("func_tag should be str or callable")
-    CALL_TAGS.append(func_tag)
+CALL_TAGS = None
 
 
-def gen_tags(cs_type, value):
+def get_call_tags():
+    global CALL_TAGS
+
+    if CALL_TAGS is not None:
+        return CALL_TAGS
+
+    CALL_TAGS = []
+    for func_tag in TAGS:
+        if isinstance(func_tag, str):
+            func_tag = import_object(func_tag)
+        elif callable(func_tag):
+            pass
+        else:
+            raise AssertionError(f"func_tag: {func_tag} should be str or callable")
+        CALL_TAGS.append(func_tag)
+    return CALL_TAGS
+
+
+def gen_tags(name, cs_type, value):
     tags = set()
-    for func_tag in CALL_TAGS:
-        tags |= func_tag(cs_type, value)
+    for func_tag in get_call_tags():
+        tags |= func_tag(name, cs_type, value)
     return tags
 
 
@@ -109,6 +120,7 @@ for app_config in apps.app_configs.values():
         ), "Do not set user_defined_slug in content_settings.py"
 
         ALL[attr] = val
+        add_app_name(attr, app)
 
 
 def split_attr(value):
@@ -182,10 +194,12 @@ class _UnitedSettings(_Settings):
         return hasattr(django_settings, value) or super().__contains__(value)
 
 
-def get_str_tags(cs_type, value=None):
+def get_str_tags(cs_name, cs_type, value=None):
     tags = cs_type.get_tags()
     if not cs_type.user_defined_slug:
-        tags |= cs_type.get_content_tags(cs_type.default if value is None else value)
+        tags |= cs_type.get_content_tags(
+            cs_name, cs_type.default if value is None else value
+        )
     return "\n".join(sorted(tags))
 
 
@@ -225,7 +239,7 @@ def set_initial_values_for_db(apply=False):
                     name=k,
                     value=cs_type.default,
                     version=cs_type.version,
-                    tags=get_str_tags(cs_type),
+                    tags=get_str_tags(k, cs_type),
                     help=cs_type.get_help(),
                 ),
             )
@@ -258,7 +272,7 @@ def set_initial_values_for_db(apply=False):
                     show="adjust",
                 )
 
-            str_tags = get_str_tags(cs_type, cs.value)
+            str_tags = get_str_tags(cs.name, cs_type, cs.value)
             str_help = cs_type.get_help()
 
             if cs.tags != str_tags or cs.help != str_help:

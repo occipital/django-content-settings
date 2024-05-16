@@ -277,7 +277,7 @@ class SimpleString(BaseSetting):
             tags = set()
         return set(tags)
 
-    def get_content_tags(self, value: str) -> Set[str]:
+    def get_content_tags(self, name: str, value: str) -> Set[str]:
         """
         Generate tags based on current type and value.
 
@@ -285,7 +285,7 @@ class SimpleString(BaseSetting):
         """
         from content_settings.conf import gen_tags
 
-        return gen_tags(self, value)
+        return gen_tags(name, self, value)
 
     def get_validators(self) -> Tuple[Callable[[Any], None]]:
         """

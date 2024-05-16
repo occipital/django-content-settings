@@ -76,7 +76,7 @@ def update_value_tags(sender, instance, **kwargs):
     if cs_type is None:
         return
 
-    instance.tags = get_str_tags(cs_type, instance.value)
+    instance.tags = get_str_tags(instance.name, cs_type, instance.value)
 
 
 if USER_DEFINED_TYPES:

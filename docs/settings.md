@@ -66,6 +66,25 @@ CONTENT_SETTINGS_CONTEXT = {
 }
 ```
 
+### `CONTENT_SETTINGS_TAGS`
+
+Allows you to add automatically generated tags to all of your settings. It is a list of functions (or import line to the function)
+
+The function should take three arguments - the name of the setting, setting object, and new value
+
+by default it is 
+
+```python
+[
+    "content_settings.tags.changed",
+],
+```
+
+Available built in types:
+
+* `"content_settings.tags.changed"` - changed tag to filter only changed settings (the name of the tag can changed in setting `CONTENT_SETTINGS_TAG_CHANGED`)
+* `"content_settings.tags.app_name"` - every setting will have a tag with app name where one was defined
+
 ---
 
 These customizable settings in the `django-content-settings` module enhance the flexibility and functionality of content management within Django applications. By adjusting these settings, developers can optimize the behavior of the module to better suit the specific needs of their projects.

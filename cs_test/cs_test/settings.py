@@ -134,3 +134,8 @@ CONTENT_SETTINGS_USER_DEFINED_TYPES = [
     ("text", "content_settings.types.basic.SimpleText", "Private Text"),
     ("bool", "content_settings.types.basic.SimpleBool", "Private Bool"),
 ]
+
+CONTENT_SETTINGS_TAGS = [
+    "content_settings.tags.changed",
+    "content_settings.tags.app_name",
+]
