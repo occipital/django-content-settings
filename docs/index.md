@@ -34,6 +34,8 @@ The module comes with a built-in API system, enabling:
 
 ### How does it look
 
+*[glossary](glossary.md)*
+
 - **Setup**. [Here](https://django-content-settings.readthedocs.io/en/latest/first/) you can get step-by-step instruction.
 
 - **Define the setting**. To do so you need to define constant in `content_settings.py` in your app
@@ -48,15 +50,15 @@ TITLE = SimpleString("Songs", help="The title of the site")
 
 the code above defines a variable `TITLE`, with type `SimpleString` and default value `Songs`.
 
-- **Migrate**. In order to be able to edit data in Django Admin
+- **Migrate**. In order to be able to edit *raw value* in Django Admin
 
 ```bash
 $ python manage.py migrate
 ```
 
-_Technically, you can use variable in code even without migration. The migration is need to make variable editable in admin panel_
+Technically, you can *use setting* in code even without migration. The migration is need to make setting editable in admin panel
 
-- **Use it in your project**. That is it. You can the variable `TITLE` in your code. 
+- **Use it in your project**. That is it. You can *use setting* `TITLE` in your code. 
 
 ```python
 
@@ -80,7 +82,7 @@ In template:
 <h2>{{CONTENT_SETTINGS.TITLE}}</h2>
 ```
 
-*if you want to use `{{SETTINGS}}` as an object that unites settings and content settings, replace `"content_settings.context_processors.content_settings"` with `"content_settings.context_processors.settings"`*
+if you want to use `{{SETTINGS}}` as an object that unites settings and content settings, replace `"content_settings.context_processors.content_settings"` with `"content_settings.context_processors.settings"`
 
 In API:
 
@@ -103,7 +105,7 @@ TITLE = SimpleString(
 )
 ```
 
-Simple as that, we have a lot of types for settings you can use `SimpleText`, `SimpleHTML`, `SimpleInt`, `SimpleBool`, `SimpleDecimal`, `DateTimeString`, `SimpleTimedelta`, `SimpleYAML`, `SimpleJSON`, `SimpleCSV`, `DjangoTemplate`, `DjangoModelTemplate`, `SimpleEval`, `SimpleExec` and so on... [Read more](https://django-content-settings.readthedocs.io/en/latest/types/) about the types available for you.
+Simple as that, we have a lot of *setting types* you can use `SimpleText`, `SimpleHTML`, `SimpleInt`, `SimpleBool`, `SimpleDecimal`, `DateTimeString`, `SimpleTimedelta`, `SimpleYAML`, `SimpleJSON`, `SimpleCSV`, `DjangoTemplate`, `DjangoModelTemplate`, `SimpleEval`, `SimpleExec` and so on... [Read more](https://django-content-settings.readthedocs.io/en/latest/types/) about the types available for you.
 
 It is also very fast thanks to our caching system. [Read more about it](https://django-content-settings.readthedocs.io/en/latest/caching/).
 

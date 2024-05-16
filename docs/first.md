@@ -53,7 +53,7 @@ TEMPLATES = [
 
 ### Step 4: Access Variables in Templates
 
-Now, you can use the variables in templates like this:
+Now, you can *use settings* in templates like this:
 
 ```html
 <b>{{ CONTENT_SETTINGS.MY_VAR }}</b>
@@ -115,7 +115,7 @@ TITLE = SimpleString(
 
 ### Step 2: Run Migrations
 
-Execute migrations to add this value to the database, allowing you to edit it subsequently.
+Execute migrations to add *default value* to the database, allowing you to edit it subsequently.
 
 ```bash
 python manage.py migrate
@@ -123,16 +123,16 @@ python manage.py migrate
 
 ### Understanding the Code
 
-- `TITLE`: The name of the variable you will use in your code and admin panel.
-- `SimpleString`: The type of variable, in this case, a simple string.
-- `"Book Store"`: The default value for this variable.
+- `TITLE`: *setting name* you will use in your code and admin panel.
+- `SimpleString`: *setting type*, in this case, a simple string.
+- `"Book Store"`: *setting default value*.
 - `"The title of the book store"`: A description displayed in the admin panel.
 
 ## Usage in Code and Templates
 
 ### In Python Code
 
-To use the variable in Python code, such as in views:
+To *use setting* in Python code, such as in views:
 
 ```python
 from content_settings.conf import content_settings

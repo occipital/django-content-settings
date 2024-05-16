@@ -10,7 +10,6 @@ from .mixins import CallToPythonMixin, GiveCallMixin, HTMLMixin
 from .validators import call_validator
 from . import PREVIEW, required
 from ..permissions import superuser
-from .validators import call_validator
 
 
 class STATIC_INCLUDES(Enum):

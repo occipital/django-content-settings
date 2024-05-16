@@ -4,7 +4,7 @@
 
 ## Introduction
 
-This article describes how to use variables created with the `django-content-settings` module in various contexts such as code, templates, and API.
+This article describes how to use settings created with the `django-content-settings` module in various contexts such as code, templates, and API.
 
 ## Creating a Variable
 
