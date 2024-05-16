@@ -170,3 +170,20 @@ def process_variable_update(instance, created, **kwargs):
 No, if your template has no input arguments you can use mixin `GiveCallMixin` or use NoArgs types such as `DjangoTemplateNoArgs` and `SimpleEvalNoArgs`.
 
 If you have an oposite situation use `MakeCallMixin`
+
+### You want to use `DjangoModelTemplate`, but you can't import model to assign querie to `model_queryset`
+
+Use `DjangoTemplate` (lower level) class with `gen_args_call_validator` in validators
+
+```python
+def getting_first_profile():
+    from accounts.models import Profile
+
+    return Profile.objects.first()
+
+NEW_SETTING = DjangoTemplate(
+    "{{object.name}}",
+    validators=[gen_args_call_validator(getting_first_profile)],
+    template_args_default={'object': require}
+)
+```
