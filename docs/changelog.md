@@ -4,6 +4,13 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
+## 0.13
+
+* `CONTENT_SETTINGS_TAGS` refactoring, the function accepts additional argument name
+* `"content_settings.tags.app_name"` - autogenerate tag with the app name
+* new validators `gen_call_validator`, `gen_args_call_validator` and `gen_kwargs_call_validator`
+* AttributeError when you trying to use an uknown setting name
+
 ### 0.12.1
 
 * 📖 SimpleExecNoCall

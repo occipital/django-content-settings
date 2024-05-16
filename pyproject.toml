@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-content-settings"
-version = "0.12.2"
+version = "0.13"
 description = "DCS - the most advanced admin editable setting"
 homepage = "https://django-content-settings.readthedocs.io/en/latest/"
 repository = "https://github.com/occipital/django-content-settings/"
