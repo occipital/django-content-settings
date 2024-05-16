@@ -164,8 +164,11 @@ def get_type_by_name(name):
 
 def get_value(name, suffix=None):
     assert DATA.POPULATED
+    cs_type = get_type_by_name(name)
+    if cs_type is None:
+        raise AttributeError(f"{name} is not defined in any content_settings.py file")
 
-    return get_type_by_name(name).give(DATA.ALL_VALUES[name], suffix)
+    return cs_type.give(DATA.ALL_VALUES[name], suffix)
 
 
 def get_raw_value(name):

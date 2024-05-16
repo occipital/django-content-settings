@@ -11,6 +11,11 @@ def test_simple_text():
     assert content_settings.TITLE == "Book Store"
 
 
+def test_unknown_setting_name():
+    with pytest.raises(AttributeError):
+        content_settings.UNKNOWN_SETTING
+
+
 def test_setting_simple_text():
     assert settings.TITLE == "Book Store"
 
