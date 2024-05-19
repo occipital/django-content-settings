@@ -2,19 +2,19 @@ EachMixin is the main mixin of the module, which allows types to have subtypes, 
 
 For example `array.TypedStringsList`
 
-# Class: Item [source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/each.py#L48)
+# class Item(BaseEach) [source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/each.py#L48)
 
 Converts each element of the array into a specific type `cs_type`
 
-# Class: Keys [source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/each.py#L110)
+# class Keys(BaseEach) [source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/each.py#L110)
 
 Converts values of the specific keys into specific types `cs_types`
 
-# Class: Values [source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/each.py#L202)
+# class Values(BaseEach) [source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/each.py#L202)
 
 Converts each value of the given dict into `cs_type`
 
-# Class: EachMixin [source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/each.py#L271)
+# class EachMixin() [source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/each.py#L271)
 
 Attributes:
 

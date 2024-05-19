@@ -1,6 +1,7 @@
 """
 Types that convert a string into a datetime, date, time or timedelta object.
 """
+
 from typing import Any, List, Tuple, Union
 
 from datetime import datetime, time, timedelta
@@ -98,6 +99,7 @@ class DateTimeString(ProcessInputFormats):
     Converts into a datetime object.
 
     Attributes:
+
     - `datetime_formats` - list (or a single string) of formats to use for conversion. As a default it uses `DATETIME_INPUT_FORMATS` from `django.conf.settings`
     """
 
@@ -117,6 +119,7 @@ class DateString(ProcessInputFormats):
     Converts into a date object.
 
     Attributes:
+
     - `date_formats` - list (or a single string) of formats to use for conversion. As a default it uses `DATE_INPUT_FORMATS` from `django.conf.settings`
     """
 
@@ -134,6 +137,7 @@ class TimeString(DateTimeString):
     Converts into a time object.
 
     Attributes:
+
     - `time_formats` - list (or a single string) of formats to use for conversion. As a default it uses `TIME_INPUT_FORMATS` from `django.conf.settings`
     """
 

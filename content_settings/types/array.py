@@ -37,6 +37,7 @@ def f_comment(prefix: str) -> Callable[[str], Optional[str]]:
 class SimpleStringsList(SimpleText):
     """
     Split a text into a list of strings.
+
     * comment_starts_with (default: #): if not None, the lines that start with this string are removed
     * filter_empty (default: True): if True, empty lines are removed
     * split_lines (default: \n): the string that separates the lines
@@ -59,6 +60,7 @@ class SimpleStringsList(SimpleText):
     def get_filters(self):
         """
         Get the filters based on the current configuration.
+
         * If filters is not None, it is returned.
         * If filter_empty is True, f_empty is added to the filters.
         * If comment_starts_with is not None, f_comment is added to the filters.
@@ -153,6 +155,7 @@ class SplitTextByFirstLine(SimpleText):
     The next separator is initialized by the next line that starts with "=====", ends with "=====" and has a key in the middle.
 
     It has the following new attributes:
+
     * split_default_key: Optional[str] = None - the key which will be used for the first line
     * split_default_chooser: Optional[Callable] = None - the function which will be used for chosing default value
     * split_not_found - what should be done if the required key not found. `NOT_FOUND.DEFAULT` - return default value, `NOT_FOUND.KEY_ERROR` raise an exception and `NOT_FOUND.VALUE` return value from split_NOT_FOUND.VALUE

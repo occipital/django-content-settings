@@ -1,13 +1,13 @@
+The module contains types of different formats such as JSON, YAML, CSV, and so on.
 
-
-# Class: SimpleYAML [source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/markup.py#L9)
+# class SimpleYAML(SimpleText) [source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/markup.py#L13)
 
 YAML content settings type. Requires yaml module.
 
-# Class: SimpleJSON [source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/markup.py#L49)
+# class SimpleJSON(EmptyNoneMixin, SimpleText) [source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/markup.py#L53)
 
 JSON content settings type.
 
-# Class: SimpleRawCSV [source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/markup.py#L74)
+# class SimpleRawCSV(SimpleText) [source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/markup.py#L78)
 
 Type that converts simple CSV to list of lists.

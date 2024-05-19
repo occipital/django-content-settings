@@ -176,6 +176,8 @@ class CallToPythonMixin:
 class GiveCallMixin:
     """
     Mixin for callable types, but result of the call without artuments should be returned.
+
+    If suffix is "call" then callable should be returned.
     """
 
     def get_suffixes(self):

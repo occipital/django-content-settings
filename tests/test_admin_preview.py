@@ -57,6 +57,15 @@ with context_defaults(admin_preview_as=PREVIEW.HTML):
                     init_books,
                 ),
                 (
+                    DjangoModelTemplate(
+                        "<b>{{book.title}}</b><br><i>{{book.description}}</i>",
+                        model_queryset=lambda: Book.objects.all().first(),
+                        obj_name="book",
+                    ),
+                    "<b>The Poplar</b><br><i>A book about poplar trees</i>",
+                    init_books,
+                ),
+                (
                     DjangoModelEval(
                         '{"name": object.title, "description": object.description}',
                         model_queryset=Book.objects.all(),

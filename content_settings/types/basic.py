@@ -38,8 +38,10 @@ class SimpleString(BaseSetting):
     - cls_field (forms.CharField): The form field class to use for the setting.
     - widget (forms.Widget): The form widget to use for the cls_field.
     - widget_attrs (Optional[dict]): Optional attributes for the widget initiation.
-    - fetch_permission (Callable): Optional permission required to fetch the setting.
-    - update_permission (Callable): Optional permission required to update the setting.
+    - fetch_permission (Callable): `permissions.none` by default. Permission required to fetch the setting in API.
+    - update_permission (Callable): `permissions.staff` by default. Optional permission required to update the setting in Django Admin.
+    - view_permission (Callable): `permissions.staff` by default. Optional permission required to view the setting in Django Admin.
+    - view_history_permission (Callable): Optional permission required to see the hisotry of changes. `None` means the permission is taken from `view_permission`.
     - help_format (Optional[str]): Optional format string for the help text for the format (align to the type).
     - help (Optional[str]): Optional help text for the setting.
     - value_required (bool): Whether a value is required for the setting.

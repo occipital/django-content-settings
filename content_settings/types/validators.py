@@ -87,6 +87,11 @@ class gen_args_call_validator(gen_call_validator):
         return self.gen_args_kwargs_func(), {}
 
 
+class gen_signle_arg_call_validator(gen_call_validator):
+    def gen_args_kwargs(self):
+        return [self.gen_args_kwargs_func()], {}
+
+
 class gen_kwargs_call_validator(gen_call_validator):
     def gen_args_kwargs(self):
         return [], self.gen_args_kwargs_func()

@@ -219,6 +219,30 @@ result = value - fee
     }
 
 
+def test_exec_call_return_lambda_dict():
+    from decimal import Decimal
+
+    var = SimpleExec(
+        template_args_default={"value": Decimal("0.0")},
+        template_static_data={"Decimal": Decimal},
+        call_return=lambda: {
+            "result": Decimal("0.00"),
+            "fee": Decimal("0.00"),
+            "tax": Decimal("0.00"),
+        },
+    )
+
+    value = """
+fee = value * Decimal("0.1")
+result = value - fee
+    """
+    assert var.give_python(value)(Decimal("100")) == {
+        "fee": Decimal("10.0"),
+        "result": Decimal("90.0"),
+        "tax": Decimal("0.00"),
+    }
+
+
 def test_exec_call_return_none():
     from decimal import Decimal
 

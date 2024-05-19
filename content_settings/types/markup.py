@@ -1,9 +1,13 @@
+"""
+The module contains types of different formats such as JSON, YAML, CSV, and so on.
+"""
+
 from django.core.exceptions import ValidationError
 
 from .basic import SimpleText, PREVIEW, SimpleString
 from .each import EachMixin, Keys, Item
 from .mixins import EmptyNoneMixin
-from . import required, optional
+from . import optional
 
 
 class SimpleYAML(SimpleText):

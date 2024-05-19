@@ -16,6 +16,19 @@ def path_to_linux(path):
     return "/".join(split_path(path))
 
 
+def get_base_classes(bases):
+    """Extract the names of base classes from the bases list in a class definition."""
+    base_class_names = []
+    for base in bases:
+        if isinstance(base, ast.Name):
+            base_class_names.append(base.id)
+        elif isinstance(base, ast.Attribute):
+            base_class_names.append(ast.unparse(base))
+        else:
+            base_class_names.append(ast.unparse(base))
+    return ", ".join(base_class_names)
+
+
 def get_function_signature(func):
     """Generate the signature for a function or method."""
     args = []
@@ -42,7 +55,7 @@ def md_from_node(node, prefix, file_path):
     for n in node.body:
         if isinstance(n, ast.ClassDef):
             if class_doc := ast.get_docstring(n):
-                yield f"\n\n{prefix} Class: {n.name}"
+                yield f"\n\n{prefix} class {n.name}({get_base_classes(n.bases)})"
                 yield f" [source]({GITHUB_PREFIX}{path_to_linux(file_path)}#L{n.lineno})"
                 yield "\n\n"
                 yield class_doc
@@ -51,7 +64,7 @@ def md_from_node(node, prefix, file_path):
 
         elif isinstance(n, ast.FunctionDef):
             if func_doc := ast.get_docstring(n):
-                yield f"\n\n{prefix} {n.name}"
+                yield f"\n\n{prefix} def {n.name}"
                 yield get_function_signature(n)
                 yield f" [source]({GITHUB_PREFIX}{path_to_linux(file_path)}#L{n.lineno})"
                 yield "\n\n"
