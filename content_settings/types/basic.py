@@ -32,7 +32,8 @@ class SimpleString(BaseSetting):
     """
     A very basic class that returns the string value, the same as a given value.
 
-     Attributes:
+    Attributes:
+
     - constant (bool): Whether the setting is constant (can not be changed).
     - cls_field (forms.CharField): The form field class to use for the setting.
     - widget (forms.Widget): The form widget to use for the cls_field.

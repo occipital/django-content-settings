@@ -19,6 +19,9 @@ test-nox:
 doc:
 	poetry run mkdocs serve
 
+mdsource:
+	poetry run poetry run python mdsource.py
+
 publish:
 	poetry run python set_version.py
 	poetry publish --build

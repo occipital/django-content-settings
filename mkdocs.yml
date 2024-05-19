@@ -15,5 +15,6 @@ nav:
   - Changelog: changelog.md
   - Glossary: glossary.md
   - "[wip] How to contribute": contribute.md
+  - Source Doc: source/index.md
 theme: readthedocs
 repo_url: https://github.com/occipital/django-content-settings/
