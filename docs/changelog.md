@@ -4,6 +4,12 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
+### 0.13.1
+
+* `SimpleExec.call_return` and `DjangoModelTemplateMixin.model_queryset` can be callable now
+* `mdsource` for generation docs from the source code
+* black version was updated to use for Python 3.8
+
 ## 0.13
 
 * `CONTENT_SETTINGS_TAGS` refactoring, the function accepts additional argument name
