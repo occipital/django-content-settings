@@ -3,11 +3,12 @@ The module contains types of different formats such as JSON, YAML, CSV, and so o
 """
 
 from django.core.exceptions import ValidationError
+from typing import List, Optional, Tuple, Dict
 
 from .basic import SimpleText, PREVIEW, SimpleString
 from .each import EachMixin, Keys, Item
 from .mixins import EmptyNoneMixin
-from . import optional
+from . import optional, BaseSetting
 
 
 class SimpleYAML(SimpleText):
@@ -121,8 +122,25 @@ class KeysFromListByList(KeysFromList):
 
 
 class SimpleCSV(EachMixin, SimpleRawCSV):
-    csv_fields = None
-    csv_fields_list_type = SimpleString(optional)
+    """
+    Type that converts simple CSV to list of dictionaries.
+
+    Attributes:
+
+    - `csv_fields` (dict, tuple or list): defines the structure of the CSV. The structure definition used by `EachMixin`
+    - `csv_fields_list_type` (BaseSetting): the type of the list elements in the `csv_fields` if it is not dict.
+
+    Examples:
+
+    ```python
+    SimpleCSV(csv_fields=["name", "price"])
+    SimpleCSV(csv_fields={"name": SimpleString(), "price": SimpleDecimal()})
+    SimpleCSV(csv_fields=["name", "price"], csv_fields_list_type=SimpleString())
+    ```
+    """
+
+    csv_fields: Optional[List | Tuple | Dict] = None
+    csv_fields_list_type: BaseSetting = SimpleString(optional)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -1,3 +1,7 @@
+"""
+A list of functions that are used as values for validators attribute of a type.
+"""
+
 from django.core.exceptions import ValidationError
 from pprint import pformat
 
@@ -83,15 +87,27 @@ class gen_call_validator(call_validator):
 
 
 class gen_args_call_validator(gen_call_validator):
+    """
+    Same as gen_call_validator, but only generates the list for args.
+    """
+
     def gen_args_kwargs(self):
         return self.gen_args_kwargs_func(), {}
 
 
 class gen_signle_arg_call_validator(gen_call_validator):
+    """
+    Same as gen_call_validator, but only generates one arg.
+    """
+
     def gen_args_kwargs(self):
         return [self.gen_args_kwargs_func()], {}
 
 
 class gen_kwargs_call_validator(gen_call_validator):
+    """
+    Same as gen_call_validator, but only generates the dict for kwargs.
+    """
+
     def gen_args_kwargs(self):
         return [], self.gen_args_kwargs_func()
