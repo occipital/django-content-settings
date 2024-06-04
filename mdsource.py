@@ -65,7 +65,6 @@ def md_from_node(node, prefix, file_path):
                 yield f"\n\n{prefix} def {n.name}"
                 yield get_function_signature(n)
                 yield f"<sup>[source]({GITHUB_PREFIX}{path_to_linux(file_path)}#L{n.lineno})</sup>\n\n"
-                yield "\n\n"
                 yield func_doc
 
 
@@ -76,7 +75,7 @@ def md_from_file(file_path):
         if module_doc := ast.get_docstring(node):
             yield module_doc
 
-        yield from md_from_node(node, prefix="##", file_path=file_path)
+        yield from md_from_node(node, prefix="###", file_path=file_path)
 
 
 with open(os.path.join("docs", "source.md"), "w") as fh:
@@ -97,7 +96,7 @@ with open(os.path.join("docs", "source.md"), "w") as fh:
             dir = dirname[len(SOURCE_FOLDER) + 1 :]
             module_name = ".".join(Path(dir).parts + (os.path.splitext(name)[0],))
 
-            fh.write(f"# {module_name}\n\n")
+            fh.write(f"\n\n## {module_name}")
 
-            fh.write(mddoc)
             fh.write("\n\n")
+            fh.write(mddoc)
