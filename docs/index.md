@@ -36,7 +36,7 @@ The module comes with a built-in API system, enabling:
 
 *[glossary](glossary.md)*
 
-- **Setup**. [Here](https://django-content-settings.readthedocs.io/en/latest/first/) you can get step-by-step instruction.
+- **Setup**. [Here](first.md) you can get step-by-step instruction.
 
 - **Define the setting**. To do so you need to define constant in `content_settings.py` in your app
 
@@ -105,10 +105,10 @@ TITLE = SimpleString(
 )
 ```
 
-Simple as that, we have a lot of *setting types* you can use `SimpleText`, `SimpleHTML`, `SimpleInt`, `SimpleBool`, `SimpleDecimal`, `DateTimeString`, `SimpleTimedelta`, `SimpleYAML`, `SimpleJSON`, `SimpleCSV`, `DjangoTemplate`, `DjangoModelTemplate`, `SimpleEval`, `SimpleExec` and so on... [Read more](https://django-content-settings.readthedocs.io/en/latest/types/) about the types available for you.
+Simple as that, we have a lot of *setting types* you can use `SimpleText`, `SimpleHTML`, `SimpleInt`, `SimpleBool`, `SimpleDecimal`, `DateTimeString`, `SimpleTimedelta`, `SimpleYAML`, `SimpleJSON`, `SimpleCSV`, `DjangoTemplate`, `DjangoModelTemplate`, `SimpleEval`, `SimpleExec` and so on... [Read more](types.md) about the types available for you.
 
-It is also very fast thanks to our caching system. [Read more about it](https://django-content-settings.readthedocs.io/en/latest/caching/).
+It is also very fast thanks to our caching system. [Read more about it](caching.md).
 
-Some fancy things you can find in our [cookbook](https://django-content-settings.readthedocs.io/en/latest/cookbook/).
+Some fancy things you can find in our [cookbook](cookbook.md).
 
 [▶️ YouTube Video with dive deep ~ 2h](https://youtu.be/RNYmvv_G5zs)
