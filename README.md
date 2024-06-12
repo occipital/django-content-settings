@@ -40,7 +40,7 @@ For the full documentation, please visit [here](https://django-content-settings.
 
 ### How does it look
 
-- **Setup**. [Here](https://django-content-settings.readthedocs.io/en/latest/first/) you can get step-by-step instruction.
+- **Setup**. [Here](https://django-content-settings.readthedocs.io/en/master/first/) you can get step-by-step instruction.
 
 - **Define the setting**. To do so you need to define constant in `content_settings.py` in your app
 
@@ -98,8 +98,8 @@ TITLE = SimpleString(
 )
 ```
 
-Simple as that, we have a lot of types for settings you can use `SimpleText`, `SimpleHTML`, `SimpleInt`, `SimpleBool`, `SimpleDecimal`, `DateTimeString`, `SimpleTimedelta`, `SimpleYAML`, `SimpleJSON`, `SimpleCSV`, `DjangoTemplate`, `DjangoModelTemplate`, `SimpleEval`, `SimpleExec` and so on... [Read more](https://django-content-settings.readthedocs.io/en/latest/types/) about the types available for you.
+Simple as that, we have a lot of types for settings you can use `SimpleText`, `SimpleHTML`, `SimpleInt`, `SimpleBool`, `SimpleDecimal`, `DateTimeString`, `SimpleTimedelta`, `SimpleYAML`, `SimpleJSON`, `SimpleCSV`, `DjangoTemplate`, `DjangoModelTemplate`, `SimpleEval`, `SimpleExec` and so on... [Read more](https://django-content-settings.readthedocs.io/en/master/types/) about the types available for you.
 
-It is also very fast thanks to our caching system. [Read more about it](https://django-content-settings.readthedocs.io/en/latest/caching/).
+It is also very fast thanks to our caching system. [Read more about it](https://django-content-settings.readthedocs.io/en/master/caching/).
 
-Some fancy things you can find in our [cookbook](https://django-content-settings.readthedocs.io/en/latest/cookbook/).
+Some fancy things you can find in our [cookbook](https://django-content-settings.readthedocs.io/en/master/cookbook/).
