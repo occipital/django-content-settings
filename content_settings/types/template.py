@@ -9,7 +9,7 @@ See `CallToPythonMixin`
 """
 
 from itertools import zip_longest
-from typing import Any, Tuple, Optional, Callable, Iterable
+from typing import Any, Tuple, Optional, Callable, Iterable, Union, Dict
 from enum import Enum, auto
 
 from django.core.exceptions import ValidationError
@@ -43,7 +43,7 @@ class StaticDataMixin:
         STATIC_INCLUDES.CONTENT_SETTINGS,
         STATIC_INCLUDES.SETTINGS,
     )
-    template_static_data: Optional[dict | Callable] = None
+    template_static_data: Optional[Union[Dict, Callable]] = None
 
     def get_template_static_data(self):
         if not self.template_static_data:
@@ -205,7 +205,7 @@ class DjangoModelTemplateMixin:
     - `obj_name` - name of the object in the template. Default: "object".
     """
 
-    model_queryset: Optional[QuerySet | Callable] = None
+    model_queryset: Optional[Union[QuerySet, Callable]] = None
     obj_name: str = "object"
 
     def get_template_args_default(self):
@@ -320,7 +320,7 @@ class SimpleExec(SimpleCallTemplate):
     update_permission = staticmethod(superuser)
     help_format = "Python code that execute and returns generated variables."
     tags = {"eval"}
-    call_return: Optional[Iterable | Callable | dict] = None
+    call_return: Optional[Union[Iterable, Callable, Dict]] = None
     allow_import: bool = False
 
     def get_call_return(self):

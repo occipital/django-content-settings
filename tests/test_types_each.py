@@ -19,6 +19,8 @@ from content_settings.types.basic import SimpleHTML
 from content_settings.types import required, optional
 from content_settings.types.array import SplitTranslation
 
+from tests import yaml_installed
+
 
 pytestmark = [pytest.mark.django_db]
 
@@ -126,6 +128,7 @@ def test_each_validate(var, value, expected):
     assert e.value.message == expected
 
 
+@pytest.mark.skipif(not yaml_installed, reason="yaml is installed")
 def test_preview_admin_html():
     var = mix(EachMixin, SimpleYAML)(
         "",
@@ -149,6 +152,7 @@ def test_preview_admin_html():
     )
 
 
+@pytest.mark.skipif(not yaml_installed, reason="yaml is installed")
 def test_preview_admin_translation():
     var = mix(EachMixin, SimpleYAML)(
         "",
@@ -178,7 +182,8 @@ def test_preview_admin_translation():
     )
 
 
-def test_preview_admin_with_unknown_html():
+@pytest.mark.skipif(not yaml_installed, reason="yaml is installed")
+def test_preview_admin_with_unknown_html_yaml():
     var = mix(EachMixin, SimpleYAML)(
         "",
         each=Item(

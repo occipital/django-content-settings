@@ -266,9 +266,9 @@ def test_split_key_validator():
 
 class TruncText(DictSuffixesMixin, SimpleText):
     suffixes = {
-        "trunc": lambda text, max_length=10: (text[: max_length - 3] + "...")
-        if len(text) > max_length
-        else text
+        "trunc": lambda text, max_length=10: (
+            (text[: max_length - 3] + "...") if len(text) > max_length else text
+        )
     }
 
 
@@ -377,7 +377,7 @@ La mejor empresa
     client = Client()
     resp = client.get(
         "/content-settings/fetch/COMPANY_DESCRIPTION/",
-        headers={"accept-language": "en"},
+        HTTP_ACCEPT_LANGUAGE="en",  # Set preferred language to English
     )
     assert resp.status_code == 200
     assert resp.json() == {
@@ -386,7 +386,7 @@ La mejor empresa
 
     resp = client.get(
         "/content-settings/fetch/COMPANY_DESCRIPTION/",
-        headers={"accept-language": "es"},
+        HTTP_ACCEPT_LANGUAGE="es",  # Set preferred language to Spanish
     )
     assert resp.status_code == 200
     assert resp.json() == {

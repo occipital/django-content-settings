@@ -16,6 +16,9 @@ test-cov-xml:
 test-nox:
 	poetry run nox
 
+test-nox-oldest:
+	poetry run nox --session "tests-3.8(pyyaml=True, django='3.2')"
+
 doc:
 	poetry run mkdocs serve
 

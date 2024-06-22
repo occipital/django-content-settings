@@ -17,16 +17,10 @@ from content_settings.types.template import DjangoTemplateNoArgs
 from content_settings.types.mixins import mix, DictSuffixesMixin
 from content_settings.types import required, optional
 
+from tests import yaml_installed
+
 
 pytestmark = [pytest.mark.django_db]
-
-yaml_installed = False
-try:
-    import yaml
-
-    yaml_installed = True
-except ImportError:
-    pass
 
 
 def test_simple_json():

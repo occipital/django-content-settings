@@ -5,7 +5,7 @@ For example `array.TypedStringsList`
 """
 
 from enum import Enum, auto
-from typing import Union, Any
+from typing import Union, Any, Dict
 
 from django.core.exceptions import ValidationError
 
@@ -112,7 +112,7 @@ class Keys(BaseEach):
     Converts values of the specific keys into specific types `cs_types`
     """
 
-    def __init__(self, **kwargs: dict[str, TCSType]):
+    def __init__(self, **kwargs: Dict[str, TCSType]):
         self.cs_types = kwargs
 
     def is_each(self, value):

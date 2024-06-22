@@ -13,4 +13,11 @@ def tests(session, django, pyyaml):
     session.install(f"django=={django}")
     if pyyaml:
         session.install("pyyaml")
+    if session.python == "3.12":
+        session.install("setuptools")
+    session.install("pytest~=7.4.3")
+    session.install("pytest-mock~=3.12.0")
+    session.install("pytest-django~=4.7.0")
+    session.install("django-webtest~=1.9.11")
+    session.install("-e", ".")
     session.run("pytest")

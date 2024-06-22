@@ -1,4 +1,5 @@
 import pytest
+import django
 
 from content_settings.types import required, optional
 from content_settings.types.basic import (
@@ -33,6 +34,7 @@ from content_settings.types.array import (
 
 from tests.books.models import Book
 from tests.tools import adjust_params
+from tests import yaml_installed
 
 pytestmark = [pytest.mark.django_db(transaction=True)]
 
@@ -95,7 +97,11 @@ pytestmark = [pytest.mark.django_db(transaction=True)]
             ),
             (
                 DateTimeString(help="A value"),
-                r"A value<br><br>Use any of the following formats: <ul><li>%Y-%m-%d %H:%M:%S</li><li>%Y-%m-%d %H:%M:%S.%f</li><li>%Y-%m-%d %H:%M</li><li>%m/%d/%Y %H:%M:%S</li><li>%m/%d/%Y %H:%M:%S.%f</li><li>%m/%d/%Y %H:%M</li><li>%m/%d/%y %H:%M:%S</li><li>%m/%d/%y %H:%M:%S.%f</li><li>%m/%d/%y %H:%M</li><li>%Y-%m-%d</li></ul>",
+                (
+                    r"A value<br><br>Use any of the following formats: <ul><li>%Y-%m-%d %H:%M:%S</li><li>%Y-%m-%d %H:%M:%S.%f</li><li>%Y-%m-%d %H:%M</li><li>%m/%d/%Y %H:%M:%S</li><li>%m/%d/%Y %H:%M:%S.%f</li><li>%m/%d/%Y %H:%M</li><li>%m/%d/%y %H:%M:%S</li><li>%m/%d/%y %H:%M:%S.%f</li><li>%m/%d/%y %H:%M</li><li>%Y-%m-%d</li></ul>"
+                    if django.VERSION > (3, 3)
+                    else r"A value<br><br>Use any of the following formats: <ul><li>%Y-%m-%d %H:%M:%S</li><li>%Y-%m-%d %H:%M:%S.%f</li><li>%Y-%m-%d %H:%M</li><li>%m/%d/%Y %H:%M:%S</li><li>%m/%d/%Y %H:%M:%S.%f</li><li>%m/%d/%Y %H:%M</li><li>%m/%d/%y %H:%M:%S</li><li>%m/%d/%y %H:%M:%S.%f</li><li>%m/%d/%y %H:%M</li></ul>"
+                ),
             ),
             (
                 DateString(help="A value"),
@@ -108,10 +114,6 @@ pytestmark = [pytest.mark.django_db(transaction=True)]
             (
                 SimpleTimedelta(help="A value"),
                 "A value<br><br>Time Delta Format<ul><li>s - seconds</li><li>m - minutes</li><li>h - hours</li><li>d - days</li><li>w - weeks</li></ul>\n            Examples:\n            <ul>\n                <li>1d - in one day</li>\n                <li>1d 3h - in one day and 3 hours</li>\n            </ul>\n        ",
-            ),
-            (
-                SimpleYAML(help="A value"),
-                "A value<br><br>Simple <a href='https://en.wikipedia.org/wiki/YAML' target='_blank'>YAML format</a>",
             ),
             (
                 SimpleJSON(help="A value"),
@@ -191,3 +193,12 @@ def test_value(var, value, initial):
     if initial:
         initial()
     assert var.get_help() == value
+
+
+@pytest.mark.skipif(not yaml_installed, reason="yaml is installed")
+def test_value_yaml():
+    var = SimpleYAML(help="A value")
+    assert (
+        var.get_help()
+        == "A value<br><br>Simple <a href='https://en.wikipedia.org/wiki/YAML' target='_blank'>YAML format</a>"
+    )

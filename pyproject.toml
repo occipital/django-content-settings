@@ -32,9 +32,9 @@ django = ">=3.2"
 pytest = "^7.4.3"
 pytest-mock = "^3.12.0"
 pytest-django = "^4.7.0"
+django-webtest = "^1.9.11"
 pytest-cov = "^4.1.0"
 nox = "^2023.4.22"
-django-webtest = "^1.9.11"
 
 
 [tool.poetry.group.dev.dependencies]

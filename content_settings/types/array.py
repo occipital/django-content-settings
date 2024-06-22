@@ -2,8 +2,7 @@
 Types that convert a string into a list of values.
 """
 
-from typing import Any, Optional, List, Callable, Generator, Iterable
-from collections.abc import Iterable
+from typing import Any, Optional, List, Callable, Generator, Iterable, Dict
 from enum import Enum, auto
 
 from django.core.exceptions import ValidationError
@@ -51,6 +50,8 @@ class SimpleStringsList(SimpleText):
     admin_preview_as: PREVIEW = PREVIEW.PYTHON
 
     def __init__(self, *args, **kwargs) -> None:
+        from collections.abc import Iterable
+
         super().__init__(*args, **kwargs)
         assert isinstance(self.comment_starts_with, (str, type(None)))
         assert isinstance(self.filter_empty, bool)
@@ -216,7 +217,7 @@ class SplitTextByFirstLine(SimpleText):
     def is_split_key_valid(self, key: str) -> bool:
         return self.split_key_validator is None or self.split_key_validator(key)
 
-    def split_value(self, value: str) -> dict[str, str]:
+    def split_value(self, value: str) -> Dict[str, str]:
         """
         The main function of the type. Split the value into a dictionary of values.
         """

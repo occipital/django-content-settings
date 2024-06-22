@@ -3,7 +3,7 @@ The module contains types of different formats such as JSON, YAML, CSV, and so o
 """
 
 from django.core.exceptions import ValidationError
-from typing import List, Optional, Tuple, Dict
+from typing import List, Optional, Tuple, Dict, Union
 
 from .basic import SimpleText, PREVIEW, SimpleString
 from .each import EachMixin, Keys, Item
@@ -139,7 +139,7 @@ class SimpleCSV(EachMixin, SimpleRawCSV):
     ```
     """
 
-    csv_fields: Optional[List | Tuple | Dict] = None
+    csv_fields: Optional[Union[List, Tuple, Dict]] = None
     csv_fields_list_type: BaseSetting = SimpleString(optional)
 
     def __init__(self, *args, **kwargs):
