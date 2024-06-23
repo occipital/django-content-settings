@@ -8,6 +8,7 @@ from datetime import datetime, time, timedelta
 from django.core.exceptions import ValidationError
 from django.utils import formats as django_formats
 from django.forms.utils import from_current_timezone
+from django.utils.translation import gettext as _
 
 from .basic import SimpleString, PREVIEW
 from .mixins import EmptyNoneMixin
@@ -36,7 +37,9 @@ def timedelta_format(text: str) -> timedelta:
             val_key = el[-1]
             delta_kwargs[TIMEDELTA_FORMATS[val_key]] = val
         except Exception as e:
-            raise ValidationError(f"wrong format for {el}: {e}")
+            raise ValidationError(
+                _("wrong format for %(el)s: %(e)s") % {"el": el, "e": e}
+            )
 
     return timedelta(**delta_kwargs)
 
@@ -72,8 +75,9 @@ class ProcessInputFormats(EmptyNoneMixin, SimpleString):
         return [formats]
 
     def get_help_format(self):
+        yield _("Use any of the following formats:")
         yield (
-            "Use any of the following formats: <ul>"
+            " <ul>"
             + "".join([f"<li>{l}</li>" for l in self.get_input_formats()])
             + "</ul>"
         )
@@ -88,7 +92,7 @@ class ProcessInputFormats(EmptyNoneMixin, SimpleString):
                 return self.postprocess_input_format(value, format)
             except (ValueError, TypeError):
                 continue
-        raise ValidationError("Wrong Format")
+        raise ValidationError(_("Wrong Format"))
 
 
 TFormats = Union[List[str], Tuple[str, ...], str]
@@ -161,19 +165,20 @@ class SimpleTimedelta(SimpleString):
     admin_preview_as = PREVIEW.PYTHON
 
     def get_help_format(self):
-        yield "Time Delta Format"
+        yield _("Time Delta Format")
         yield "<ul>"
         for name, value in TIMEDELTA_FORMATS.items():
             yield f"<li>{name} - {value}</li>"
         yield "</ul>"
-
-        yield """
-            Examples:
-            <ul>
-                <li>1d - in one day</li>
-                <li>1d 3h - in one day and 3 hours</li>
-            </ul>
-        """
+        yield _("Examples:")
+        yield "<ul>"
+        yield "<li>"
+        yield _("1d - in one day")
+        yield "</li>"
+        yield "<li>"
+        yield _("1d 3h - in one day and 3 hours")
+        yield "</li>"
+        yield "</ul>"
 
     def to_python(self, value):
         return timedelta_format(super().to_python(value))

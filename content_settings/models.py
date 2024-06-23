@@ -4,32 +4,40 @@ from django.db import models
 from django.core.validators import RegexValidator
 from django.utils import timezone
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
 
 
 class ContentSetting(models.Model):
-    id = models.AutoField(primary_key=True, verbose_name="ID")
+    id = models.AutoField(primary_key=True, verbose_name=_("ID"))
     name = models.CharField(
         max_length=200,
         unique=True,
         validators=[
             RegexValidator(
                 regex=r"^[A-Z][A-Z0-9_]*$",
-                message="Value must be uppercase, can include numbers and underscores, and cannot start with a number.",
+                message=_(
+                    "Value must be uppercase, can include numbers and underscores, and cannot start with a number."
+                ),
             ),
         ],
+        verbose_name=_("Name"),
     )
-    value = models.TextField(blank=True)
-    version = models.CharField(max_length=50, null=True)
-    help = models.TextField(blank=True, null=True)
-    tags = models.TextField(blank=True, null=True)
+    value = models.TextField(blank=True, verbose_name=_("Value"))
+    version = models.CharField(max_length=50, null=True, verbose_name=_("Version"))
+    help = models.TextField(blank=True, null=True, verbose_name=_("Help"))
+    tags = models.TextField(blank=True, null=True, verbose_name=_("Tags"))
     user_defined_type = models.CharField(
-        max_length=50, null=True, default=None, db_index=True
+        max_length=50,
+        null=True,
+        default=None,
+        db_index=True,
+        verbose_name=_("User Defined Type"),
     )
 
     class Meta:
         ordering = ("name",)
         permissions = [
-            ("can_preview_on_site", "Can preview on site"),
+            ("can_preview_on_site", _("Can preview on site")),
         ]
 
     @property
@@ -45,31 +53,42 @@ class ContentSetting(models.Model):
 
 class HistoryContentSetting(models.Model):
     CHANGED_CHOICES = (
-        (True, "Changed"),
-        (False, "Added"),
-        (None, "Removed"),
+        (True, _("Changed")),
+        (False, _("Added")),
+        (None, _("Removed")),
     )
     BY_USER_CHOICES = (
-        (True, "by user"),
-        (False, "by app"),
-        (None, "unknown"),
+        (True, _("by user")),
+        (False, _("by app")),
+        (None, _("unknown")),
     )
 
-    id = models.AutoField(primary_key=True, verbose_name="ID")
-    created_on = models.DateTimeField(null=False, default=timezone.now)
+    id = models.AutoField(primary_key=True, verbose_name=_("ID"))
+    created_on = models.DateTimeField(
+        null=False, default=timezone.now, verbose_name=_("Created On")
+    )
 
-    name = models.CharField(max_length=200)
-    value = models.TextField(blank=True, null=True)
-    version = models.CharField(max_length=50, null=True)
+    name = models.CharField(max_length=200, verbose_name=_("Name"))
+    value = models.TextField(blank=True, null=True, verbose_name=_("Value"))
+    version = models.CharField(max_length=50, null=True, verbose_name=_("Version"))
 
-    was_changed = models.BooleanField(null=True, default=True, choices=CHANGED_CHOICES)
-    by_user = models.BooleanField(null=True, default=None, choices=BY_USER_CHOICES)
+    was_changed = models.BooleanField(
+        null=True, default=True, choices=CHANGED_CHOICES, verbose_name=_("Was Changed")
+    )
+    by_user = models.BooleanField(
+        null=True, default=None, choices=BY_USER_CHOICES, verbose_name=_("By User")
+    )
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name=_("User"),
     )
-    help = models.TextField(blank=True, null=True)
-    tags = models.TextField(blank=True, null=True)
-    user_defined_type = models.CharField(max_length=50, null=True, default=None)
+    help = models.TextField(blank=True, null=True, verbose_name=_("Help"))
+    tags = models.TextField(blank=True, null=True, verbose_name=_("Tags"))
+    user_defined_type = models.CharField(
+        max_length=50, null=True, default=None, verbose_name=_("User Defined Type")
+    )
 
     @property
     def user_defined_type_display(self):
@@ -123,10 +142,12 @@ class HistoryContentSetting(models.Model):
 
 
 class UserTagSetting(models.Model):
-    id = models.AutoField(primary_key=True, verbose_name="ID")
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    name = models.CharField(max_length=200)
-    tag = models.TextField()
+    id = models.AutoField(primary_key=True, verbose_name=_("ID"))
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("User")
+    )
+    name = models.CharField(max_length=200, verbose_name=_("Name"))
+    tag = models.TextField(verbose_name=_("Tag"))
 
     class Meta:
         unique_together = (("user", "name", "tag"),)
@@ -143,11 +164,13 @@ class UserTagSetting(models.Model):
 
 
 class UserPreview(models.Model):
-    id = models.AutoField(primary_key=True, verbose_name="ID")
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    name = models.CharField(max_length=200)
-    from_value = models.TextField()
-    value = models.TextField()
+    id = models.AutoField(primary_key=True, verbose_name=_("ID"))
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("User")
+    )
+    name = models.CharField(max_length=200, verbose_name=_("Name"))
+    from_value = models.TextField(verbose_name=_("From Value"))
+    value = models.TextField(verbose_name=_("Value"))
 
     class Meta:
         unique_together = (("user", "name"),)
@@ -162,18 +185,19 @@ class UserPreviewHistory(models.Model):
     STATUS_REMOVED = 20
     STATUS_IGNORED = 30
 
-    id = models.AutoField(primary_key=True, verbose_name="ID")
+    id = models.AutoField(primary_key=True, verbose_name=_("ID"))
     created_on = models.DateTimeField(null=False, default=timezone.now)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
     name = models.CharField(max_length=200)
     value = models.TextField(null=True)
     status = models.IntegerField(
         default=STATUS_CREATED,
         choices=(
-            (STATUS_CREATED, "Created"),
-            (STATUS_APPLIED, "Applied"),
-            (STATUS_REMOVED, "Removed"),
-            (STATUS_IGNORED, "Ignored"),
+            (STATUS_CREATED, _("Created")),
+            (STATUS_APPLIED, _("Applied")),
+            (STATUS_REMOVED, _("Removed")),
+            (STATUS_IGNORED, _("Ignored")),
         ),
     )
 

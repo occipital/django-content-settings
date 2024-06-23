@@ -8,6 +8,7 @@ from enum import Enum, auto
 from typing import Union, Any, Dict
 
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
 
 from . import required, optional, PREVIEW, pre, BaseSetting
 
@@ -61,7 +62,9 @@ class Item(BaseEach):
             try:
                 self.cs_type.validate(v)
             except ValidationError as e:
-                raise ValidationError(f"item #{i}: {e.message}")
+                raise ValidationError(
+                    _("item #%(i)s: %(e)s") % {"i": i, "e": e.message}
+                )
 
     def each_to_python(self, value):
         ret = []
@@ -69,7 +72,9 @@ class Item(BaseEach):
             try:
                 ret.append(self.cs_type.to_python(v))
             except ValidationError as e:
-                raise ValidationError(f"item #{i}: {e.message}")
+                raise ValidationError(
+                    _("item #%(i)s: %(e)s") % {"i": i, "e": e.message}
+                )
         return ret
 
     def each_give_python_to_admin(self, value, name, **kwargs):
@@ -78,11 +83,13 @@ class Item(BaseEach):
             try:
                 ret.append(self.cs_type.give_python_to_admin(v, name, **kwargs))
             except ValidationError as e:
-                raise ValidationError(f"item #{i}: {e.message}")
+                raise ValidationError(
+                    _("item #%(i)s: %(e)s") % {"i": i, "e": e.message}
+                )
         return ret
 
     def get_help_format(self):
-        yield "A list of items. Each item should be: "
+        yield _("A list of items. Each item should be: ")
         yield "<div class='subitem'>"
         yield from self.cs_type.get_help_format()
         yield "</div>"
@@ -125,12 +132,12 @@ class Keys(BaseEach):
             try:
                 self.cs_types[k].validate(v)
             except ValidationError as e:
-                raise ValidationError(f"key {k}: {e.message}")
+                raise ValidationError(_("key %(k)s: %(e)s") % {"k": k, "e": e.message})
 
         for k, v in self.cs_types.items():
             if k not in value:
                 if v.default == required:
-                    raise ValidationError(f"Missing required key {k}")
+                    raise ValidationError(_("Missing required key %(k)s") % {"k": k})
 
     def each_to_python(self, value):
         ret = {}
@@ -139,7 +146,9 @@ class Keys(BaseEach):
                 try:
                     ret[k] = self.cs_types[k].to_python(v)
                 except ValidationError as e:
-                    raise ValidationError(f"key {k}: {e.message}")
+                    raise ValidationError(
+                        _("key %(k)s: %(e)s") % {"k": k, "e": e.message}
+                    )
             else:
                 ret[k] = v
 
@@ -156,7 +165,9 @@ class Keys(BaseEach):
                 try:
                     ret[k] = self.cs_types[k].give_python_to_admin(v, name, **kwargs)
                 except ValidationError as e:
-                    raise ValidationError(f"key {k}: {e.message}")
+                    raise ValidationError(
+                        _("key %(k)s: %(e)s") % {"k": k, "e": e.message}
+                    )
             else:
                 ret[k] = v
 
@@ -167,16 +178,18 @@ class Keys(BaseEach):
         return ret
 
     def get_help_format(self):
-        yield "A dictionary. Keys: "
+        yield _("A dictionary. Keys: ")
         for k, v in self.cs_types.items():
             yield "<div class='subitem'>"
             yield f"<i>{k}</i> - "
             if v.default == required:
-                yield "(required) "
+                yield _("(required) ")
             elif v.default == optional:
-                yield "(optional) "
+                yield _("(optional) ")
             else:
-                yield f"(default: {v.default if v.default else '<i>empty</i>'}) "
+                yield _("(default: %(default)s) ") % {
+                    "default": v.default if v.default else ("<i>" + _("empty") + "</i>")
+                }
             yield from v.get_help_format()
             yield "</div>"
 
@@ -215,7 +228,7 @@ class Values(BaseEach):
             try:
                 self.cs_type.validate(v)
             except ValidationError as e:
-                raise ValidationError(f"key {k}: {e.message}")
+                raise ValidationError(_("key %(k)s: %(e)s") % {"k": k, "e": e.message})
 
     def each_to_python(self, value):
         ret = {}
@@ -224,7 +237,7 @@ class Values(BaseEach):
             try:
                 ret[k] = self.cs_type.to_python(v)
             except ValidationError as e:
-                raise ValidationError(f"key {k}: {e.message}")
+                raise ValidationError(_("key %(k)s: %(e)s") % {"k": k, "e": e.message})
 
         return ret
 
@@ -235,12 +248,12 @@ class Values(BaseEach):
             try:
                 ret[k] = self.cs_type.give_python_to_admin(v, name, **kwargs)
             except ValidationError as e:
-                raise ValidationError(f"key {k}: {e.message}")
+                raise ValidationError(_("key %(k)s: %(e)s") % {"k": k, "e": e.message})
 
         return ret
 
     def get_help_format(self):
-        yield "A dictionary. Each value should be: "
+        yield _("A dictionary. Each value should be: ")
         yield "<div class='subitem'>"
         yield from self.cs_type.get_help_format()
         yield "</div>"

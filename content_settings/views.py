@@ -1,5 +1,6 @@
 from django.http import HttpResponseNotFound, HttpResponseForbidden, HttpResponse
 from django.views.generic import View
+from django.utils.translation import gettext as _
 from content_settings.conf import content_settings
 
 from .conf import ALL, split_attr, content_settings
@@ -63,10 +64,10 @@ def fetch_one_setting(request, name, suffix=None):
     settings_name = name.upper().replace("-", "_")
     cs_type = get_type_by_name(settings_name)
     if cs_type is None:
-        return HttpResponseNotFound("value not found")
+        return HttpResponseNotFound(_("value not found"))
 
     if not cs_type.can_fetch(request.user):
-        return HttpResponseForbidden("permission denied")
+        return HttpResponseForbidden(_("permission denied"))
 
     if suffix is not None:
         suffix = suffix.lower().replace("-", "_")

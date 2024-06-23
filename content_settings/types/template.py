@@ -15,6 +15,7 @@ from enum import Enum, auto
 from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
 from django.db.models.query import QuerySet
+from django.utils.translation import gettext as _
 
 from .basic import SimpleText
 from .mixins import CallToPythonMixin, GiveCallMixin, HTMLMixin
@@ -109,15 +110,19 @@ class SimpleCallTemplate(CallToPythonMixin, StaticDataMixin, SimpleText):
         return (call_validator(),)
 
     def get_help_format(self):
-        yield self.help_format
-        yield " Available objects:<ul>"
+        yield _("Available objects:")
+        yield "<ul>"
 
         for name, default in self.get_template_args_default().items():
             yield f"<li>{name}"
             if default == required:
-                yield f" - required</li>"
+                yield " - "
+                yield _("required")
+                yield "</li>"
             else:
-                yield f" - {repr(default)}</li>"
+                yield " - "
+                yield repr(default)
+                yield "</li>"
 
         for name in self.get_template_full_static_data().keys():
             yield f"<li>{name}</li>"
@@ -143,7 +148,9 @@ class SimpleCallTemplate(CallToPythonMixin, StaticDataMixin, SimpleText):
 
         for name, value in kwargs.items():
             if value == required:
-                raise ValidationError(f"Missing required argument {name}")
+                raise ValidationError(
+                    _("Missing required argument %(name)s") % {"name": name}
+                )
 
         return kwargs
 
@@ -155,7 +162,13 @@ class DjangoTemplate(SimpleCallTemplate):
 
     tags = {"template"}
     admin_preview_as: PREVIEW = PREVIEW.TEXT
-    help_format = "Simple <a href='https://docs.djangoproject.com/en/3.2/topics/templates/' target='_blank'>Django Template</a>."
+
+    def get_help_format(self):
+        yield _(
+            "Simple <a href='https://docs.djangoproject.com/en/3.2/topics/templates/' target='_blank'>Django Template</a>."
+        )
+        yield " "
+        yield from super().get_help_format()
 
     def prepare_python_call(self, value):
         from django.template import Template
@@ -226,7 +239,7 @@ class DjangoModelTemplateMixin:
             elif callable(self.model_queryset):
                 return gen_signle_arg_call_validator(self.model_queryset)
             else:
-                raise ValueError("model_queryset must be a QuerySet or a callable")
+                raise ValueError(_("model_queryset must be a QuerySet or a callable"))
 
     def get_validators(self):
         validators = super().get_validators()
@@ -266,9 +279,13 @@ class SimpleEval(SimpleCallTemplate):
     """
 
     update_permission = staticmethod(superuser)
-    help_format = "Python code that returns a value."
     tags = {"eval"}
     admin_preview_as: PREVIEW = PREVIEW.PYTHON
+
+    def get_help_format(self):
+        yield _("Python code that returns a value.")
+        yield " "
+        yield from super().get_help_format()
 
     def prepare_python_call(self, value):
         return {"template": compile(value, "<string>", "eval")}
@@ -318,7 +335,6 @@ class SimpleExec(SimpleCallTemplate):
 
     admin_preview_as: PREVIEW = PREVIEW.PYTHON
     update_permission = staticmethod(superuser)
-    help_format = "Python code that execute and returns generated variables."
     tags = {"eval"}
     call_return: Optional[Union[Iterable, Callable, Dict]] = None
     allow_import: bool = False
@@ -336,11 +352,14 @@ class SimpleExec(SimpleCallTemplate):
         return {name: None for name in self.call_return}
 
     def get_help_format(self):
+        yield _("Python code that execute and returns generated variables.")
+        yield " "
         yield from super().get_help_format()
         if self.get_call_return() is None:
-            yield "Return Dict is not specified"
+            yield _("Return Dict is not specified")
         else:
-            yield f"Return Dict: <ul>"
+            yield _("Return Dict: ")
+            yield "<ul>"
             for name, value in self.get_call_return().items():
                 yield f"<li>{name} - default: {value}</li>"
             yield "</ul>"
@@ -391,14 +410,13 @@ class SimpleExecNoCall(StaticDataMixin, SimpleText):
 
     admin_preview_as: PREVIEW = PREVIEW.PYTHON
     update_permission = staticmethod(superuser)
-    help_format = "Python code that execute and generates environment variables."
     tags = {"eval"}
     call_return = None
     allow_import = False
 
     def get_help_format(self):
-        yield self.help_format
-        yield " Available objects:<ul>"
+        yield _("Available objects:")
+        yield "<ul>"
 
         for name in self.get_template_full_static_data().keys():
             yield f"<li>{name}</li>"

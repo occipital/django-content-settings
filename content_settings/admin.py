@@ -16,12 +16,13 @@ from django.urls.exceptions import NoReverseMatch
 from django.utils.text import capfirst
 from django.template.response import TemplateResponse
 from django.contrib.messages import add_message, ERROR
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.contrib import messages
 from django.shortcuts import resolve_url
 from django.shortcuts import get_object_or_404
+from django.utils.html import escape
 
 from .models import (
     ContentSetting,
@@ -408,7 +409,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
     def setting_help(self, obj):
         cs_type = get_type_by_name(obj.name)
         if cs_type is None or cs_type.constant:
-            return "(the setting is not using)"
+            return _("(the setting is not using)")
 
         if obj.user_defined_type:
             help = cs_type.get_help()
@@ -416,12 +417,12 @@ class ContentSettingAdmin(admin.ModelAdmin):
             help = obj.help
         return mark_safe(help + html_classes(obj.name))
 
-    setting_help.short_description = "Help"
+    setting_help.short_description = _("Help")
 
     def setting_tags(self, obj):
         cs_type = get_type_by_name(obj.name)
         if cs_type is None or cs_type.constant:
-            return "(the setting is not using)"
+            return _("(the setting is not using)")
 
         tags = obj.tags_set
 
@@ -429,7 +430,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
             return "---"
         return ", ".join(tags)
 
-    setting_tags.short_description = "Tags"
+    setting_tags.short_description = _("Tags")
 
     def marks(self, obj):
         return mark_safe(
@@ -455,8 +456,6 @@ class ContentSettingAdmin(admin.ModelAdmin):
             return mark_safe(full_value["html"])
 
     def default_value(self, obj):
-        from django.utils.html import escape
-
         cs_type = get_type_by_name(obj.name)
 
         if cs_type is None or cs_type.constant:
@@ -467,10 +466,12 @@ class ContentSettingAdmin(admin.ModelAdmin):
             .replace("\n", "&NewLine;")
             .replace('"', "&quot;")
         )
+
+        label = _('Reset ("save" is required for applying)')
         return mark_safe(
             f"""
         <pre class="default_value">{escape(cs_type.default)}</pre>
-        <a class="reset_default" data-value="{attr_default}" style="cursor: pointer; color:var(--link-fg)">Reset ("save" is required for applying)</a>
+        <a class="reset_default" data-value="{attr_default}" style="cursor: pointer; color:var(--link-fg)">{label}</a>
         """
         )
 
@@ -531,7 +532,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
             request.user, preview_setting, UserPreviewHistory.STATUS_REMOVED
         )
         preview_setting.delete()
-        self.message_user(request, "Preview setting removed", messages.SUCCESS)
+        self.message_user(request, _("Preview setting removed"), messages.SUCCESS)
         return HttpResponseRedirect(
             request.META.get("HTTP_REFERER", resolve_url("admin:index"))
         )
@@ -560,7 +561,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
 
             preview_setting.delete()
 
-        self.message_user(request, "Preview settings applied", messages.SUCCESS)
+        self.message_user(request, _("Preview settings applied"), messages.SUCCESS)
         return HttpResponseRedirect(
             request.META.get("HTTP_REFERER", resolve_url("admin:index"))
         )
@@ -572,7 +573,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
             )
             preview_setting.delete()
 
-        self.message_user(request, "Preview settings removed", messages.SUCCESS)
+        self.message_user(request, _("Preview settings removed"), messages.SUCCESS)
         return HttpResponseRedirect(
             request.META.get("HTTP_REFERER", resolve_url("admin:index"))
         )
@@ -632,7 +633,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
             except KeyError:
                 return JsonResponse(
                     {
-                        "error": "Invalid user_defined_type",
+                        "error": _("Invalid user_defined_type"),
                         "html": "",
                     }
                 )
@@ -641,7 +642,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
         else:
             cs_type = get_type_by_name(request.POST["name"])
         if cs_type is None or cs_type.constant:
-            return JsonResponse({"html": "", "error": "Invalid name"})
+            return JsonResponse({"html": "", "error": _("Invalid name")})
 
         value = request.POST["value"]
 

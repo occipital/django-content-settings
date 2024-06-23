@@ -3,6 +3,8 @@ The module contains types of different formats such as JSON, YAML, CSV, and so o
 """
 
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
+
 from typing import List, Optional, Tuple, Dict, Union
 
 from .basic import SimpleText, PREVIEW, SimpleString
@@ -16,10 +18,14 @@ class SimpleYAML(SimpleText):
     YAML content settings type. Requires yaml module.
     """
 
-    help_format = "Simple <a href='https://en.wikipedia.org/wiki/YAML' target='_blank'>YAML format</a>"
     admin_preview_as = PREVIEW.PYTHON
     yaml_loader = None
     tags = {"yaml"}
+
+    def get_help_format(self):
+        return _(
+            "Simple <a href='https://en.wikipedia.org/wiki/YAML' target='_blank'>YAML format</a>"
+        )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -56,10 +62,14 @@ class SimpleJSON(EmptyNoneMixin, SimpleText):
     JSON content settings type.
     """
 
-    help_format = "Simple <a href='https://en.wikipedia.org/wiki/JSON' target='_blank'>JSON format</a>"
     admin_preview_as = PREVIEW.PYTHON
     decoder_cls = None
     tags = {"json"}
+
+    def get_help_format(self):
+        return _(
+            "Simple <a href='https://en.wikipedia.org/wiki/JSON' target='_blank'>JSON format</a>"
+        )
 
     def get_decoder_cls(self):
         return self.decoder_cls
@@ -81,11 +91,15 @@ class SimpleRawCSV(SimpleText):
     Type that converts simple CSV to list of lists.
     """
 
-    help_format = "Simple <a href='https://en.wikipedia.org/wiki/Comma-separated_values' target='_blank'>CSV format</a>"
     admin_preview_as = PREVIEW.PYTHON
     tags = {"csv"}
 
     csv_dialect = "unix"
+
+    def get_help_format(self):
+        return _(
+            "Simple <a href='https://en.wikipedia.org/wiki/Comma-separated_values' target='_blank'>CSV format</a>"
+        )
 
     def get_csv_reader(self, value):
         value = super().to_python(value)

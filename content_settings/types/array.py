@@ -6,6 +6,7 @@ from typing import Any, Optional, List, Callable, Generator, Iterable, Dict
 from enum import Enum, auto
 
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
 
 from .basic import (
     SimpleText,
@@ -80,18 +81,34 @@ class SimpleStringsList(SimpleText):
         return filters
 
     def get_help_format(self) -> Generator[str, None, None]:
-        yield "List of values with the following format:"
+        yield _("List of values with the following format:")
         yield "<ul>"
         if self.split_lines == "\n":
-            yield "<li>each line is a new value</li>"
+            yield "<li>"
+            yield _("each line is a new value")
+            yield "</li>"
         else:
-            yield f"<li>{self.split_lines} separates values</li>"
-        yield "<li>strip spaces from the beginning and from the end of the value</li>"
-        yield "<li>remove empty values</li>"
+            yield "<li>"
+            yield _("%(split_lines)s separates values") % {
+                "split_lines": self.split_lines
+            }
+            yield "</li>"
+        yield "<li>"
+        yield _("strip spaces from the beginning and from the end of the value")
+        yield "</li>"
+        yield "<li>"
+        yield _("remove empty values")
+        yield "</li>"
         if self.comment_starts_with:
-            yield f"<li> use {self.comment_starts_with} to comment a line</li>"
+            yield "<li>"
+            yield _("use %(comment_starts_with)s to comment a line") % {
+                "comment_starts_with": self.comment_starts_with
+            }
+            yield "</li>"
         if self.filter_empty:
-            yield "<li>empty values are removed</li>"
+            yield "<li>"
+            yield _("empty values are removed")
+            yield "</li>"
         yield "</ul>"
 
     def filter_line(self, line: str) -> str:
@@ -313,11 +330,15 @@ class SplitTranslation(SplitByFirstLine):
     split_not_found = NOT_FOUND.DEFAULT
 
     def get_help_format(self):
-        yield "Translated Text. "
-        yield "The first line can initialize the translation splitter. "
-        yield f"The initial language is {self.split_default_key}. "
-        yield f"The first line can be '===== {self.split_default_key} ====='. "
-        yield "The format for the value inside the translation is: "
+        yield _("Translated Text. ")
+        yield _("The first line can initialize the translation splitter. ")
+        yield _("The initial language is %(split_default_key)s. ") % {
+            "split_default_key": self.split_default_key
+        }
+        yield _("The first line can be '===== %(split_default_key)s ====='. ") % {
+            "split_default_key": self.split_default_key
+        }
+        yield _("The format for the value inside the translation is: ")
         yield from self.split_type.get_help_format()
 
     def split_default_choose(self, value):

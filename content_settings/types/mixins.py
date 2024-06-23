@@ -4,6 +4,7 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext as _
 
 from .validators import call_validator
 from . import PREVIEW, pre
@@ -38,13 +39,19 @@ class MinMaxValidationMixin:
 
         is_none_valid = self.min_value is None and self.max_value is None
         if not is_none_valid and value is None:
-            raise ValidationError("Value cannot be None")
+            raise ValidationError(_("Value cannot be None"))
 
         if self.min_value is not None and value < self.min_value:
-            raise ValidationError(f"Value cannot be less than {self.min_value}")
+            raise ValidationError(
+                _("Value cannot be less than %(min_value)s")
+                % {"min_value": self.min_value}
+            )
 
         if self.max_value is not None and value > self.max_value:
-            raise ValidationError(f"Value cannot be greater than {self.max_value}")
+            raise ValidationError(
+                _("Value cannot be greater than %(max_value)s")
+                % {"max_value": self.max_value}
+            )
 
     def get_help_format(self):
         yield from super().get_help_format()
@@ -79,7 +86,8 @@ class HTMLMixin:
 
     def get_help_format(self):
         yield from super().get_help_format()
-        yield " in HTML format"
+        yield " "
+        yield _("in HTML format")
 
     def give(self, value, suffix=None):
         return mark_safe(super().give(value, suffix))
@@ -145,7 +153,7 @@ class CallToPythonMixin:
             return ""
 
         if not value:
-            return "No preview (add at least one call_validator in validators)"
+            return _("No preview (add at least one call_validator in validators)")
 
         if len(value) == 1 and admin_preview_as in (PREVIEW.TEXT, PREVIEW.HTML):
             value = value[0][1]
@@ -156,7 +164,7 @@ class CallToPythonMixin:
             else:
                 return str(value)
 
-        def _():
+        def f():
             for validator, val in value:
                 yield pre(f">>> {validator}")
 
@@ -170,7 +178,7 @@ class CallToPythonMixin:
                     else:
                         yield pre("<<< " + pformat(val))
 
-        return "\n".join(_())
+        return "\n".join(f())
 
 
 class GiveCallMixin:
