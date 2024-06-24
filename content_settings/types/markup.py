@@ -13,6 +13,7 @@ from .mixins import EmptyNoneMixin
 from . import optional, BaseSetting
 
 
+# TODO: should have Empty None as well as JSON
 class SimpleYAML(SimpleText):
     """
     YAML content settings type. Requires yaml module.

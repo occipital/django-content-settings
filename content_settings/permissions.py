@@ -2,6 +2,8 @@
 A list of functions that are used as values for type attributes such as `fetch_permission`, `view_permission`, `update_permission`, and `view_history_permission`.
 """
 
+from .functools import and_, or_, not_  # noqa: F401
+
 
 def any(user):
     """
@@ -45,38 +47,5 @@ def has_perm(perm):
 
     def _(user):
         return user.is_active and user.has_perm(perm)
-
-    return _
-
-
-def and_(*funcs):
-    """
-    Returns a function that performs an 'and' operation on multiple functions.
-    """
-
-    def _(user):
-        return all(func(user) for func in funcs)
-
-    return _
-
-
-def or_(*funcs):
-    """
-    Returns a function that performs an 'or' operation on multiple functions.
-    """
-
-    def _(user):
-        return any(func(user) for func in funcs)
-
-    return _
-
-
-def not_(func):
-    """
-    Returns a function that performs a 'not' operation on a function.
-    """
-
-    def _(user):
-        return not func(user)
 
     return _

@@ -6,6 +6,8 @@ from django.contrib.auth import get_user_model
 
 def pytest_configure(config):
     from django.conf import settings
+    from content_settings.defaults.filters import full_name_exact
+    from content_settings.defaults.modifiers import help_prefix
 
     settings.configure(
         DEBUG_PROPAGATE_EXCEPTIONS=True,
@@ -65,6 +67,12 @@ def pytest_configure(config):
             ),
             ("text", "content_settings.types.basic.SimpleText", "Text"),
             ("html", "content_settings.types.basic.SimpleHTML", "HTML"),
+        ],
+        CONTENT_SETTINGS_DEFAULTS=[
+            (
+                full_name_exact("content_settings.types.basic.SimplePassword"),
+                help_prefix("<i>Do Not Share</i>"),
+            ),
         ],
     )
 

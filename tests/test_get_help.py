@@ -106,7 +106,7 @@ pytestmark = [pytest.mark.django_db(transaction=True)]
             (
                 "SimplePassword_with_help",
                 SimplePassword(help="A value"),
-                "A value<br><br>string",
+                "<i>Do Not Share</i><br>A value<br><br>string",
             ),
             (
                 "DateTimeString_with_help",

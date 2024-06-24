@@ -22,12 +22,13 @@ from content_settings.types.markup import SimpleYAML
 from content_settings.types.each import EachMixin, Keys
 from content_settings.types.template import DjangoTemplateHTML, DjangoModelTemplateHTML
 
-from content_settings.context_managers import context_defaults, add_tags
 from content_settings import permissions
+from content_settings.defaults.context import defaults
+from content_settings.defaults.modifiers import add_tags
 
 from .models import Artist
 
-with context_defaults(add_tags(["main"]), fetch_permission=permissions.any):
+with defaults(add_tags(["main"]), fetch_permission=permissions.any):
     TITLE = SimpleString("My Site", help="Title of the site")
 
     AFTER_TITLE = DjangoTemplateHTML(
