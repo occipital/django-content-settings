@@ -16,13 +16,6 @@ def set_if_missing(**new_kwargs: Any) -> TModifier:
     return lambda kwargs: {k: v for k, v in new_kwargs.items() if k not in kwargs}
 
 
-def set_override(**new_kwargs: Any) -> TModifier:
-    """
-    Force set key-value, overriding existing.
-    """
-    return lambda kwargs: new_kwargs
-
-
 class unite(object):
     """
     unite is a base class for modifiers that uses to unite new_kwargs with existing kwargs.
