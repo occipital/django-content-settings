@@ -28,8 +28,8 @@ def classes_plus_self(cls: BaseSetting) -> Iterator[Type[BaseSetting]]:
     """
     Returns an iterator of classes that are subclasses of the given class and the given class itself.
     """
-    yield from classes(cls)
     yield cls
+    yield from classes(cls)
 
 
 def class_names(cls: Type[BaseSetting]) -> Iterator[Tuple[str, str]]:

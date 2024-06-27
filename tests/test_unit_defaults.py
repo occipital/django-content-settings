@@ -166,3 +166,63 @@ def test_default_tags():
             assert process_modifiers({"tags": ["third"]}) == {
                 "tags": {"third", "main", "second"}
             }
+
+
+def test_forced_main_tag():
+    with defaults(tags={"main"}):
+        assert process_modifiers({}) == {"tags": {"main"}}
+        assert process_modifiers({"tags": {"internal"}}) == {"tags": {"internal"}}
+        with default_tags({"additional"}):
+            assert process_modifiers({}) == {"tags": {"main", "additional"}}
+            assert process_modifiers({"tags": {"internal"}}) == {
+                "tags": {"internal", "additional"}
+            }
+
+
+def test_multiple_adding_tags():
+    with defaults(add_tags({"first"})):
+        with defaults(add_tags({"second"})):
+            assert process_modifiers({}) == {"tags": {"first", "second"}}
+            assert process_modifiers({"tags": {"main"}}) == {
+                "tags": {"first", "second", "main"}
+            }
+        with defaults(add_tags({"third"})):
+            assert process_modifiers({}) == {"tags": {"first", "third"}}
+            assert process_modifiers({"tags": {"main"}}) == {
+                "tags": {"first", "third", "main"}
+            }
+
+
+def test_one_main_tag_and_multiple_adding_tags():
+    with defaults(tags={"main"}):
+        with defaults(add_tags({"first"})):
+            assert process_modifiers({}) == {"tags": {"main", "first"}}
+            with defaults(add_tags({"second"})):
+                assert process_modifiers({}) == {"tags": {"main", "first", "second"}}
+                assert process_modifiers({"tags": {"internal"}}) == {
+                    "tags": {"first", "second", "internal"}
+                }
+
+
+def test_removing_main_tag():
+    with defaults(tags={"main"}):
+        with defaults(remove_tag("main")):
+            assert process_modifiers({}) == {}
+
+
+def test_removing_main_tag_not_empty_not_set():
+    with defaults(tags={"main"}):
+        with defaults(remove_tag("main", _empty_not_set=False)):
+            assert process_modifiers({}) == {"tags": set()}
+
+
+def test_removing_main_tag_but_not_existing():
+    with defaults(tags={"main"}):
+        with defaults(remove_tag("main")):
+            assert process_modifiers({"tags": {"main"}}) == {"tags": {"main"}}
+
+
+def test_adding_three_tags_and_removing_one():
+    with defaults(add_tags({"first", "second", "third"})):
+        with defaults(remove_tag("second")):
+            assert process_modifiers({}) == {"tags": {"first", "third"}}

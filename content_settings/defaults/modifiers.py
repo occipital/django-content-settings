@@ -63,6 +63,28 @@ class unite(object):
         raise NotImplementedError("Subclass must implement process method")
 
 
+class unite_empty_not_set(unite):
+    """
+    unite, that uses for removing elements from the object. For example - making smaller set or removing text from string.
+
+    it adds additional parameter `_empty_not_set: bool = True` that answers the question - should we remove value from updates if it is empty.
+
+    It doesn't solve a particular problem, but it is a way to remove uncertenty.
+    """
+
+    empty_not_set: bool = True
+
+    def __init__(self, _empty_not_set: bool = True, **kwargs) -> None:
+        self.empty_not_set = _empty_not_set
+        super().__init__(**kwargs)
+
+    def __call__(self, *args, **kwargs) -> Dict[str, Any]:
+        ret = super().__call__(*args, **kwargs)
+        if not self.empty_not_set:
+            return ret
+        return {k: v if v else NotSet for k, v in ret.items()}
+
+
 class unite_set_add(unite):
     """
     modify set by adding new values
@@ -78,7 +100,7 @@ class unite_set_add(unite):
         )
 
 
-class unite_set_remove(unite):
+class unite_set_remove(unite_empty_not_set):
     """
     modify set by removing given values
     """
@@ -92,32 +114,32 @@ class unite_set_remove(unite):
         return set(up) - set(value) | (set(kw) if kw is not NotSet else set())
 
 
-def add_tags(tags: Iterable[str]) -> TModifier:
+def add_tags(tags: Iterable[str], **kwargs) -> TModifier:
     """
     add tags
     """
-    return unite_set_add(tags=tags)
+    return unite_set_add(tags=tags, **kwargs)
 
 
-def remove_tags(tags: Iterable[str]) -> TModifier:
+def remove_tags(tags: Iterable[str], **kwargs) -> TModifier:
     """
     remove tags
     """
-    return unite_set_remove(tags=tags)
+    return unite_set_remove(tags=tags, **kwargs)
 
 
-def add_tag(tag: str) -> TModifier:
+def add_tag(tag: str, **kwargs) -> TModifier:
     """
     add tag
     """
-    return unite_set_add(tags={tag})
+    return unite_set_add(tags={tag}, **kwargs)
 
 
-def remove_tag(tag: str) -> TModifier:
+def remove_tag(tag: str, **kwargs) -> TModifier:
     """
     remove tag
     """
-    return unite_set_remove(tags={tag})
+    return unite_set_remove(tags={tag}, **kwargs)
 
 
 class unite_str(unite):
