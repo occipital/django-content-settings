@@ -20,7 +20,7 @@ from content_settings.types.lazy import LazyObject
 from content_settings.types import PREVIEW, required, optional, pre, BaseSetting
 from content_settings.types.mixins import HTMLMixin
 from content_settings.permissions import none, staff
-from content_settings.defaults.context import defaults_modifiers
+from content_settings.defaults.context import update_defaults
 
 
 class SimpleString(BaseSetting):
@@ -99,8 +99,7 @@ class SimpleString(BaseSetting):
             self.default, str
         ), "Default should be str (or required or optional for special cases)"
 
-        kwargs = self.update_defaults_context(kwargs)
-        self.init_assign_kwargs(kwargs)
+        self.init_assign_kwargs(update_defaults(self, kwargs))
 
         assert isinstance(self.version, str), "Version should be str"
         assert (
@@ -109,18 +108,6 @@ class SimpleString(BaseSetting):
         assert (
             self.get_admin_preview_as() in PREVIEW
         ), f"admin_preview_as should be one of {PREVIEW}"
-
-    def update_defaults_context(self, kwargs: dict) -> dict:
-        """
-        Updates kwargs from the context_defaults_kwargs with the values that can be assigned to the instance.
-        """
-        for modifier in defaults_modifiers(self):
-            updates = modifier(kwargs)
-            for name, value in updates.items():
-                if self.can_assign(name):
-                    kwargs[name] = value
-
-        return kwargs
 
     def init_assign_kwargs(self, kwargs):
         """

@@ -9,11 +9,27 @@ from typing import Dict, Any, Callable, Set, Iterable
 TModifier = Callable[[Dict[str, Any]], Dict[str, Any]]
 
 
-def set_if_missing(**new_kwargs: Any) -> TModifier:
+class NotSet:
+    """
+    A reference to say that the value is not set. (Using None is not possible)
+    """
+
+    pass
+
+
+class SkipSet(Exception):
+    """
+    For unite modifiers, to skip setting the value.
+    """
+
+
+def set_if_missing(**params: Any) -> TModifier:
     """
     Set key-value if it is not already set.
     """
-    return lambda kwargs: {k: v for k, v in new_kwargs.items() if k not in kwargs}
+    return lambda updates, kwargs: {
+        k: v if k not in kwargs else NotSet for k, v in params.items()
+    }
 
 
 class unite(object):
@@ -21,27 +37,30 @@ class unite(object):
     unite is a base class for modifiers that uses to unite new_kwargs with existing kwargs.
     """
 
-    skip_if_not_set = False
-
     def __init__(self, **kwargs) -> None:
-        self.new_kwargs = kwargs
+        self.params = kwargs
 
-    def __call__(self, kwargs: Dict[str, Any]) -> Dict[str, Any]:
+    def __call__(
+        self, updates: Dict[str, Any], kwargs: Dict[str, Any]
+    ) -> Dict[str, Any]:
         result = {}
-        for k, v in self.new_kwargs.items():
-            if k in kwargs:
-                result[k] = self.process(v, kwargs[k])
-            elif self.skip_if_not_set:
+        for k, v in self.params.items():
+            try:
+                result[k] = self.process(
+                    v, updates.get(k, NotSet), kwargs.get(k, NotSet)
+                )
+            except SkipSet:
                 continue
-            else:
-                result[k] = v
         return result
 
-    def process(self, new_value: Any, old_value: Any) -> Any:
+    def process(self, value: Any, up: Any, kw: Any) -> Any:
         """
-        Process new_value and old_value and return new value.
+        returns value for the update dict. Where
+        * `value` is the value from parameter of modifier
+        * `up` is the current value in the update dict
+        * `kw` is the current value in the settings kwargs
         """
-        raise NotImplementedError("Subclass must implement this method")
+        raise NotImplementedError("Subclass must implement process method")
 
 
 class unite_set_add(unite):
@@ -49,8 +68,14 @@ class unite_set_add(unite):
     modify set by adding new values
     """
 
-    def process(self, new_value: Iterable[Any], old_value: Iterable[Any]) -> Set[Any]:
-        return set(new_value) | set(old_value)
+    def process(
+        self, value: Iterable[Any], up: Iterable[Any], kw: Iterable[Any]
+    ) -> Set[Any]:
+        return (
+            set(value)
+            | (set(up) if up is not NotSet else set())
+            | (set(kw) if kw is not NotSet else set())
+        )
 
 
 class unite_set_remove(unite):
@@ -58,10 +83,13 @@ class unite_set_remove(unite):
     modify set by removing given values
     """
 
-    skip_if_not_set = True
+    def process(
+        self, value: Iterable[Any], up: Iterable[Any], kw: Iterable[Any]
+    ) -> Set[Any]:
+        if up is NotSet or not up:
+            raise SkipSet()
 
-    def process(self, new_value: Iterable[Any], old_value: Iterable[Any]) -> Set[Any]:
-        return set(old_value) - set(new_value)
+        return set(up) - set(value) | (set(kw) if kw is not NotSet else set())
 
 
 def add_tags(tags: Iterable[str]) -> TModifier:
@@ -97,8 +125,15 @@ class unite_str(unite):
         self._format = _format
         super().__init__(**kwargs)
 
-    def process(self, new_value: str, old_value: str) -> str:
-        return self._format.format(new_value=new_value, old_value=old_value)
+    def process(self, value: Any, up: Any, kw: Any) -> str:
+        if up is not NotSet:
+            old_value = up
+        elif kw is not NotSet:
+            old_value = kw
+        else:
+            old_value = ""
+
+        return self._format.format(new_value=value, old_value=old_value)
 
 
 def help_prefix(prefix: str) -> TModifier:
