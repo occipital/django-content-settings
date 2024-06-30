@@ -44,9 +44,7 @@ CACHE_SPLITER = get_setting("CACHE_SPLITER", "::")
 
 VALUES_ONLY_FROM_DB = get_setting("VALUES_ONLY_FROM_DB", False) and not settings.DEBUG
 
-CONTEXT = get_setting("CONTEXT", {})
-
-CONTEXT_PROCESSORS = get_setting("CONTEXT_PROCESSORS", [])
+DEFAULTS = get_setting("DEFAULTS", [])
 
 USER_DEFINED_TYPES = get_setting("USER_DEFINED_TYPES", [])
 

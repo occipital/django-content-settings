@@ -160,7 +160,6 @@ class DjangoTemplate(SimpleCallTemplate):
     The setting of that type generates value based on the Django Template in the raw value.
     """
 
-    tags = {"template"}
     admin_preview_as: PREVIEW = PREVIEW.TEXT
 
     def get_help_format(self):
@@ -278,8 +277,6 @@ class SimpleEval(SimpleCallTemplate):
     By default, `update_permission` is set to `superuser`.
     """
 
-    update_permission = staticmethod(superuser)
-    tags = {"eval"}
     admin_preview_as: PREVIEW = PREVIEW.PYTHON
 
     def get_help_format(self):
@@ -334,8 +331,6 @@ class SimpleExec(SimpleCallTemplate):
     """
 
     admin_preview_as: PREVIEW = PREVIEW.PYTHON
-    update_permission = staticmethod(superuser)
-    tags = {"eval"}
     call_return: Optional[Union[Iterable, Callable, Dict]] = None
     allow_import: bool = False
 
@@ -409,8 +404,6 @@ class SimpleExecNoCall(StaticDataMixin, SimpleText):
     """
 
     admin_preview_as: PREVIEW = PREVIEW.PYTHON
-    update_permission = staticmethod(superuser)
-    tags = {"eval"}
     call_return = None
     allow_import = False
 

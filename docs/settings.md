@@ -51,19 +51,30 @@ Allows the addition of custom tags that users can assign to variables. This is a
 
 The values for variables should only be taken from DB. In case of any value is missing in DB - it will raise AssertionError
 
-### `CONTENT_SETTINGS_CONTEXT_PROCESSORS` and `CONTENT_SETTINGS_CONTEXT`
+### `CONTENT_SETTINGS_DEFAULTS`
 
-Those are args and kwargs for global `context_defaults`. By settings one of those values you like grouping all of the under global `with context_defaults(*CONTENT_SETTINGS_CONTEXT_PROCESSORS, **CONTENT_SETTINGS_CONTEXT)`
+defines a global defauls contexts for specific types.
 
-For example if you want only superuser to update any settings by default
+a list of tuples. Each tuple has at least two elements.
+
+The first element is a filter which defined which settings type is eligable for the global context. *The list of available filtes can be find in `content_settings.filters`*.
+
+All other arguments are modiers that change the default arguments. *All modifiers can be found in `content_settings.defaults.modifiers`*.
+
+[Read more about defaults context](defaults.md#global-updates-content_settings_defaults)
 
 ```python
-
 from content_settings.permissions import superuser
+from content_settings.functools import _or
+from content_settings.filters import full_name_exact
+from content_settings.defaults.modifiers import set_if_missing
 
-CONTENT_SETTINGS_CONTEXT = {
-    "update_permission": superuser
-}
+CONTENT_SETTINGS_DEFAULTS = [
+    (_or(
+        full_name_exact("content_settings.types.template.SimpleEval"),
+        full_name_exact("content_settings.types.template.SimpleExec"),
+    ), set_if_missing(update_permission=superuser)),
+]
 ```
 
 ### `CONTENT_SETTINGS_TAGS`

@@ -8,6 +8,7 @@ nav:
   - "[wip] Custom Type": custom.md
   - Enhancements to Admin Panel: admin.md
   - Permissions: permissions.md
+  - Defaults Context: defaults.md
   - Available Settings: settings.md
   - How Caching is Organized: caching.md
   - Cookbook: cookbook.md

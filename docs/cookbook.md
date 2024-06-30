@@ -11,14 +11,15 @@ So imagine you have a group of settings that have the same permission, and also 
 ```python
 from content_settings.types.basic import SimpleString
 from content_settings.permissions import superuser
-from content_settings.context_mamagers import context_defaults, help_format
+from content_settings.defaults.context import defaults
+from content_settings.defaults.modifiers import help_suffix
 
-with context_defaults(help_format("{}. Only superuser can change that"), update_permission=superuser):
-    SITE_TITLE = SimpleString("Book Store", help="title for the site")
-    SITE_KEYWORDS = SimpleString("books, store, popular", help="head keywords")
+with defaults(help_suffix("Only superuser can change that"), update_permission=superuser):
+    SITE_TITLE = SimpleString("Book Store", help="title for the site.")
+    SITE_KEYWORDS = SimpleString("books, store, popular", help="head keywords.")
 ```
 
-The above settigs lines can be replaced without `context_defaults` as:
+The above settigs lines can be replaced without `defaults` as:
 
 ```python
 # same imports
@@ -26,12 +27,12 @@ The above settigs lines can be replaced without `context_defaults` as:
 SITE_TITLE = SimpleString(
     "Book Store", 
     update_permission=superuser,
-    help="title for the site. Only superuser can change that",
+    help="title for the site.<br>Only superuser can change that",
 )
 SITE_KEYWORDS = SimpleString(
     "books, store, popular",
     update_permission=superuser,
-    help="head keywords. Only superuser can change that",
+    help="head keywords.<br>Only superuser can change that",
 )
 ```
 

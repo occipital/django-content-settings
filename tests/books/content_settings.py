@@ -20,7 +20,8 @@ from content_settings.types.markup import SimpleCSV
 from content_settings.types.template import DjangoModelTemplate, DjangoTemplateNoArgs
 from content_settings.types.array import SplitTranslation
 from content_settings import permissions
-from content_settings.context_managers import context_defaults, add_tags
+from content_settings.defaults.context import defaults
+from content_settings.defaults.modifiers import add_tags
 
 from .models import Book
 
@@ -30,7 +31,7 @@ class PublicSimpleString(SimpleString):
     version = "3.0.0"
 
 
-with context_defaults(add_tags({"general"})):
+with defaults(add_tags({"general"})):
 
     TITLE = SimpleString(
         "Book Store",
@@ -110,9 +111,9 @@ COMPANY_DESCRIPTION = SplitTranslation(
 INTERESTING_TEXT = mix(DictSuffixesPreviewMixin, SimpleText)(
     "This is a long interesting text",
     suffixes={
-        "trim": lambda text, max_length=10: (text[: max_length - 3] + "...")
-        if len(text) > max_length
-        else text
+        "trim": lambda text, max_length=10: (
+            (text[: max_length - 3] + "...") if len(text) > max_length else text
+        )
     },
     admin_preview_as=PREVIEW.TEXT,
     fetch_permission=permissions.any,

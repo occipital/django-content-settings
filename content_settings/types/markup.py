@@ -13,6 +13,7 @@ from .mixins import EmptyNoneMixin
 from . import optional, BaseSetting
 
 
+# TODO: should have Empty None as well as JSON
 class SimpleYAML(SimpleText):
     """
     YAML content settings type. Requires yaml module.
@@ -20,7 +21,6 @@ class SimpleYAML(SimpleText):
 
     admin_preview_as = PREVIEW.PYTHON
     yaml_loader = None
-    tags = {"yaml"}
 
     def get_help_format(self):
         return _(
@@ -64,7 +64,6 @@ class SimpleJSON(EmptyNoneMixin, SimpleText):
 
     admin_preview_as = PREVIEW.PYTHON
     decoder_cls = None
-    tags = {"json"}
 
     def get_help_format(self):
         return _(
@@ -92,7 +91,6 @@ class SimpleRawCSV(SimpleText):
     """
 
     admin_preview_as = PREVIEW.PYTHON
-    tags = {"csv"}
 
     csv_dialect = "unix"
 

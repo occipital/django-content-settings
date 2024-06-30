@@ -15,12 +15,12 @@ from django import forms
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.exceptions import ValidationError
 
-from content_settings.context_managers import context_defaults_kwargs
 from content_settings.settings import CACHE_SPLITER
 from content_settings.types.lazy import LazyObject
 from content_settings.types import PREVIEW, required, optional, pre, BaseSetting
 from content_settings.types.mixins import HTMLMixin
 from content_settings.permissions import none, staff
+from content_settings.defaults.context import update_defaults
 
 
 class SimpleString(BaseSetting):
@@ -87,6 +87,9 @@ class SimpleString(BaseSetting):
         All of the changes for type instance can only be done inside of __init__ method. The other methods should not change self object.
         """
         # optional support of help_text instead of help
+        assert not (
+            "help" in kwargs and "help_text" in kwargs
+        ), "You cannot use both help and help_text"
         if "help" not in kwargs and "help_text" in kwargs:
             kwargs["help"] = kwargs.pop("help_text")
 
@@ -99,8 +102,7 @@ class SimpleString(BaseSetting):
             self.default, str
         ), "Default should be str (or required or optional for special cases)"
 
-        kwargs = self.update_defaults_context(kwargs)
-        self.init_assign_kwargs(kwargs)
+        self.init_assign_kwargs(update_defaults(self, kwargs))
 
         assert isinstance(self.version, str), "Version should be str"
         assert (
@@ -109,28 +111,6 @@ class SimpleString(BaseSetting):
         assert (
             self.get_admin_preview_as() in PREVIEW
         ), f"admin_preview_as should be one of {PREVIEW}"
-
-    def update_defaults_context(self, kwargs: dict) -> dict:
-        """
-        Updates kwargs from the context_defaults_kwargs with the values that can be assigned to the instance.
-        """
-        context_defaults = {
-            name: value
-            for name, value in context_defaults_kwargs().items()
-            if self.can_assign(name)
-        }
-
-        # update actual values
-        return {
-            name: value
-            for name, value in context_defaults_kwargs(
-                {
-                    **context_defaults,
-                    **kwargs,
-                }
-            ).items()
-            if self.can_assign(name)
-        }
 
     def init_assign_kwargs(self, kwargs):
         """
