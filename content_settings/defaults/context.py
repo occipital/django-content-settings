@@ -26,25 +26,34 @@ def defaults(*args, **kwargs):
 
 @contextmanager
 def default_tags(tags: Set[str]):
+    """
+    defaults context for setting default tags.
+    """
     with defaults(add_tags(tags)):
         yield
 
 
 @contextmanager
 def default_help_prefix(prefix: str):
+    """
+    defaults context for setting default help prefix.
+    """
     with defaults(help_prefix(prefix)):
         yield
 
 
 @contextmanager
 def default_help_suffix(suffix: str):
+    """
+    defaults context for setting default help suffix.
+    """
     with defaults(help_suffix(suffix)):
         yield
 
 
 def defaults_modifiers(setting: BaseSetting) -> Iterator[TModifier]:
     """
-    Get modifiers for specific class
+    Generator for all modifiers for the given setting.
     """
     for modifier in DEFAULTS:
         if not modifier[0](setting.__class__):
@@ -54,7 +63,7 @@ def defaults_modifiers(setting: BaseSetting) -> Iterator[TModifier]:
 
 def update_defaults(setting: BaseSetting, kwargs: Dict[str, Any]):
     """
-    Update paramas of the setting type by the collected modifiers
+    Update paramas of the setting type by applying all of the modifiers from the defaults context.
     """
     updates = {}
     for modifier in defaults_modifiers(setting):

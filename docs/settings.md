@@ -53,11 +53,21 @@ The values for variables should only be taken from DB. In case of any value is m
 
 ### `CONTENT_SETTINGS_DEFAULTS`
 
-list of global defaults context. [Read more about defaults context](defaults.md#global-updates-content_settings_defaults)
+defines a global defauls contexts for specific types.
+
+a list of tuples. Each tuple has at least two elements.
+
+The first element is a filter which defined which settings type is eligable for the global context. *The list of available filtes can be find in `content_settings.filters`*.
+
+All other arguments are modiers that change the default arguments. *All modifiers can be found in `content_settings.defaults.modifiers`*.
+
+[Read more about defaults context](defaults.md#global-updates-content_settings_defaults)
 
 ```python
 from content_settings.permissions import superuser
 from content_settings.functools import _or
+from content_settings.filters import full_name_exact
+from content_settings.defaults.modifiers import set_if_missing
 
 CONTENT_SETTINGS_DEFAULTS = [
     (_or(

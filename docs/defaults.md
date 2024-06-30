@@ -147,6 +147,8 @@ or you want to set for all Python fields (which are all SimpleEval and SimpleExe
 ```python
 from content_settings.permissions import superuser
 from content_settings.functools import _or
+from content_settings.filters import full_name_exact
+from content_settings.defaults.modifiers import set_if_missing
 
 CONTENT_SETTINGS_DEFAULTS = [
     (_or(
@@ -154,5 +156,4 @@ CONTENT_SETTINGS_DEFAULTS = [
         full_name_exact("content_settings.types.template.SimpleExec"),
     ), set_if_missing(update_permission=superuser)),
 ]
-
 ```

@@ -25,7 +25,10 @@ class SkipSet(Exception):
 
 def set_if_missing(**params: Any) -> TModifier:
     """
-    Set key-value if it is not already set.
+    Set key-value pairs in the updates dictionary if they are not already set in kwargs. This modifier is used for all `**kwargs` attributes for `defaults` context.
+
+    Args:
+        **params: Arbitrary keyword arguments representing key-value pairs to set.
     """
     return lambda updates, kwargs: {
         k: v if k not in kwargs else NotSet for k, v in params.items()
@@ -34,7 +37,12 @@ def set_if_missing(**params: Any) -> TModifier:
 
 class unite(object):
     """
-    unite is a base class for modifiers that uses to unite new_kwargs with existing kwargs.
+    unite is a base class for modifiers that unites kwargs passed in arguments with kwargs already collected and kwargs passed in the definition of the settings type.
+
+    All child classes should implement `process` method.
+
+    Args:
+        **kwargs: Arbitrary keyword arguments representing key-value pairs to unite.
     """
 
     def __init__(self, **kwargs) -> None:
@@ -43,6 +51,16 @@ class unite(object):
     def __call__(
         self, updates: Dict[str, Any], kwargs: Dict[str, Any]
     ) -> Dict[str, Any]:
+        """
+        Unites the provided updates and kwargs dictionaries with the parameters.
+
+        Args:
+            updates: The dictionary with already collected kwargs from default context.
+            kwargs: The kwargs passed in the definition of the settings type.
+
+        Returns:
+            A dictionary with united key-value pairs.
+        """
         result = {}
         for k, v in self.params.items():
             try:
@@ -55,21 +73,28 @@ class unite(object):
 
     def process(self, value: Any, up: Any, kw: Any) -> Any:
         """
-        returns value for the update dict. Where
-        * `value` is the value from parameter of modifier
-        * `up` is the current value in the update dict
-        * `kw` is the current value in the settings kwargs
+        Returns value for the update dictionary.
+
+        Args:
+            value: The value from the parameter of the modifier.
+            up: The current value in the update dictionary.
+            kw: The current value in the settings kwargs.
+
+        Returns:
+            The processed value to be set in the update dictionary.
         """
         raise NotImplementedError("Subclass must implement process method")
 
 
 class unite_empty_not_set(unite):
     """
-    unite, that uses for removing elements from the object. For example - making smaller set or removing text from string.
+    unite, that is used for removing elements from the object. For example - making a smaller set or removing text from a string.
 
-    it adds additional parameter `_empty_not_set: bool = True` that answers the question - should we remove value from updates if it is empty.
+    It adds an additional parameter `_empty_not_set: bool = True` that answers the question - should we remove value from updates if it is empty.
 
-    It doesn't solve a particular problem, but it is a way to remove uncertenty.
+    Args:
+        _empty_not_set: A boolean indicating whether to remove empty values from updates.
+        **kwargs: Arbitrary keyword arguments representing key-value pairs to unite.
     """
 
     empty_not_set: bool = True
@@ -79,6 +104,16 @@ class unite_empty_not_set(unite):
         super().__init__(**kwargs)
 
     def __call__(self, *args, **kwargs) -> Dict[str, Any]:
+        """
+        Unites the provided updates and kwargs dictionaries with the parameters, removing empty values if specified.
+
+        Args:
+            *args: Positional arguments.
+            **kwargs: Keyword arguments.
+
+        Returns:
+            A dictionary with united key-value pairs, with empty values removed if specified.
+        """
         ret = super().__call__(*args, **kwargs)
         if not self.empty_not_set:
             return ret
@@ -87,7 +122,7 @@ class unite_empty_not_set(unite):
 
 class unite_set_add(unite):
     """
-    modify set by adding new values
+    unite that modifies a set by adding new values in it.
     """
 
     def process(
@@ -102,7 +137,8 @@ class unite_set_add(unite):
 
 class unite_set_remove(unite_empty_not_set):
     """
-    modify set by removing given values
+    unite that modifies a set by removing given values.
+
     """
 
     def process(
@@ -116,33 +152,41 @@ class unite_set_remove(unite_empty_not_set):
 
 def add_tags(tags: Iterable[str], **kwargs) -> TModifier:
     """
-    add tags
+    add tags to the setting
     """
     return unite_set_add(tags=tags, **kwargs)
 
 
 def remove_tags(tags: Iterable[str], **kwargs) -> TModifier:
     """
-    remove tags
+    Removes tags from the update context.
     """
     return unite_set_remove(tags=tags, **kwargs)
 
 
 def add_tag(tag: str, **kwargs) -> TModifier:
     """
-    add tag
+    same as `add_tags` but only one.
     """
     return unite_set_add(tags={tag}, **kwargs)
 
 
 def remove_tag(tag: str, **kwargs) -> TModifier:
     """
-    remove tag
+    same as `remove_tags` but only one.
     """
     return unite_set_remove(tags={tag}, **kwargs)
 
 
 class unite_str(unite):
+    """
+    unite that modifies a string by formatting it.
+
+    Args:
+        _format: A string to format the value use `{new_value}` as a placeholder for the passed value in kwargs and `{old_value}` as a placeholder for the value in the update context.
+        **kwargs: Arbitrary keyword arguments.
+    """
+
     def __init__(self, _format: str = "{new_value}\n{old_value}", **kwargs) -> None:
         self._format = _format
         super().__init__(**kwargs)

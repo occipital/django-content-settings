@@ -78,6 +78,8 @@ def md_from_file(file_path):
         yield from md_from_node(node, prefix="###", file_path=file_path)
 
 
+module_list = []
+
 with open(os.path.join("docs", "source.md"), "w") as fh:
     for dirname, dirs, files in os.walk(SOURCE_FOLDER):
         if dirname.endswith("__pycache__"):
@@ -97,6 +99,13 @@ with open(os.path.join("docs", "source.md"), "w") as fh:
             module_name = ".".join(Path(dir).parts + (os.path.splitext(name)[0],))
 
             fh.write(f"\n\n## {module_name}")
+            module_list.append(f"- [{module_name}](#{module_name.replace('.', '')})")
 
             fh.write("\n\n")
             fh.write(mddoc)
+
+    # Write the module list at the beginning of the file
+    fh.seek(0, 0)
+    fh.write("# Module List\n\n")
+    fh.write("\n".join(module_list))
+    fh.write("\n\n")
