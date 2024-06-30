@@ -35,6 +35,7 @@ from .context_managers import content_settings_context
 from .conf import USER_DEFINED_TYPES_INSTANCE
 from .settings import USER_TAGS, USER_DEFINED_TYPES, PREVIEW_ON_SITE_HREF
 from .caching import get_type_by_name
+from .utils import class_names
 
 
 def user_able_to_update(user, name, user_defined_type=None):
@@ -58,15 +59,8 @@ def get_selected_tags_from_params(params):
 
 def html_classes(name):
     classes = "</li><li>".join(
-        f"{cls.__name__} <i>from {cls.__module__}</i>"
-        for cls in inspect.getmro(get_type_by_name(name).__class__)
-        if cls.__name__
-        and cls.__module__ != "builtins"
-        and (cls.__module__, cls.__name__)
-        not in (
-            ("content_settings.types.basic", "BaseSetting"),
-            ("content_settings.types.basic", "SimpleString"),
-        )
+        f"{cls_name} <i>from {module_name}</i>"
+        for cls_name, module_name in class_names(get_type_by_name(name).__class__)
     )
     if not classes:
         return ""

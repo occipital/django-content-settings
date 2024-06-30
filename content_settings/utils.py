@@ -7,34 +7,27 @@ from typing import Iterator, Tuple, Type
 from content_settings.types import BaseSetting
 
 
-def classes(cls: BaseSetting) -> Iterator[Type[BaseSetting]]:
+def classes(setting_cls: Type[BaseSetting]) -> Iterator[Type[BaseSetting]]:
     """
     Returns an iterator of classes that are subclasses of the given class.
     """
-    for cls in inspect.getmro(cls):
-        if not cls.__name__:
+    for cls in inspect.getmro(setting_cls):
+
+        if not cls.__name__ or not cls.__module__:
             continue
         if cls.__module__ == "builtins":
             continue
         if (cls.__module__, cls.__name__) in (
-            ("content_settings.types.basic", "BaseSetting"),
+            ("content_settings.types", "BaseSetting"),
             ("content_settings.types.basic", "SimpleString"),
-        ):
+        ) and cls != setting_cls:
             continue
         yield cls
 
 
-def classes_plus_self(cls: BaseSetting) -> Iterator[Type[BaseSetting]]:
-    """
-    Returns an iterator of classes that are subclasses of the given class and the given class itself.
-    """
-    yield cls
-    yield from classes(cls)
-
-
-def class_names(cls: Type[BaseSetting]) -> Iterator[Tuple[str, str]]:
+def class_names(setting_cls: Type[BaseSetting]) -> Iterator[Tuple[str, str]]:
     """
     Returns an iterator of tuple with module and class name that are subclasses of the given class.
     """
-    for cls in classes_plus_self(cls):
+    for cls in classes(setting_cls):
         yield (cls.__module__, cls.__name__)
