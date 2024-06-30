@@ -11,5 +11,6 @@
     <a href="{% add_preserved_filters delete_url %}" class="deletelink">{% translate "Delete" %}</a>
 {% endif %}
 {% if show_close %}<a href="{% url opts|admin_urlname:'changelist' %}" class="closelink">{% translate 'Close' %}</a>{% endif %}
+<input type="hidden" name="content_settings_full_checksum" value="{{CONTENT_SETTINGS.full_checksum}}">
 {% endblock %}
 </div>

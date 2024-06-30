@@ -10,19 +10,27 @@ The `content_settings.settings.py` module in the `django-content-settings` packa
 
 Detailed information about caching can be found in a [dedicated section](caching.md). The following are the settings related to caching:
 
-### `CONTENT_SETTINGS_CHECKSUM_KEY_PREFIX` (default: `"CS_CHECKSUM_"`)
+### `CONTENT_SETTINGS_CHECKSUM_KEY_PREFIX`
+
+*default: `"CS_CHECKSUM_"`*
 
 Specifies the prefix used when storing checksums.
 
-### `CONTENT_SETTINGS_CACHE_BACKEND` (default: `"default"`)
+### `CONTENT_SETTINGS_CACHE_BACKEND`
+
+*default: `"default"`*
 
 Defines the cache backend used for storing checksums.
 
-### `CONTENT_SETTINGS_CACHE_TIMEOUT` (default: `60 * 60 * 24`)
+### `CONTENT_SETTINGS_CACHE_TIMEOUT`
+
+*default: `60 * 60 * 24`*
 
 Sets the timeout for cache keys. Defines how long (in seconds) the cache keys will be stored before expiration.
 
-### `CONTENT_SETTINGS_CACHE_SPLITER` (default: `"::"`)
+### `CONTENT_SETTINGS_CACHE_SPLITER`
+
+*default: `"::"`*
 
 Specifies the string used to join values in caching. This value should not be used in the version value.
 
@@ -43,15 +51,25 @@ Allows the addition of custom tags that users can assign to variables. This is a
 }
 ```
 
-  In this default setting, users can tag variables as 'favorites' or 'marked' with corresponding emojis for added and addable states.
+In this default setting, users can tag variables as 'favorites' or 'marked' with corresponding emojis for added and addable states.
+
+### `CONTENT_SETTINGS_ADMIN_CHECKSUM_CHECK_BEFORE_SAVE`
+
+*default: False*
+
+make check of the current checksum before saving data in django admin. If the page is opened for too long, and someone change any settings between page is opened and submited - changes wouldn't be applied.
 
 ## Other
 
 ### `CONTENT_SETTINGS_VALUES_ONLY_FROM_DB`
 
+*default: False*
+
 The values for variables should only be taken from DB. In case of any value is missing in DB - it will raise AssertionError
 
 ### `CONTENT_SETTINGS_DEFAULTS`
+
+*default: [] (empty list)*
 
 defines a global defauls contexts for specific types.
 
@@ -79,23 +97,14 @@ CONTENT_SETTINGS_DEFAULTS = [
 
 ### `CONTENT_SETTINGS_TAGS`
 
+*default: [] (empty list)*
+
 Allows you to add automatically generated tags to all of your settings. It is a list of functions (or import line to the function)
 
 The function should take three arguments - the name of the setting, setting object, and new value
-
-by default it is 
-
-```python
-[
-    "content_settings.tags.changed",
-],
-```
 
 Available built in types:
 
 * `"content_settings.tags.changed"` - changed tag to filter only changed settings (the name of the tag can changed in setting `CONTENT_SETTINGS_TAG_CHANGED`)
 * `"content_settings.tags.app_name"` - every setting will have a tag with app name where one was defined
 
----
-
-These customizable settings in the `django-content-settings` module enhance the flexibility and functionality of content management within Django applications. By adjusting these settings, developers can optimize the behavior of the module to better suit the specific needs of their projects.

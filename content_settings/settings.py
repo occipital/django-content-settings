@@ -13,9 +13,7 @@ UPDATE_DB_VALUES_BY_MIGRATE = get_setting("UPDATE_DB_VALUES_BY_MIGRATE", True)
 
 TAGS = get_setting(
     "TAGS",
-    [
-        "content_settings.tags.changed",
-    ],
+    [],
 )
 
 TAG_CHANGED = get_setting("TAG_CHANGED", "changed")
@@ -47,6 +45,10 @@ VALUES_ONLY_FROM_DB = get_setting("VALUES_ONLY_FROM_DB", False) and not settings
 DEFAULTS = get_setting("DEFAULTS", [])
 
 USER_DEFINED_TYPES = get_setting("USER_DEFINED_TYPES", [])
+
+ADMIN_CHECKSUM_CHECK_BEFORE_SAVE = get_setting(
+    "ADMIN_CHECKSUM_CHECK_BEFORE_SAVE", False
+)
 
 assert isinstance(USER_DEFINED_TYPES, list), "USER_DEFINED_TYPES must be a list"
 assert len(USER_DEFINED_TYPES) == len(

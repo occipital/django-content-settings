@@ -83,15 +83,11 @@ Trigger on_change and on_change_commited for the content setting
 
 A set of available utilites
 
-### def classes(cls: BaseSetting)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/utils.py#L10)</sup>
+### def classes(setting_cls: Type[BaseSetting])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/utils.py#L10)</sup>
 
 Returns an iterator of classes that are subclasses of the given class.
 
-### def classes_plus_self(cls: BaseSetting)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/utils.py#L27)</sup>
-
-Returns an iterator of classes that are subclasses of the given class and the given class itself.
-
-### def class_names(cls: Type[BaseSetting])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/utils.py#L35)</sup>
+### def class_names(setting_cls: Type[BaseSetting])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/utils.py#L28)</sup>
 
 Returns an iterator of tuple with module and class name that are subclasses of the given class.
 
@@ -599,7 +595,7 @@ The module is called a "template" because the setting's raw value is a template 
 
 See `CallToPythonMixin`
 
-### class StaticDataMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L33)</sup>
+### class StaticDataMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L32)</sup>
 
 Adds static data to the context, such as SETTINGS or/and CONTENT_SETTINGS.
 
@@ -608,27 +604,27 @@ Attributes:
 - `template_static_includes` - tuple of `STATIC_INCLUDES` that should be included in the context. Default: `(STATIC_INCLUDES.CONTENT_SETTINGS, STATIC_INCLUDES.SETTINGS)`. If `STATIC_INCLUDES.SETTINGS` is included, `django.conf.settings` will be added to the context. If `STATIC_INCLUDES.CONTENT_SETTINGS` is included, `content_settings.conf.content_settings` will be added to the context.
 - `template_static_data` - static data that should be added to the context (on top of what will be added by `template_static_includes`). It can be a dictionary or a callable that returns a dictionary. Default: `None`.
 
-### class SimpleCallTemplate(CallToPythonMixin, StaticDataMixin, SimpleText)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L80)</sup>
+### class SimpleCallTemplate(CallToPythonMixin, StaticDataMixin, SimpleText)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L74)</sup>
 
 Base class for templates that can be called.
 
-#### def prepate_input_to_dict(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L132)</sup>
+#### def prepate_input_to_dict(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L126)</sup>
 
 prepares an inpit dictuonary for the call based on the given arguments and kwargs
 
-### class DjangoTemplate(SimpleCallTemplate)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L158)</sup>
+### class DjangoTemplate(SimpleCallTemplate)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L152)</sup>
 
 The setting of that type generates value based on the Django Template in the raw value.
 
-### class DjangoTemplateNoArgs(GiveCallMixin, DjangoTemplate)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L194)</sup>
+### class DjangoTemplateNoArgs(GiveCallMixin, DjangoTemplate)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L188)</sup>
 
 Same as `DjangoTemplate` but the setting value is not callablle, but already rendered value.
 
-### class DjangoTemplateHTML(HTMLMixin, DjangoTemplateNoArgs)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L202)</sup>
+### class DjangoTemplateHTML(HTMLMixin, DjangoTemplateNoArgs)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L196)</sup>
 
 Same as `DjangoTemplateNoArgs` but the rendered value is marked as safe.
 
-### class DjangoModelTemplateMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L210)</sup>
+### class DjangoModelTemplateMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L204)</sup>
 
 Mixing that uses one argument for the template from the model queryset.
 
@@ -637,33 +633,33 @@ Attributes:
 - `model_queryset` - QuerySet or a callable that returns a Model Object. For QuerySet, the first object will be used. For callable, the object returned by the callable will be used. The generated object will be used as validator and for preview.
 - `obj_name` - name of the object in the template. Default: "object".
 
-#### def get_first_call_validator(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L229)</sup>
+#### def get_first_call_validator(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L223)</sup>
 
 generates the first validator based of model_queryset, which will be used for validation and for preview.
 
-### class DjangoModelTemplate(DjangoModelTemplateMixin, DjangoTemplate)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L253)</sup>
+### class DjangoModelTemplate(DjangoModelTemplateMixin, DjangoTemplate)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L247)</sup>
 
 Django Template that uses one argument as a model object.
 
-### class DjangoModelTemplateHTML(DjangoModelTemplate)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L261)</sup>
+### class DjangoModelTemplateHTML(DjangoModelTemplate)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L255)</sup>
 
 Same as `DjangoModelTemplate` but the rendered value is marked as safe.
 
-### class SimpleEval(SimpleCallTemplate)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L273)</sup>
+### class SimpleEval(SimpleCallTemplate)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L267)</sup>
 
 Template that evaluates the Python code (using `eval` function).
 
 By default, `update_permission` is set to `superuser`.
 
-### class DjangoModelEval(DjangoModelTemplateMixin, SimpleEval)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L301)</sup>
+### class DjangoModelEval(DjangoModelTemplateMixin, SimpleEval)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L295)</sup>
 
 Same as `SimpleEval` but uses one value as a model object.
 
-### class SimpleEvalNoArgs(GiveCallMixin, SimpleEval)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L309)</sup>
+### class SimpleEvalNoArgs(GiveCallMixin, SimpleEval)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L303)</sup>
 
 Same as `SimpleEval` but the setting value is not callable, but already evaluated.
 
-### class SimpleExec(SimpleCallTemplate)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L317)</sup>
+### class SimpleExec(SimpleCallTemplate)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L311)</sup>
 
 Template that executes the Python code (using `exec` function).
 
@@ -678,21 +674,21 @@ Attributes:
     - If an iterable, the iterable will be used as keys for the return dictionary. The values will be `None` by default.
 - `allow_import` - allows importing modules. Default: `False`.
 
-### class DjangoModelExec(DjangoModelTemplateMixin, SimpleExec)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L383)</sup>
+### class DjangoModelExec(DjangoModelTemplateMixin, SimpleExec)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L377)</sup>
 
 Same as `SimpleExec` but uses one value as a model object.
 
-### class SimpleExecNoArgs(GiveCallMixin, SimpleExec)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L391)</sup>
+### class SimpleExecNoArgs(GiveCallMixin, SimpleExec)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L385)</sup>
 
 Same as `SimpleExec` but the setting value is not callable, but already executed.
 
-### class SimpleExecNoCall(StaticDataMixin, SimpleText)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L399)</sup>
+### class SimpleExecNoCall(StaticDataMixin, SimpleText)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L393)</sup>
 
 Same as `SimpleExec` but the setting value is not callable, but already executed.
 
 The class is not inherited from `SimpleCallTemplate`, and technically can be a part of markdown module.
 
-### class GiveOneKeyMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L445)</sup>
+### class GiveOneKeyMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L439)</sup>
 
 Mixin that returns only one key from the result dict.
 
@@ -700,11 +696,11 @@ Attributes:
 
 - `one_key_name` - name of the key that will be returned. Default: "result".
 
-### class SimpleExecOneKey(GiveOneKeyMixin, SimpleExec)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L466)</sup>
+### class SimpleExecOneKey(GiveOneKeyMixin, SimpleExec)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L460)</sup>
 
 Same as `SimpleExec` but returns only one key (from attribute `one_key_name`) from the result dict.
 
-### class SimpleExecOneKeyNoCall(GiveOneKeyMixin, SimpleExecNoCall)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L474)</sup>
+### class SimpleExecOneKeyNoCall(GiveOneKeyMixin, SimpleExecNoCall)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L468)</sup>
 
 Same as `SimpleExecNoCall` but returns only one key (from attribute `one_key_name`) from the result dict.
 

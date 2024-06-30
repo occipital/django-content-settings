@@ -5,7 +5,13 @@ from django.apps import apps
 from django.conf import settings as django_settings
 
 from .types.basic import BaseSetting
-from .caching import get_value, get_type_by_name, get_all_names
+from .caching import (
+    get_value,
+    get_type_by_name,
+    get_all_names,
+    get_checksum_from_local,
+    get_checksum_from_user_local,
+)
 from .settings import USER_DEFINED_TYPES, TAGS
 from .store import add_app_name
 
@@ -181,6 +187,10 @@ class _Settings:
         _, name, suffix = split_attr(value)
         cs_type = get_type_by_name(name)
         return cs_type is not None and cs_type.can_suffix(suffix)
+
+    @property
+    def full_checksum(self):
+        return get_checksum_from_local() + get_checksum_from_user_local()
 
 
 def get_str_tags(cs_name, cs_type, value=None):

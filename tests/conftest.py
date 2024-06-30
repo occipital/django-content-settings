@@ -74,6 +74,10 @@ def pytest_configure(config):
                 help_prefix("<i>Do Not Share</i>"),
             ),
         ],
+        CONTENT_SETTINGS_ADMIN_CHECKSUM_CHECK_BEFORE_SAVE=True,
+        CONTENT_SETTINGS_TAGS=[
+            "content_settings.tags.changed",
+        ],
     )
 
     django.setup()

@@ -32,8 +32,13 @@ from .models import (
     UserPreviewHistory,
 )
 from .context_managers import content_settings_context
-from .conf import USER_DEFINED_TYPES_INSTANCE
-from .settings import USER_TAGS, USER_DEFINED_TYPES, PREVIEW_ON_SITE_HREF
+from .conf import USER_DEFINED_TYPES_INSTANCE, content_settings
+from .settings import (
+    USER_TAGS,
+    USER_DEFINED_TYPES,
+    PREVIEW_ON_SITE_HREF,
+    ADMIN_CHECKSUM_CHECK_BEFORE_SAVE,
+)
 from .caching import get_type_by_name
 from .utils import class_names
 
@@ -291,7 +296,31 @@ class ContentSettingAdmin(admin.ModelAdmin):
 
         return extra_context
 
+    def full_checksum_valid(self, request):
+        if (
+            ADMIN_CHECKSUM_CHECK_BEFORE_SAVE
+            and request.POST["content_settings_full_checksum"]
+            != content_settings.full_checksum
+        ):
+            add_message(
+                request,
+                ERROR,
+                _(
+                    "The content settings have been changed by another user. Please reload the page and try again. (or disable ADMIN_CHECKSUM_CHECK_BEFORE_SAVE in settings)"
+                ),
+            )
+            return False
+        return True
+
+    def changeform_view(self, request, *args, **kwargs):
+        if request.method == "POST" and not self.full_checksum_valid(request):
+            return HttpResponseRedirect(request.path)
+        return super().changeform_view(request, *args, **kwargs)
+
     def changelist_view(self, request, extra_context=None):
+        if request.method == "POST" and not self.full_checksum_valid(request):
+            return HttpResponseRedirect(request.path)
+
         def key_value_from_request():
             total_forms = int(request.POST["form-TOTAL_FORMS"])
 

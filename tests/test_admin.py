@@ -29,6 +29,64 @@ def test_admin(webtest_admin):
     assert resp.json == {"TITLE": "New Title"}
 
 
+def test_admin_checksum_check(webtest_admin):
+    cs = ContentSetting.objects.get(name="TITLE")
+    resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/change/")
+    assert resp.status_int == 200
+
+    resp2 = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/change/")
+
+    resp.forms["contentsetting_form"]["value"] = "New Title"
+    resp = resp.forms["contentsetting_form"].submit()
+    assert resp.status_int == 302
+
+    cs.refresh_from_db()
+    assert cs.value == "New Title"
+
+    resp2.forms["contentsetting_form"]["value"] = "Super Title"
+    resp2 = resp2.forms["contentsetting_form"].submit()
+    assert resp2.status_int == 302
+
+    cs.refresh_from_db()
+    assert cs.value == "New Title"
+
+
+def test_admin_list_view(webtest_admin):
+    cs = ContentSetting.objects.get(name="BOOKS_ON_HOME_PAGE")
+    resp = webtest_admin.get(
+        f"/admin/content_settings/contentsetting/?q=BOOKS_ON_HOME_PAGE"
+    )
+    assert resp.status_int == 200
+
+    resp.forms["changelist-form"]["form-0-value"] = "4"
+    resp = resp.forms["changelist-form"].submit(name="_save")
+
+    cs.refresh_from_db()
+    assert cs.value == "4"
+
+
+def test_admin_list_view_checksum_check(webtest_admin):
+    cs = ContentSetting.objects.get(name="BOOKS_ON_HOME_PAGE")
+    resp = webtest_admin.get(
+        f"/admin/content_settings/contentsetting/?q=BOOKS_ON_HOME_PAGE"
+    )
+    assert resp.status_int == 200
+
+    resp2 = webtest_admin.get(
+        f"/admin/content_settings/contentsetting/?q=BOOKS_ON_HOME_PAGE"
+    )
+    assert resp2.status_int == 200
+
+    resp.forms["changelist-form"]["form-0-value"] = "4"
+    resp = resp.forms["changelist-form"].submit(name="_save")
+
+    resp2.forms["changelist-form"]["form-0-value"] = "5"
+    resp2 = resp2.forms["changelist-form"].submit(name="_save")
+
+    cs.refresh_from_db()
+    assert cs.value == "4"
+
+
 def test_admin_update_permission(webtest_admin):
     cs = ContentSetting.objects.get(name="BOOKS")
     resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/change/")
@@ -248,7 +306,9 @@ def test_add_tag(webtest_admin):
 
     resp = webtest_admin.get("/admin/content_settings/contentsetting/context-tags/")
     assert resp.status_int == 200
-    assert '<a href="?tags=favorites">⭐</a><sup>1</sup>' in resp.content.decode("utf-8")
+    assert '<a href="?tags=favorites">⭐</a><sup>1</sup>' in resp.content.decode(
+        "utf-8"
+    )
 
     resp = webtest_admin.get("/admin/content_settings/contentsetting/")
     assert resp.status_int == 200
