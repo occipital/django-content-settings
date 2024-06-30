@@ -2,8 +2,6 @@
 A list of functions that are used as values for type attributes such as `fetch_permission`, `view_permission`, `update_permission`, and `view_history_permission`.
 """
 
-from .functools import and_, or_, not_  # noqa: F401
-
 
 def any(user):
     """

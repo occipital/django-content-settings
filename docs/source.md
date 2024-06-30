@@ -47,27 +47,27 @@ Returns a function that performs a 'not' operation on a function.
 
 A list of functions that are used as values for type attributes such as `fetch_permission`, `view_permission`, `update_permission`, and `view_history_permission`.
 
-### def any(user)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/permissions.py#L8)</sup>
+### def any(user)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/permissions.py#L6)</sup>
 
 Returns True for any user.
 
-### def none(user)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/permissions.py#L15)</sup>
+### def none(user)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/permissions.py#L13)</sup>
 
 Returns False for any user.
 
-### def authenticated(user)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/permissions.py#L22)</sup>
+### def authenticated(user)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/permissions.py#L20)</sup>
 
 Returns True if the user is authenticated.
 
-### def staff(user)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/permissions.py#L29)</sup>
+### def staff(user)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/permissions.py#L27)</sup>
 
 Returns True if the user is active and a staff member.
 
-### def superuser(user)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/permissions.py#L36)</sup>
+### def superuser(user)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/permissions.py#L34)</sup>
 
 Returns True if the user is active and a superuser.
 
-### def has_perm(perm)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/permissions.py#L43)</sup>
+### def has_perm(perm)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/permissions.py#L41)</sup>
 
 Returns a function that checks if the user has a specific permission.
 
