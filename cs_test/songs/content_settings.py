@@ -24,7 +24,7 @@ from content_settings.types.template import DjangoTemplateHTML, DjangoModelTempl
 
 from content_settings import permissions
 from content_settings.defaults.context import defaults
-from content_settings.defaults.modifiers import add_tags
+from content_settings.defaults.modifiers import add_tags, help_suffix
 
 from .models import Artist
 
@@ -39,14 +39,14 @@ with defaults(add_tags(["main"]), fetch_permission=permissions.any):
         "5", min_value=0, max_value=10, help="How many days without fail"
     )
 
+with defaults(help_suffix("<i>Try not to update too often</i>")):
+    FAVORITE_SUBJECTS = SimpleStringsList("", help="my favorive songs subjects")
 
-FAVORITE_SUBJECTS = SimpleStringsList("", help="my favorive songs subjects")
-
-PRICES = mix(DictSuffixesPreviewMixin, TypedStringsList)(
-    "",
-    line_type=SimpleDecimal(),
-    suffixes={"positive": lambda value: [v for v in value if v >= 0]},
-)
+    PRICES = mix(DictSuffixesPreviewMixin, TypedStringsList)(
+        "",
+        line_type=SimpleDecimal(),
+        suffixes={"positive": lambda value: [v for v in value if v >= 0]},
+    )
 
 START_DATE = DateString("2024-02-11", constant=True)
 

@@ -87,6 +87,9 @@ class SimpleString(BaseSetting):
         All of the changes for type instance can only be done inside of __init__ method. The other methods should not change self object.
         """
         # optional support of help_text instead of help
+        assert not (
+            "help" in kwargs and "help_text" in kwargs
+        ), "You cannot use both help and help_text"
         if "help" not in kwargs and "help_text" in kwargs:
             kwargs["help"] = kwargs.pop("help_text")
 
