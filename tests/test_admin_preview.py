@@ -317,18 +317,6 @@ with defaults(admin_preview_as=PREVIEW.TEXT):
                 ),
                 (
                     SimpleEval(
-                        "SETTINGS.TITLE + ' ' + explain",
-                        validators=(
-                            call_validator(),
-                            call_validator("epic"),
-                        ),
-                        template_args_default={"explain": "the best"},
-                        template_static_includes=(STATIC_INCLUDES.UNITED_SETTINGS,),
-                    ),
-                    "<pre>>>> VAR()</pre>\n<pre>Book Store the best</pre>\n<pre>>>> VAR('epic')</pre>\n<pre>Book Store epic</pre>",
-                ),
-                (
-                    SimpleEval(
                         "CONTENT_SETTINGS.TITLE + ' ' + explain",
                         validators=(
                             call_validator(),

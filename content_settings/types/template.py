@@ -27,7 +27,6 @@ from ..permissions import superuser
 class STATIC_INCLUDES(Enum):
     CONTENT_SETTINGS = auto()
     SETTINGS = auto()
-    UNITED_SETTINGS = auto()
 
 
 class StaticDataMixin:
@@ -36,7 +35,7 @@ class StaticDataMixin:
 
     Attributes:
 
-    - `template_static_includes` - tuple of `STATIC_INCLUDES` that should be included in the context. Default: `(STATIC_INCLUDES.CONTENT_SETTINGS, STATIC_INCLUDES.SETTINGS)`. If `STATIC_INCLUDES.SETTINGS` is included, `django.conf.settings` will be added to the context. If `STATIC_INCLUDES.CONTENT_SETTINGS` is included, `content_settings.conf.content_settings` will be added to the context. If `STATIC_INCLUDES.UNITED_SETTINGS` is included, both `django.conf.settings` and `content_settings.conf.settings` will be added to the context in the `SETTINGS` key.
+    - `template_static_includes` - tuple of `STATIC_INCLUDES` that should be included in the context. Default: `(STATIC_INCLUDES.CONTENT_SETTINGS, STATIC_INCLUDES.SETTINGS)`. If `STATIC_INCLUDES.SETTINGS` is included, `django.conf.settings` will be added to the context. If `STATIC_INCLUDES.CONTENT_SETTINGS` is included, `content_settings.conf.content_settings` will be added to the context.
     - `template_static_data` - static data that should be added to the context (on top of what will be added by `template_static_includes`). It can be a dictionary or a callable that returns a dictionary. Default: `None`.
     """
 
@@ -61,12 +60,7 @@ class StaticDataMixin:
 
             ret["CONTENT_SETTINGS"] = content_settings
 
-        if STATIC_INCLUDES.UNITED_SETTINGS in self.template_static_includes:
-            from content_settings.conf import settings
-
-            ret["SETTINGS"] = settings
-
-        elif STATIC_INCLUDES.SETTINGS in self.template_static_includes:
+        if STATIC_INCLUDES.SETTINGS in self.template_static_includes:
             from django.conf import settings
 
             ret["SETTINGS"] = settings

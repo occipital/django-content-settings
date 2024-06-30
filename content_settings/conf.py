@@ -183,17 +183,6 @@ class _Settings:
         return cs_type is not None and cs_type.can_suffix(suffix)
 
 
-class _UnitedSettings(_Settings):
-    def __getattr__(self, value):
-        if hasattr(django_settings, value):
-            return getattr(django_settings, value)
-
-        return super().__getattr__(value)
-
-    def __contains__(self, value):
-        return hasattr(django_settings, value) or super().__contains__(value)
-
-
 def get_str_tags(cs_name, cs_type, value=None):
     tags = cs_type.get_tags()
     if not cs_type.user_defined_slug:
@@ -303,4 +292,3 @@ def set_initial_values_for_db(apply=False):
 
 
 content_settings = _Settings()
-settings = _UnitedSettings()
