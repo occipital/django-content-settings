@@ -4,6 +4,19 @@
 
 📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
 
+[Issuses left for releasing v1](https://github.com/occipital/django-content-settings/labels/v1)
+
+### 0.15
+
+* fixing nox testing for covering different Python and Django versions
+* `context_managers.context_defaults` moved to `defaults.context.defaults`. More in [defaults documentation](defaults.md)
+* `CONTENT_SETTINGS_DEFAULTS` is a replacement for `CONTENT_SETTINGS_CONTEXT_PROCESSORS` and `CONTENT_SETTINGS_CONTEXT`. More in [defaults documentation](defaults.md)
+* Ability to assign defaults globally for specific setting types. More in [defaults documentation](defaults.md)
+* `CONTENT_SETTINGS_ADMIN_CHECKSUM_CHECK_BEFORE_SAVE` - new settings that makes sure that nothing is changed while the Django Admin panel for content settings were opened
+* remove overwriting default attributes tags and permissions in subclasses.
+* new module [functools](#functools) - which now contains logical functions `not_`, `or_` and `and_`, moved from module `permissions` since those functions are used for `defaults.filters` as well
+* [Preparation for the version 1](https://github.com/occipital/django-content-settings/labels/v1)
+
 ### 0.13.1
 
 * `SimpleExec.call_return` and `DjangoModelTemplateMixin.model_queryset` can be callable now
