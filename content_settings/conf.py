@@ -342,6 +342,11 @@ class _Settings:
 
     @property
     def full_checksum(self):
+        """
+        the current checksum of the settings.
+
+        used for validation of settings weren't changed over time.
+        """
         return get_checksum_from_local() + get_checksum_from_user_local()
 
 
