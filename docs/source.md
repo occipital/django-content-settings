@@ -19,12 +19,71 @@
 - [defaults.filters](#defaultsfilters)
 - [defaults.modifiers](#defaultsmodifiers)
 
+urce](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L29)</sup>
+
+getting an object from the module by the path. `full.path.to.Object` -> `Object`
+
+### def get_call_tags()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L51)</sup>
+
+returns list of functions from `CONTENT_SETTINGS_TAGS` setting that are used to generate tags for settings.
+the result is cached in `CALL_TAGS` variable.
+
+### def gen_tags(name: str, cs_type: BaseSetting, value: Any)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L73)</sup>
+
+generate tags based on `CONTENT_SETTINGS_TAGS` setting.
+
+### def register_prefix(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L83)</sup>
+
+decorator for registration a new prefix
+
+### def lazy_prefix(name: str, suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L96)</sup>
+
+lazy__ prefix that gives a lazy proxy object by the name of the setting.
+
+### def type_prefix(name: str, suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L104)</sup>
+
+type__ prefix that return setting type by the name of the setting.
+
+### def startswith_prefix(name: str, suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L114)</sup>
+
+startswith__ prefix that returns all settings as a dict (setting name: setting value) that start with the given name.
+
+### def withtag_prefix(name: str, suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L122)</sup>
+
+withtag__ prefix that returns all settings as a dict (setting name: setting value) that have the given tag.
+
+### def split_attr(value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L163)</sup>
 
 splits the name of the attr on 3 parts: prefix, name, suffix
 
 * prefix should be registered by register_prefix
 * name should be uppercase
 * suffix can be any string, but not uppercase
+
+### def get_str_tags(cs_name: str, cs_type: BaseSetting, value: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L194)</sup>
+
+    get tags as a text (joined by `
+`) for specific setting type. name and value are used to generate content tags.
+
+    from saving in DB.
+    
+
+### def set_initial_values_for_db(apply: bool = False)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L208)</sup>
+
+sync settings with DB.
+    * creates settings that are not in DB
+    * updates settings that are in DB but have different attributes such as help text or tags
+    * deletes settings that are in DB but are not in ALL
+
+attribute `apply` is used to apply changes in DB immediately. Can be used in tests.
+
+### class _Settings()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L312)</sup>
+
+the main object that uses for getting settings for cache.
+
+#### def __dir__(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L325)</sup>
+
+dir() returns all settings names
 
 ## functools
 

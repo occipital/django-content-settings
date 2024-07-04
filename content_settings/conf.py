@@ -1,8 +1,12 @@
+"""
+the module collects all settings from all apps and makes them available as `content_settings` object.
+"""
+
 from importlib import import_module
 from functools import partial
+from typing import Any, Callable, Optional
 
 from django.apps import apps
-from django.conf import settings as django_settings
 
 from .types.basic import BaseSetting
 from .caching import (
@@ -22,7 +26,10 @@ ALL = {}
 PREFIXSES = {}
 
 
-def import_object(path):
+def import_object(path: str) -> Any:
+    """
+    getting an object from the module by the path. `full.path.to.Object` -> `Object`
+    """
     parts = path.split(".")
     module = import_module(".".join(parts[:-1]))
     return getattr(module, parts[-1])
@@ -41,7 +48,11 @@ if USER_DEFINED_TYPES:
 CALL_TAGS = None
 
 
-def get_call_tags():
+def get_call_tags() -> list[Callable]:
+    """
+    returns list of functions from `CONTENT_SETTINGS_TAGS` setting that are used to generate tags for settings.
+    the result is cached in `CALL_TAGS` variable.
+    """
     global CALL_TAGS
 
     if CALL_TAGS is not None:
@@ -59,15 +70,23 @@ def get_call_tags():
     return CALL_TAGS
 
 
-def gen_tags(name, cs_type, value):
+def gen_tags(name: str, cs_type: BaseSetting, value: Any) -> set[str]:
+    """
+    generate tags based on `CONTENT_SETTINGS_TAGS` setting.
+    """
     tags = set()
     for func_tag in get_call_tags():
         tags |= func_tag(name, cs_type, value)
     return tags
 
 
-def register_prefix(name):
-    def _cover(func):
+def register_prefix(name: str) -> Callable:
+    """
+    decorator for registration a new prefix
+    """
+
+    def _cover(func: Callable) -> Callable:
+        assert name not in PREFIXSES
         PREFIXSES[name] = func
         return func
 
@@ -75,27 +94,43 @@ def register_prefix(name):
 
 
 @register_prefix("lazy")
-def lazy_prefix(name, suffix):
+def lazy_prefix(name: str, suffix: str) -> Any:
+    """
+    lazy__ prefix that gives a lazy proxy object by the name of the setting.
+    """
     return get_type_by_name(name).lazy_give(lambda: get_value(name, suffix), suffix)
 
 
 @register_prefix("type")
-def type_prefix(name, suffix):
+def type_prefix(name: str, suffix: str) -> Any:
+    """
+    type__ prefix that return setting type by the name of the setting.
+    """
     assert not suffix, "type prefix can not have suffix"
 
     return get_type_by_name(name)
 
 
 @register_prefix("startswith")
-def startswith_prefix(name, suffix):
-    return content_settings.startswith(name, suffix)
+def startswith_prefix(name: str, suffix: str) -> dict[str, Any]:
+    """
+    startswith__ prefix that returns all settings as a dict (setting name: setting value) that start with the given name.
+    """
+    return {
+        k: get_value(k, suffix) for k in dir(content_settings) if k.startswith(name)
+    }
 
 
 @register_prefix("withtag")
-def withtag_prefix(name, suffix):
+def withtag_prefix(name: str, suffix: str) -> dict[str, Any]:
+    """
+    withtag__ prefix that returns all settings as a dict (setting name: setting value) that have the given tag.
+    """
     return {
-        **content_settings.withtag(name, suffix),
-        **content_settings.withtag(name.lower(), suffix),
+        k: get_value(k, suffix)
+        for k in dir(content_settings)
+        if name in get_type_by_name(k).get_tags()
+        or name.lower() in get_type_by_name(k).get_tags()
     }
 
 
@@ -129,7 +164,7 @@ for app_config in apps.app_configs.values():
         add_app_name(attr, app)
 
 
-def split_attr(value):
+def split_attr(value: str) -> tuple[Optional[str], str, Optional[str]]:
     """
     splits the name of the attr on 3 parts: prefix, name, suffix
 
@@ -160,40 +195,14 @@ def split_attr(value):
     return prefix, name, None
 
 
-class _Settings:
-    def __getattr__(self, value):
-        prefix, name, suffix = split_attr(value)
-        if prefix:
-            assert (
-                prefix in PREFIXSES
-            ), f"Invalid attribute name: {value}; prefix not found"
-            return PREFIXSES[prefix](name, suffix)
-        return get_value(name, suffix)
+def get_str_tags(
+    cs_name: str, cs_type: BaseSetting, value: Optional[str] = None
+) -> str:
+    """
+    get tags as a text (joined by `\n`) for specific setting type. name and value are used to generate content tags.
 
-    def __dir__(self):
-        return get_all_names()
-
-    def startswith(self, value, suffix=None):
-        return {k: get_value(k, suffix) for k in dir(self) if k.startswith(value)}
-
-    def withtag(self, value, suffix=None):
-        return {
-            k: get_value(k, suffix)
-            for k in dir(self)
-            if value in get_type_by_name(k).get_tags()
-        }
-
-    def __contains__(self, value):
-        _, name, suffix = split_attr(value)
-        cs_type = get_type_by_name(name)
-        return cs_type is not None and cs_type.can_suffix(suffix)
-
-    @property
-    def full_checksum(self):
-        return get_checksum_from_local() + get_checksum_from_user_local()
-
-
-def get_str_tags(cs_name, cs_type, value=None):
+    from saving in DB.
+    """
     tags = cs_type.get_tags()
     if not cs_type.user_defined_slug:
         tags |= cs_type.get_content_tags(
@@ -202,10 +211,15 @@ def get_str_tags(cs_name, cs_type, value=None):
     return "\n".join(sorted(tags))
 
 
-# TODO: remove preview settings during migration
+def set_initial_values_for_db(apply: bool = False) -> list[tuple[str, str]]:
+    """
+    sync settings with DB.
+        * creates settings that are not in DB
+        * updates settings that are in DB but have different attributes such as help text or tags
+        * deletes settings that are in DB but are not in ALL
 
-
-def set_initial_values_for_db(apply=False):
+    attribute `apply` is used to apply changes in DB immediately. Can be used in tests.
+    """
     from content_settings.models import ContentSetting, HistoryContentSetting
 
     changes = []
@@ -299,6 +313,36 @@ def set_initial_values_for_db(apply=False):
                 execute(cs.name, "delete", lambda: cs.delete())
 
     return changes
+
+
+class _Settings:
+    """
+    the main object that uses for getting settings for cache.
+    """
+
+    def __getattr__(self, value):
+        prefix, name, suffix = split_attr(value)
+        if prefix:
+            assert (
+                prefix in PREFIXSES
+            ), f"Invalid attribute name: {value}; prefix not found"
+            return PREFIXSES[prefix](name, suffix)
+        return get_value(name, suffix)
+
+    def __dir__(self):
+        """
+        dir() returns all settings names
+        """
+        return get_all_names()
+
+    def __contains__(self, value):
+        _, name, suffix = split_attr(value)
+        cs_type = get_type_by_name(name)
+        return cs_type is not None and cs_type.can_suffix(suffix)
+
+    @property
+    def full_checksum(self):
+        return get_checksum_from_local() + get_checksum_from_user_local()
 
 
 content_settings = _Settings()

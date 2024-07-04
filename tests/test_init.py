@@ -32,15 +32,10 @@ def test_update_simple_text():
 
 def test_startswith():
     assert content_settings.startswith__IS_ == {"IS_OPEN": True, "IS_CLOSED": False}
-    assert content_settings.startswith("IS_") == {"IS_OPEN": True, "IS_CLOSED": False}
 
 
 def test_withtag():
     assert content_settings.withtag__GENERAL == {
-        "TITLE": "Book Store",
-        "DESCRIPTION": "Book Store is the best book store in the world",
-    }
-    assert content_settings.withtag("general") == {
         "TITLE": "Book Store",
         "DESCRIPTION": "Book Store is the best book store in the world",
     }
