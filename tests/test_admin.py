@@ -24,9 +24,9 @@ def test_admin(webtest_admin):
     cs.refresh_from_db()
     assert cs.value == "New Title"
 
-    resp = webtest_admin.get("/content-settings/fetch/title/")
+    resp = webtest_admin.get("/books/fetch/all/")
     assert resp.status_int == 200
-    assert resp.json == {"TITLE": "New Title"}
+    assert resp.json["TITLE"] == "New Title"
 
 
 def test_admin_checksum_check(webtest_admin):
@@ -101,14 +101,12 @@ The Night of Taras,12,1
     resp = resp.forms["contentsetting_form"].submit()
     assert resp.status_int == 302
 
-    resp = webtest_admin.get("/content-settings/fetch/books/")
+    resp = webtest_admin.get("/books/fetch/all/")
     assert resp.status_int == 200
-    assert resp.json == {
-        "BOOKS": [
-            {"name": "The Poplar", "price": "12", "is_available": True},
-            {"name": "The Night of Taras", "price": "12", "is_available": True},
-        ]
-    }
+    assert resp.json["BOOKS"] == [
+        {"name": "The Poplar", "price": "12", "is_available": True},
+        {"name": "The Night of Taras", "price": "12", "is_available": True},
+    ]
 
 
 def test_admin_change_from_different_version(webtest_admin):
@@ -127,9 +125,9 @@ def test_admin_change_from_different_version(webtest_admin):
     cs.refresh_from_db()
     assert cs.value == "New Title"
 
-    resp = webtest_admin.get("/content-settings/fetch/title/")
+    resp = webtest_admin.get("/books/fetch/all/")
     assert resp.status_int == 200
-    assert resp.json == {"TITLE": initial_value}
+    assert resp.json["TITLE"] == initial_value
 
 
 def test_admin_change_but_cache_was_expired(webtest_admin):
@@ -148,9 +146,9 @@ def test_admin_change_but_cache_was_expired(webtest_admin):
 
     cache.clear()
 
-    resp = webtest_admin.get("/content-settings/fetch/title/")
+    resp = webtest_admin.get("/books/fetch/all/")
     assert resp.status_int == 200
-    assert resp.json == {"TITLE": initial_value}
+    assert resp.json["TITLE"] == initial_value
 
 
 def test_admin_update(webtest_admin, webtest_user):

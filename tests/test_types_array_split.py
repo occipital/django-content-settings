@@ -349,19 +349,14 @@ A Simple Line
 
 def test_split_translation_with_default_value():
     client = Client()
-    resp = client.get("/content-settings/fetch/COMPANY_DESCRIPTION/")
-    assert resp.status_code == 200
-    assert resp.json() == {
-        "COMPANY_DESCRIPTION": "The best Company",
-    }
 
-    resp = client.get(
-        "/content-settings/fetch/COMPANY_DESCRIPTION/", HTTP_ACCEPT_LANGUAGE="ua"
-    )
+    resp = client.get("/books/fetch/all/")
     assert resp.status_code == 200
-    assert resp.json() == {
-        "COMPANY_DESCRIPTION": "The best Company",
-    }
+    assert resp.json()["COMPANY_DESCRIPTION"] == "The best Company"
+
+    resp = client.get("/books/fetch/all/", HTTP_ACCEPT_LANGUAGE="ua")
+    assert resp.status_code == 200
+    assert resp.json()["COMPANY_DESCRIPTION"] == "The best Company"
 
 
 def test_split_translation_with_available_translations():
@@ -375,23 +370,14 @@ La mejor empresa
     cs.save()
 
     client = Client()
-    resp = client.get(
-        "/content-settings/fetch/COMPANY_DESCRIPTION/",
-        HTTP_ACCEPT_LANGUAGE="en",  # Set preferred language to English
-    )
-    assert resp.status_code == 200
-    assert resp.json() == {
-        "COMPANY_DESCRIPTION": "The best Company",
-    }
 
-    resp = client.get(
-        "/content-settings/fetch/COMPANY_DESCRIPTION/",
-        HTTP_ACCEPT_LANGUAGE="es",  # Set preferred language to Spanish
-    )
+    resp = client.get("/books/fetch/all/")
     assert resp.status_code == 200
-    assert resp.json() == {
-        "COMPANY_DESCRIPTION": "La mejor empresa",
-    }
+    assert resp.json()["COMPANY_DESCRIPTION"] == "The best Company"
+
+    resp = client.get("/books/fetch/all/", HTTP_ACCEPT_LANGUAGE="es")
+    assert resp.status_code == 200
+    assert resp.json()["COMPANY_DESCRIPTION"] == "La mejor empresa"
 
 
 def test_admin_preview_default(webtest_admin):

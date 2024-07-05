@@ -6,7 +6,7 @@
 
 The `content_settings.permissions` *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/permissions.py))* module in Django provides functions that can be used as arguments for the  permission attributes of your types. Such as:
 
-* `fetch_permission` - permission for API access to the variables through the URLS `/content-settings/fetch/*/` and `views.FetchSettingsView`
+* `fetch_permission` - permission for API access to the variables through the `views.FetchSettingsView`
 * `update_permission` - permission to change the variable in the admin panel
 * `view_permission` - permission to see the variable in the admin panel (it woudn't be listed for those who are not allowed)
 * `view_history_permission` - permission to see the history of changes for the variable. It is the only permission where None is allowed, in that case the permission will be taken from `view_permission`

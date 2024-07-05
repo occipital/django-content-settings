@@ -159,7 +159,6 @@ class ContentSettingAdmin(admin.ModelAdmin):
         "setting_tags",
         "version",
         "default_value",
-        "fetch_one_setting",
     ]
     history_list_display = ["value"]
     form = ContentSettinForm
@@ -497,18 +496,6 @@ class ContentSettingAdmin(admin.ModelAdmin):
         <a class="reset_default" data-value="{attr_default}" style="cursor: pointer; color:var(--link-fg)">{label}</a>
         """
         )
-
-    def fetch_one_setting(self, obj):
-        if not obj.name:
-            return ""
-
-        try:
-            return reverse(
-                "content_settings:fetch_one_setting",
-                kwargs={"name": obj.name.lower().replace("_", "-")},
-            )
-        except NoReverseMatch:
-            return ""
 
     def get_urls(self):
         urls = super().get_urls()

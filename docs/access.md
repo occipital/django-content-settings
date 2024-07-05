@@ -70,16 +70,25 @@ Using variables in templates is straightforward. If you've added `content_settin
 
 ## Access Through API
 
-If you've included `content_settings.urls` in your `urls.py`, it might look like this:
+If you've included fetching views in your `urls.py`, it might look like this:
 
 ```python
 from django.urls import path, include
 from django.contrib import admin
+from content_settings.views import FetchSettingsView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("books/", include("books.urls")),
-    path("content-settings/", include("content_settings.urls")),
+    path("fetch/main/", FetchSettingsView.as_view(attrs=[
+        "TITLE",
+        "BOOKS__available_names",
+    ]), name="fetch_main"),
+    path("fetch/home-detail/", FetchSettingsView.as_view(attrs=[
+        "DESCRIPTION",
+        "OPEN_DATE",
+        "TITLE",
+    ]), name="fetch_home_detail"),
 ]
 ```
 
@@ -95,47 +104,12 @@ DESCRIPTION = SimpleText(
 )
 ```
 
-### Fetching Variables via API
-
-For example, to fetch the `DESCRIPTION` variable:
-
-```bash
-curl http://127.0.0.1:8000/content-settings/fetch/description/
-```
-
-The result will be in JSON format:
-
-```json
-{"DESCRIPTION": "The best book store in the world"}
-```
-
 ### Fetching Multiple Variables
-
-Use the `content_settings.views.FetchSettingsView` view for fetching multiple attributes:
-
-```python
-from django.urls import path
-from content_settings.views import FetchSettingsView
-
-
-urlpatterns = [
-    path("fetch/main/", FetchSettingsView.as_view(attrs=[
-        "TITLE",
-        "BOOKS__available_names",
-    ]), name="fetch_main"),
-    path("fetch/home-detail/", FetchSettingsView.as_view(attrs=[
-        "DESCRIPTION",
-        "OPEN_DATE",
-        "TITLE",
-    ]), name="fetch_home_detail"),
-]
-
-```
 
 Fetching the group `home-detail` via API:
 
 ```bash
-curl http://127.0.0.1:8000/content-settings/fetch/home-detail/
+curl http://127.0.0.1:8000/fetch/home-detail/
 ```
 
 The result will be:

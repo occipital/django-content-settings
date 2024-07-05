@@ -84,27 +84,6 @@ In template:
 <h2>{{CONTENT_SETTINGS.TITLE}}</h2>
 ```
 
-In API:
-
-```bash
-$ curl http://127.0.0.1/content-settings/fetch/title/
-```
-
-Ok, I lied, in order to use in API you need to update permission from the setting:
-
-```python
-# content_settings.py
-
-from content_settings.types.basic import SimpleString
-from content_settings import permissions
-
-TITLE = SimpleString(
-    "Songs",
-    fetch_permission=permissions.any,
-    help="The title of the site",
-)
-```
-
 Simple as that, we have a lot of *setting types* you can use `SimpleText`, `SimpleHTML`, `SimpleInt`, `SimpleBool`, `SimpleDecimal`, `DateTimeString`, `SimpleTimedelta`, `SimpleYAML`, `SimpleJSON`, `SimpleCSV`, `DjangoTemplate`, `DjangoModelTemplate`, `SimpleEval`, `SimpleExec` and so on... [Read more](types.md) about the types available for you.
 
 It is also very fast thanks to our caching system. [Read more about it](caching.md).

@@ -59,4 +59,19 @@ urlpatterns = [
         FetchSettingsView.as_view(attrs=gen_hastag("general")),
         name="fetch_is",
     ),
+    path(
+        "fetch/all/",
+        FetchSettingsView.as_view(
+            attrs=[
+                "CUSTOM_TITLE",
+                "PREFIX",
+                "PREFIX_UPDATED",
+                "COMPANY_DESCRIPTION",
+                "BOOKS",
+                "BOOKS__available_names",
+                "TITLE",
+            ]
+        ),
+        name="fetch_all",
+    ),
 ]

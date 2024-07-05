@@ -76,28 +76,6 @@ MIDDLEWARE = [
 ]
 ```
 
-### Step 6 (optional): API Access Configuration
-
-To access variables through the API, update `urls.py` with the following line:
-
-```python
-path("content-settings/", include("content_settings.urls")),
-```
-
-Your `urls.py` may look like this now:
-
-```python
-from django.urls import path, include
-from django.contrib import admin
-
-urlpatterns = [
-    path("admin/", admin.site.urls),
-    path("content-settings/", include("content_settings.urls")), # <-- update
-]
-```
-
-After this configuration, run your project along with the necessary migrations.
-
 ## Creating Your First Variable
 
 ### Step 1: Define the Variable

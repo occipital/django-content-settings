@@ -37,17 +37,18 @@ def get_staff_client():
 
 def test_get_simple_text():
     client = get_anonymous_client()
-    resp = client.get("/content-settings/fetch/title/")
+
+    resp = client.get("/books/fetch/all/")
     assert resp.status_code == 200
-    assert resp.json() == {"TITLE": "Book Store"}
+    assert resp.json()["TITLE"] == "Book Store"
 
     var = ContentSetting.objects.get(name="TITLE")
     var.value = "New Title"
     var.save()
 
-    resp = client.get("/content-settings/fetch/title/")
+    resp = client.get("/books/fetch/all/")
     assert resp.status_code == 200
-    assert resp.json() == {"TITLE": "New Title"}
+    assert resp.json()["TITLE"] == "New Title"
 
 
 def test_fetch_group_signle_value():
@@ -86,60 +87,37 @@ def test_fetch_group_suffix():
     }
 
 
-@pytest.mark.parametrize(
-    "client,name,status_code",
-    [
-        ["anonymous", "title", 200],
-        ["authenticated", "title", 200],
-        ["anonymous", "open-date", 403],
-        ["authenticated", "open-date", 403],
-        ["staff", "open-date", 200],
-        ["staff", "OPEN-DATE", 200],
-        ["staff", "OPEN_DATE", 200],
-        ["anonymous", "author", 200],
-    ],
-)
-def test_fetch_permissions(client, name, status_code):
-    if client == "anonymous":
-        client = get_anonymous_client()
-    elif client == "authenticated":
-        client = get_authenticated_client()
-    elif client == "staff":
-        client = get_staff_client()
-    else:
-        raise ValueError("Invalid client type")
-
-    resp = client.get(f"/content-settings/fetch/{name}/")
-    assert resp.status_code == status_code
-
-
 @content_settings_context(TITLE="New Book Store")
 def test_get_simple_text_updated():
     client = get_anonymous_client()
-    resp = client.get("/content-settings/fetch/title/")
+
+    resp = client.get("/books/fetch/all/")
     assert resp.status_code == 200
-    assert resp.json() == {"TITLE": "New Book Store"}
+    assert resp.json()["TITLE"] == "New Book Store"
 
 
 def test_get_simple_text_updated_twice():
     client = get_anonymous_client()
     with content_settings_context(TITLE="New Book Store"):
-        resp = client.get("/content-settings/fetch/title/")
+        resp = client.get("/books/fetch/all/")
         assert resp.status_code == 200
-        assert resp.json() == {"TITLE": "New Book Store"}
+        assert resp.json()["TITLE"] == "New Book Store"
 
     with content_settings_context(TITLE="SUPER New Book Store"):
-        resp = client.get("/content-settings/fetch/title/")
+        resp = client.get("/books/fetch/all/")
         assert resp.status_code == 200
-        assert resp.json() == {"TITLE": "SUPER New Book Store"}
+        assert resp.json()["TITLE"] == "SUPER New Book Store"
 
 
 def test_fetch_suffix():
     client = get_anonymous_client()
-    resp = client.get("/content-settings/fetch/books/suffix/available-names/")
-    assert resp.json() == {
-        "BOOKS__available_names": ["Kateryna", "The Poplar", "The Night of Taras"]
-    }
+    resp = client.get("/books/fetch/all/")
+    assert resp.status_code == 200
+    assert resp.json()["BOOKS__available_names"] == [
+        "Kateryna",
+        "The Poplar",
+        "The Night of Taras",
+    ]
 
 
 def test_fetch_tags():

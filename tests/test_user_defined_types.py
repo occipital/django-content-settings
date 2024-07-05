@@ -23,9 +23,10 @@ def test_simple():
         user_defined_type="line",
     )
     client = Client()
-    resp = client.get("/content-settings/fetch/prefix/")
+
+    resp = client.get("/books/fetch/all/")
     assert resp.status_code == 200
-    assert resp.json() == {"PREFIX": "Some Title Prefix"}
+    assert resp.json()["PREFIX"] == "Some Title Prefix"
 
 
 def test_simple_update_value():
@@ -35,15 +36,15 @@ def test_simple_update_value():
         user_defined_type="line",
     )
     client = Client()
-    resp = client.get("/content-settings/fetch/prefix/")
+    resp = client.get("/books/fetch/all/")
     assert resp.status_code == 200
-    assert resp.json() == {"PREFIX": "Some Title Prefix"}
+    assert resp.json()["PREFIX"] == "Some Title Prefix"
 
     cs.value = "New Title Prefix"
     cs.save()
-    resp = client.get("/content-settings/fetch/prefix/")
+    resp = client.get("/books/fetch/all/")
     assert resp.status_code == 200
-    assert resp.json() == {"PREFIX": "New Title Prefix"}
+    assert resp.json()["PREFIX"] == "New Title Prefix"
 
 
 def test_simple_remove_value():
@@ -53,13 +54,14 @@ def test_simple_remove_value():
         user_defined_type="line",
     )
     client = Client()
-    resp = client.get("/content-settings/fetch/prefix/")
+    resp = client.get("/books/fetch/all/")
     assert resp.status_code == 200
-    assert resp.json() == {"PREFIX": "Some Title Prefix"}
+    assert resp.json()["PREFIX"] == "Some Title Prefix"
 
     cs.delete()
-    resp = client.get("/content-settings/fetch/prefix/")
-    assert resp.status_code == 404
+    resp = client.get("/books/fetch/all/")
+    assert resp.status_code == 200
+    assert "PREFIX" not in resp.json()
 
 
 def test_simple_update_name():
@@ -69,18 +71,17 @@ def test_simple_update_name():
         user_defined_type="line",
     )
     client = Client()
-    resp = client.get("/content-settings/fetch/prefix/")
+    resp = client.get("/books/fetch/all/")
     assert resp.status_code == 200
-    assert resp.json() == {"PREFIX": "Some Title Prefix"}
+    assert resp.json()["PREFIX"] == "Some Title Prefix"
 
     cs.name = "PREFIX_UPDATED"
     cs.save()
-    resp = client.get("/content-settings/fetch/prefix/")
-    assert resp.status_code == 404
 
-    resp = client.get("/content-settings/fetch/prefix-updated/")
+    resp = client.get("/books/fetch/all/")
     assert resp.status_code == 200
-    assert resp.json() == {"PREFIX_UPDATED": "Some Title Prefix"}
+    assert resp.json()["PREFIX_UPDATED"] == "Some Title Prefix"
+    assert "PREFIX" not in resp.json()
 
 
 def test_simple_update_version():
@@ -90,18 +91,18 @@ def test_simple_update_version():
         user_defined_type="line",
     )
     client = Client()
-    resp = client.get("/content-settings/fetch/prefix/")
+    resp = client.get("/books/fetch/all/")
     assert resp.status_code == 200
-    assert resp.json() == {"PREFIX": "Some Title Prefix"}
+    assert resp.json()["PREFIX"] == "Some Title Prefix"
 
     ContentSetting.objects.filter(name="PREFIX").update(
         version=cs.version + "1", value="New Prefix"
     )
     recalc_checksums()
 
-    resp = client.get("/content-settings/fetch/prefix/")
+    resp = client.get("/books/fetch/all/")
     assert resp.status_code == 200
-    assert resp.json() == {"PREFIX": "Some Title Prefix"}
+    assert resp.json()["PREFIX"] == "Some Title Prefix"
 
 
 def test_simple_in_other_var():
@@ -204,9 +205,9 @@ def test_admin_add(webtest_admin):
     assert cs.version == "3.0.0"
 
     client = Client()
-    resp = client.get("/content-settings/fetch/custom-title/")
+    resp = client.get("/books/fetch/all/")
     assert resp.status_code == 200
-    assert resp.json() == {"CUSTOM_TITLE": "My Way"}
+    assert resp.json()["CUSTOM_TITLE"] == "My Way"
 
 
 def test_admin_update_history(webtest_admin):

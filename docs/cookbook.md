@@ -84,9 +84,7 @@ You can use it as test decorator:
 ```python
 @content_settings_context(TITLE="New Book Store")
 def test_get_simple_text_updated():
-    resp = get_anonymous_client().get("/content-settings/fetch/title/")
-    assert resp.status_code == 200
-    assert resp.json() == {"TITLE": "New Book Store"}
+    assert content_settings.TITLE == "New Book Store"
 ```
 
 or as context manager:
@@ -95,14 +93,10 @@ or as context manager:
 def test_get_simple_text_updated_twice():
     client = get_anonymous_client()
     with content_settings_context(TITLE="New Book Store"):
-        resp = client.get("/content-settings/fetch/title/")
-        assert resp.status_code == 200
-        assert resp.json() == {"TITLE": "New Book Store"}
+        assert content_settings.TITLE == "New Book Store"
 
     with content_settings_context(TITLE="SUPER New Book Store"):
-        resp = client.get("/content-settings/fetch/title/")
-        assert resp.status_code == 200
-        assert resp.json() == {"TITLE": "SUPER New Book Store"}
+        assert content_settings.TITLE == "SUPER New Book Store"
 ```
 
 ### I have an endless running command and I want to keep all of the settings updated within that script
