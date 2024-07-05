@@ -2,10 +2,17 @@
 
 - [caching](#caching)
 - [conf](#conf)
+- [context_managers](#context_managers)
+- [context_processors](#context_processors)
 - [functools](#functools)
+- [middlewares](#middlewares)
+- [models](#models)
 - [permissions](#permissions)
 - [signals](#signals)
+- [store](#store)
+- [tags](#tags)
 - [utils](#utils)
+- [views](#views)
 - [types.array](#typesarray)
 - [types.basic](#typesbasic)
 - [types.datetime](#typesdatetime)
@@ -19,9 +26,7 @@
 - [defaults.filters](#defaultsfilters)
 - [defaults.modifiers](#defaultsmodifiers)
 
-tr)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L29)</sup>
-
-getting an object from the module by the path. `full.path.to.Object` -> `Object`
+` -> `Object`
 
 ### def get_call_tags()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L51)</sup>
 
@@ -91,6 +96,28 @@ the current checksum of the settings.
 
 used for validation of settings weren't changed over time.
 
+## context_managers
+
+context managers for the content settings, but not all `defaults` context manager can be found in `content_settings.defaults.context.defaults`
+
+### class content_settings_context(ContextDecorator)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/context_managers.py#L8)</sup>
+
+context manager that overwrites settings in the context.
+
+`**kwargs` for the context manager are the settings to overwrite, where key is a setting name and value is a raw value of the setting.
+
+outside of the content_settings module can be used for testing.
+
+`_raise_errors: bool = True` - if False, then ignore errors when applying value of the setting.
+
+## context_processors
+
+the module contains context processors for the django templates.
+
+### def content_settings(request = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/context_processors.py#L8)</sup>
+
+context processor for the django templates that provides content_settings object into template as CONTENT_SETTINGS. 
+
 ## functools
 
 in the same way as python has functools, the module also has a few functions
@@ -107,6 +134,66 @@ Returns a function that performs an 'or' operation on multiple functions.
 ### def not_(func)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/functools.py#L29)</sup>
 
 Returns a function that performs a 'not' operation on a function.
+
+## middlewares
+
+Available middlewares for the content settings.
+
+### def preivew_on_site(get_response)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/middlewares.py#L9)</sup>
+
+the middleware required for previewing the content settings on the site.
+
+It checks content_settings.can_preview_on_site permission for the user and if the user has it, then the middleware will preview the content settings for the user.
+
+## models
+
+Django Models for the content settings.
+
+### class ContentSetting(models.Model)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L18)</sup>
+
+The main model for the content settings. Is stores all of the raw values for the content settings.
+
+#### def tags_set(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L55)</sup>
+
+tags field stores tags in a newline separated format. The property returns a set of tags.
+
+### class HistoryContentSetting(models.Model)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L68)</sup>
+
+The model for the history of the content settings. Is used to store the history of changes for the content settings such as changed/added/removed.
+
+The the generation of the history is done in two steps.
+First step is to create a record when the setting is changed.
+Second step is to assign other changing parameters such as by_user.
+
+#### def update_last_record_for_name(cls, name: str, user: Optional[User] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L133)</sup>
+
+Update the last record with the information about the source of the update.
+
+#### def gen_unique_records(cls, name)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L146)</sup>
+
+The current issue is that sometimes the same setting is changed multiple times in a row.
+This method is used to generate unique records for the history.
+
+### class UserTagSetting(models.Model)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L175)</sup>
+
+User can assign personal tags to the settings for extending tags-filtering functionality.
+The model contains those assignees.
+
+The allowed tags to assign in Django Admin panel can be found in `CONTENT_SETTINGS_USER_TAGS` django setting.
+
+### class UserPreview(models.Model)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L203)</sup>
+
+The user is allowed to preview settings before applying.
+
+The model contains the information of which settings are currently previewing.
+
+### class UserPreviewHistory(models.Model)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L224)</sup>
+
+Contains history of the user's preview settings. Because the settings can also change logic, so we want to keep the history of the settings for future investigations.
+
+#### def user_record(cls, user: User, preview_setting: UserPreview, status: int = STATUS_CREATED)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L250)</sup>
+
+Making a record in the history of the user's preview settings.
 
 ## permissions
 
@@ -138,11 +225,47 @@ Returns a function that checks if the user has a specific permission.
 
 ## signals
 
+the module is used for connecting signals to the content settings.
 
+### def do_update_stored_checksum()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/signals.py#L26)</sup>
 
-### def trigger_on_change(sender, instance, created)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/signals.py#L31)</sup>
+update the stored checksum of the settings.
+
+### def trigger_on_change(sender, instance, created)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/signals.py#L38)</sup>
 
 Trigger on_change and on_change_commited for the content setting
+
+## store
+
+the module is used for collecting information.
+
+the `APP_NAME_STORE` a dict `setting_name: app_name` is used to store the name of the app that uses the setting. Which later on can be used in `tags.app_name` to generate a tag with the name of the app.
+
+### def add_app_name(cs_name: str, app_name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L10)</sup>
+
+add the name of the app that uses the setting.
+
+### def cs_has_app(cs_name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L17)</sup>
+
+check if the setting has an app name.
+
+### def get_app_name(cs_name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L24)</sup>
+
+get the name of the app that uses the setting.
+
+## tags
+
+the functions that can be used for `CONTENT_SETTINGS_TAGS` and generate tags for the content settings based on setting name, type and value.
+
+### def changed(name: str, cs_type: BaseSetting, value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/tags.py#L10)</sup>
+
+returns a tag `changed` if the value of the setting is different from the default value.
+
+the name of the tag can be changed in `CONTENT_SETTINGS_TAG_CHANGED` django setting.
+
+### def app_name(name: str, cs_type: BaseSetting, value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/tags.py#L19)</sup>
+
+returns a tag with the name of the app that uses the setting.
 
 ## utils
 
@@ -155,6 +278,10 @@ Returns an iterator of classes that are subclasses of the given class.
 ### def class_names(setting_cls: Type[BaseSetting])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/utils.py#L28)</sup>
 
 Returns an iterator of tuple with module and class name that are subclasses of the given class.
+
+## views
+
+Those are the views can be used in the Integration with the Project.
 
 ## types.array
 

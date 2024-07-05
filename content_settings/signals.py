@@ -1,3 +1,7 @@
+"""
+the module is used for connecting signals to the content settings.
+"""
+
 from django.db.models.signals import post_save, post_migrate, post_delete, pre_save
 from django.core.signals import request_started
 from django.db.backends.signals import connection_created
@@ -20,6 +24,9 @@ from .models import ContentSetting, HistoryContentSetting
 @receiver(post_delete, sender=ContentSetting)
 @receiver(post_save, sender=ContentSetting)
 def do_update_stored_checksum(*args, **kwargs):
+    """
+    update the stored checksum of the settings.
+    """
     connection = transaction.get_connection()
     if connection.in_atomic_block:
         transaction.on_commit(recalc_checksums)

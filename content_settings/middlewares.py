@@ -1,8 +1,18 @@
+"""
+Available middlewares for the content settings.
+"""
+
 from .context_managers import content_settings_context
 from .models import UserPreview
 
 
 def preivew_on_site(get_response):
+    """
+    the middleware required for previewing the content settings on the site.
+
+    It checks content_settings.can_preview_on_site permission for the user and if the user has it, then the middleware will preview the content settings for the user.
+    """
+
     def middleware(request):
         if not request.user.has_perm("content_settings.can_preview_on_site"):
             return get_response(request)

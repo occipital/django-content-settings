@@ -1,7 +1,21 @@
+"""
+context managers for the content settings, but not all `defaults` context manager can be found in `content_settings.defaults.context.defaults`
+"""
+
 from contextlib import ContextDecorator
 
 
 class content_settings_context(ContextDecorator):
+    """
+    context manager that overwrites settings in the context.
+
+    `**kwargs` for the context manager are the settings to overwrite, where key is a setting name and value is a raw value of the setting.
+
+    outside of the content_settings module can be used for testing.
+
+    `_raise_errors: bool = True` - if False, then ignore errors when applying value of the setting.
+    """
+
     def __init__(self, **values) -> None:
         self.raise_errors = values.pop("_raise_errors", True)
         super().__init__()

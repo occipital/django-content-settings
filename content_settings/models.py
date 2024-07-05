@@ -1,3 +1,7 @@
+"""
+Django Models for the content settings.
+"""
+
 from collections import defaultdict
 
 from django.db import models
@@ -5,9 +9,17 @@ from django.core.validators import RegexValidator
 from django.utils import timezone
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth import get_user_model
+from typing import Optional
+
+User = get_user_model()
 
 
 class ContentSetting(models.Model):
+    """
+    The main model for the content settings. Is stores all of the raw values for the content settings.
+    """
+
     id = models.AutoField(primary_key=True, verbose_name=_("ID"))
     name = models.CharField(
         max_length=200,
@@ -42,6 +54,9 @@ class ContentSetting(models.Model):
 
     @property
     def tags_set(self):
+        """
+        tags field stores tags in a newline separated format. The property returns a set of tags.
+        """
         if not self.tags:
             return set()
 
@@ -52,6 +67,14 @@ class ContentSetting(models.Model):
 
 
 class HistoryContentSetting(models.Model):
+    """
+    The model for the history of the content settings. Is used to store the history of changes for the content settings such as changed/added/removed.
+
+    The the generation of the history is done in two steps.
+    First step is to create a record when the setting is changed.
+    Second step is to assign other changing parameters such as by_user.
+    """
+
     CHANGED_CHOICES = (
         (True, _("Changed")),
         (False, _("Added")),
@@ -109,14 +132,24 @@ class HistoryContentSetting(models.Model):
         ]
 
     @classmethod
-    def update_last_record_for_name(cls, name, user=None):
+    def update_last_record_for_name(cls, name: str, user: Optional[User] = None):
+        """
+        Update the last record with the information about the source of the update.
+        """
         last_setting = cls.objects.filter(name=name).first()
+        if not last_setting or last_setting.by_user is not None:
+            return
+
         last_setting.user = user
         last_setting.by_user = user is not None
         last_setting.save()
 
     @classmethod
     def gen_unique_records(cls, name):
+        """
+        The current issue is that sometimes the same setting is changed multiple times in a row.
+        This method is used to generate unique records for the history.
+        """
         next_obj = None
         records = cls.objects.filter(name=name)
         if not records.exists():
@@ -142,6 +175,13 @@ class HistoryContentSetting(models.Model):
 
 
 class UserTagSetting(models.Model):
+    """
+    User can assign personal tags to the settings for extending tags-filtering functionality.
+    The model contains those assignees.
+
+    The allowed tags to assign in Django Admin panel can be found in `CONTENT_SETTINGS_USER_TAGS` django setting.
+    """
+
     id = models.AutoField(primary_key=True, verbose_name=_("ID"))
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("User")
@@ -164,6 +204,12 @@ class UserTagSetting(models.Model):
 
 
 class UserPreview(models.Model):
+    """
+    The user is allowed to preview settings before applying.
+
+    The model contains the information of which settings are currently previewing.
+    """
+
     id = models.AutoField(primary_key=True, verbose_name=_("ID"))
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("User")
@@ -180,6 +226,10 @@ class UserPreview(models.Model):
 
 
 class UserPreviewHistory(models.Model):
+    """
+    Contains history of the user's preview settings. Because the settings can also change logic, so we want to keep the history of the settings for future investigations.
+    """
+
     STATUS_CREATED = 0
     STATUS_APPLIED = 10
     STATUS_REMOVED = 20
@@ -202,7 +252,12 @@ class UserPreviewHistory(models.Model):
     )
 
     @classmethod
-    def user_record(cls, user, preview_setting, status=STATUS_CREATED):
+    def user_record(
+        cls, user: User, preview_setting: UserPreview, status: int = STATUS_CREATED
+    ):
+        """
+        Making a record in the history of the user's preview settings.
+        """
         return cls.objects.create(
             user=user,
             name=preview_setting.name,

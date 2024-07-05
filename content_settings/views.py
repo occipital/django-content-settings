@@ -1,3 +1,7 @@
+"""
+Those are the views can be used in the Integration with the Project.
+"""
+
 from django.http import HttpResponseNotFound, HttpResponseForbidden, HttpResponse
 from django.views.generic import View
 from django.utils.translation import gettext as _
