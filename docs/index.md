@@ -89,5 +89,3 @@ Simple as that, we have a lot of *setting types* you can use `SimpleText`, `Simp
 It is also very fast thanks to our caching system. [Read more about it](caching.md).
 
 Some fancy things you can find in our [cookbook](cookbook.md).
-
-[▶️ YouTube Video with dive deep ~ 2h](https://youtu.be/RNYmvv_G5zs)

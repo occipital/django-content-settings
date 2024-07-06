@@ -116,7 +116,7 @@ the module contains context processors for the django templates.
 
 ### def content_settings(request = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/context_processors.py#L8)</sup>
 
-context processor for the django templates that provides content_settings object into template as CONTENT_SETTINGS. 
+context processor for the django templates that provides content_settings object into template as CONTENT_SETTINGS.
 
 ## functools
 
@@ -153,11 +153,11 @@ Django Models for the content settings.
 
 The main model for the content settings. Is stores all of the raw values for the content settings.
 
-#### def tags_set(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L55)</sup>
+#### def tags_set(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L56)</sup>
 
 tags field stores tags in a newline separated format. The property returns a set of tags.
 
-### class HistoryContentSetting(models.Model)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L68)</sup>
+### class HistoryContentSetting(models.Model)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L69)</sup>
 
 The model for the history of the content settings. Is used to store the history of changes for the content settings such as changed/added/removed.
 
@@ -165,33 +165,33 @@ The the generation of the history is done in two steps.
 First step is to create a record when the setting is changed.
 Second step is to assign other changing parameters such as by_user.
 
-#### def update_last_record_for_name(cls, name: str, user: Optional[User] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L133)</sup>
+#### def update_last_record_for_name(cls, name: str, user: Optional[User] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L135)</sup>
 
 Update the last record with the information about the source of the update.
 
-#### def gen_unique_records(cls, name)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L146)</sup>
+#### def gen_unique_records(cls, name)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L148)</sup>
 
 The current issue is that sometimes the same setting is changed multiple times in a row.
 This method is used to generate unique records for the history.
 
-### class UserTagSetting(models.Model)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L175)</sup>
+### class UserTagSetting(models.Model)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L177)</sup>
 
 User can assign personal tags to the settings for extending tags-filtering functionality.
 The model contains those assignees.
 
 The allowed tags to assign in Django Admin panel can be found in `CONTENT_SETTINGS_USER_TAGS` django setting.
 
-### class UserPreview(models.Model)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L203)</sup>
+### class UserPreview(models.Model)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L206)</sup>
 
 The user is allowed to preview settings before applying.
 
 The model contains the information of which settings are currently previewing.
 
-### class UserPreviewHistory(models.Model)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L224)</sup>
+### class UserPreviewHistory(models.Model)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L228)</sup>
 
 Contains history of the user's preview settings. Because the settings can also change logic, so we want to keep the history of the settings for future investigations.
 
-#### def user_record(cls, user: User, preview_setting: UserPreview, status: int = STATUS_CREATED)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L250)</sup>
+#### def user_record(cls, user: User, preview_setting: UserPreview, status: int = STATUS_CREATED)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/models.py#L255)</sup>
 
 Making a record in the history of the user's preview settings.
 
@@ -257,13 +257,13 @@ get the name of the app that uses the setting.
 
 the functions that can be used for `CONTENT_SETTINGS_TAGS` and generate tags for the content settings based on setting name, type and value.
 
-### def changed(name: str, cs_type: BaseSetting, value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/tags.py#L10)</sup>
+### def changed(name: str, cs_type: BaseSetting, value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/tags.py#L11)</sup>
 
 returns a tag `changed` if the value of the setting is different from the default value.
 
 the name of the tag can be changed in `CONTENT_SETTINGS_TAG_CHANGED` django setting.
 
-### def app_name(name: str, cs_type: BaseSetting, value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/tags.py#L19)</sup>
+### def app_name(name: str, cs_type: BaseSetting, value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/tags.py#L20)</sup>
 
 returns a tag with the name of the app that uses the setting.
 
@@ -282,6 +282,53 @@ Returns an iterator of tuple with module and class name that are subclasses of t
 ## views
 
 Those are the views can be used in the Integration with the Project.
+
+### def gen_startswith(startswith: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/views.py#L14)</sup>
+
+for names attribute of FetchSettingsView, to find settings by name starts with `startswith`
+
+### def gen_hastag(tag: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/views.py#L27)</sup>
+
+for names attribute of FetchSettingsView, to find settings by tag
+
+### class FetchSettingsView(View)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/views.py#L40)</sup>
+
+A View for featching settings from the content settings.
+
+Use attribute `names` to define the names of the settings to fetch.
+
+```
+FetchSettingsView.as_view(
+    names=[
+        "DESCRIPTION",
+        "OPEN_DATE",
+        "TITLE",
+    ]
+)
+```
+
+Suffix can be used in names
+
+```
+FetchSettingsView.as_view(
+    names=[
+        "TITLE",
+        "BOOKS__available_names",
+    ]
+),
+```
+
+function for getting names by specific conditions can be used
+
+```
+FetchSettingsView.as_view(names=gen_hastag("general")),
+```
+
+or combinations of them
+
+```
+FetchSettingsView.as_view(names=(gen_startswith("IS_"), "TITLE")),
+```
 
 ## types.array
 

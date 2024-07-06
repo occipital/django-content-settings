@@ -12,8 +12,6 @@ The `django-content-settings` module is a versatile addition to the Django ecosy
 
 For the full documentation, please visit [here](https://django-content-settings.readthedocs.io/).
 
-[▶️ YouTube Video with dive deep ~ 2h](https://youtu.be/RNYmvv_G5zs) 
-
 ### How does it look
 
 - **Setup**. [Here](https://django-content-settings.readthedocs.io/en/master/first/) you can get step-by-step instruction.

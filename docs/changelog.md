@@ -6,6 +6,12 @@
 
 [Issuses left for releasing v1](https://github.com/occipital/django-content-settings/labels/v1)
 
+### 0.16
+
+* remove `urls.py` now the only quick way to connect API is to use [Views](api.md)
+* remove `content_settings.startswith` and `content_settings.withtag`
+* more [doc-strings](source.md), update `poetry.lock` and test coverage 94%
+
 ### 0.15
 
 * fixing nox testing for covering different Python and Django versions
