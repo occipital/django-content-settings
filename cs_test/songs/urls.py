@@ -26,5 +26,5 @@ urlpatterns = [
         name="index",
     ),
     path("math/", math, name="math"),
-    path("fetch/main/", FetchSettingsView.as_view(attrs=gen_hastag("main"))),
+    path("fetch/main/", FetchSettingsView.as_view(names=gen_hastag("main"))),
 ]

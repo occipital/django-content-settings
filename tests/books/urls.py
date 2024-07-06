@@ -22,7 +22,7 @@ urlpatterns = [
     path(
         "fetch/main/",
         FetchSettingsView.as_view(
-            attrs=[
+            names=[
                 "TITLE",
                 "BOOKS__available_names",
             ]
@@ -30,9 +30,19 @@ urlpatterns = [
         name="fetch_main",
     ),
     path(
+        "fetch/main-simple/",
+        FetchSettingsView.as_view(
+            names=[
+                "TITLE",
+                ("BOOKS", "BOOKS__available_names"),
+            ]
+        ),
+        name="fetch_main",
+    ),
+    path(
         "fetch/home-detail/",
         FetchSettingsView.as_view(
-            attrs=[
+            names=[
                 "DESCRIPTION",
                 "OPEN_DATE",
                 "TITLE",
@@ -43,7 +53,7 @@ urlpatterns = [
     path(
         "fetch/home/",
         FetchSettingsView.as_view(
-            attrs=[
+            names=[
                 "TITLE",
             ]
         ),
@@ -51,18 +61,23 @@ urlpatterns = [
     ),
     path(
         "fetch/is/",
-        FetchSettingsView.as_view(attrs=gen_startswith("IS_")),
+        FetchSettingsView.as_view(names=gen_startswith("IS_")),
         name="fetch_is",
     ),
     path(
+        "fetch/is-and-title/",
+        FetchSettingsView.as_view(names=(gen_startswith("IS_"), "TITLE")),
+        name="fetch_is_and_title",
+    ),
+    path(
         "fetch/general/",
-        FetchSettingsView.as_view(attrs=gen_hastag("general")),
+        FetchSettingsView.as_view(names=gen_hastag("general")),
         name="fetch_is",
     ),
     path(
         "fetch/all/",
         FetchSettingsView.as_view(
-            attrs=[
+            names=[
                 "CUSTOM_TITLE",
                 "PREFIX",
                 "PREFIX_UPDATED",

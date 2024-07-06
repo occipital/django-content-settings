@@ -43,6 +43,8 @@ Allows access to users with a specific permission.
 has_perm('app_label.permission_codename')
 ```
 
+### Functions from `functools` module that can be used
+
 #### `and_(*funcs)`
 
 Combines multiple permission functions using a logical AND.
@@ -75,7 +77,8 @@ To set a permission where only staff members or users with a specific permission
 
 ```python
 from content_settings.types.basic import SimpleString, SimpleDecimal
-from content_settings.permissions import or_, staff, has_perm
+from content_settings.permissions import staff, has_perm
+from content_settings.functools import or_
 
 TITLE = SimpleString(
     "default value",

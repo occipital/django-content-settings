@@ -4,7 +4,7 @@ the module collects all settings from all apps and makes them available as `cont
 
 from importlib import import_module
 from functools import partial
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, List, Set, Dict, Tuple
 
 from django.apps import apps
 
@@ -48,7 +48,7 @@ if USER_DEFINED_TYPES:
 CALL_TAGS = None
 
 
-def get_call_tags() -> list[Callable]:
+def get_call_tags() -> List[Callable]:
     """
     returns list of functions from `CONTENT_SETTINGS_TAGS` setting that are used to generate tags for settings.
     the result is cached in `CALL_TAGS` variable.
@@ -70,7 +70,7 @@ def get_call_tags() -> list[Callable]:
     return CALL_TAGS
 
 
-def gen_tags(name: str, cs_type: BaseSetting, value: Any) -> set[str]:
+def gen_tags(name: str, cs_type: BaseSetting, value: Any) -> Set[str]:
     """
     generate tags based on `CONTENT_SETTINGS_TAGS` setting.
     """
@@ -112,7 +112,7 @@ def type_prefix(name: str, suffix: str) -> Any:
 
 
 @register_prefix("startswith")
-def startswith_prefix(name: str, suffix: str) -> dict[str, Any]:
+def startswith_prefix(name: str, suffix: str) -> Dict[str, Any]:
     """
     startswith__ prefix that returns all settings as a dict (setting name: setting value) that start with the given name.
     """
@@ -122,7 +122,7 @@ def startswith_prefix(name: str, suffix: str) -> dict[str, Any]:
 
 
 @register_prefix("withtag")
-def withtag_prefix(name: str, suffix: str) -> dict[str, Any]:
+def withtag_prefix(name: str, suffix: str) -> Dict[str, Any]:
     """
     withtag__ prefix that returns all settings as a dict (setting name: setting value) that have the given tag.
     """
@@ -164,7 +164,7 @@ for app_config in apps.app_configs.values():
         add_app_name(attr, app)
 
 
-def split_attr(value: str) -> tuple[Optional[str], str, Optional[str]]:
+def split_attr(value: str) -> Tuple[Optional[str], str, Optional[str]]:
     """
     splits the name of the attr on 3 parts: prefix, name, suffix
 
@@ -211,7 +211,7 @@ def get_str_tags(
     return "\n".join(sorted(tags))
 
 
-def set_initial_values_for_db(apply: bool = False) -> list[tuple[str, str]]:
+def set_initial_values_for_db(apply: bool = False) -> List[Tuple[str, str]]:
     """
     sync settings with DB.
         * creates settings that are not in DB

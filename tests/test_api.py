@@ -51,7 +51,7 @@ def test_get_simple_text():
     assert resp.json()["TITLE"] == "New Title"
 
 
-def test_fetch_group_signle_value():
+def test_fetch_group_single_value():
     client = get_anonymous_client()
     resp = client.get("/books/fetch/home/")
     assert resp.status_code == 200
@@ -66,6 +66,8 @@ def test_fetch_group_multiple_values():
         "DESCRIPTION": "Book Store is the best book store in the world",
         "TITLE": "Book Store",
     }
+
+    assert resp.headers["X-Content-Settings-Errors"] == "OPEN_DATE: permission denied"
 
     client = get_staff_client()
     resp = client.get("/books/fetch/home-detail/")
@@ -84,6 +86,16 @@ def test_fetch_group_suffix():
     assert resp.json() == {
         "TITLE": "Book Store",
         "BOOKS__available_names": ["Kateryna", "The Poplar", "The Night of Taras"],
+    }
+
+
+def test_fetch_group_with_keys():
+    client = get_anonymous_client()
+    resp = client.get("/books/fetch/main-simple/")
+    assert resp.status_code == 200
+    assert resp.json() == {
+        "TITLE": "Book Store",
+        "BOOKS": ["Kateryna", "The Poplar", "The Night of Taras"],
     }
 
 
@@ -142,3 +154,11 @@ def test_fetch_startswith():
 
     # is open should not be match as it is without permissions
     assert resp.json() == {"IS_CLOSED": False}
+
+
+def test_fetch_startswith_and_title():
+    client = get_anonymous_client()
+    resp = client.get("/books/fetch/is-and-title/")
+
+    # is open should not be match as it is without permissions
+    assert resp.json() == {"IS_CLOSED": False, "TITLE": "Book Store"}

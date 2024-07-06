@@ -9,6 +9,7 @@ nav:
   - Enhancements to Admin Panel: admin.md
   - Permissions: permissions.md
   - Defaults Context: defaults.md
+  - API & Views: api.md
   - Available Settings: settings.md
   - How Caching is Organized: caching.md
   - Cookbook: cookbook.md

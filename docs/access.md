@@ -80,11 +80,11 @@ from content_settings.views import FetchSettingsView
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("books/", include("books.urls")),
-    path("fetch/main/", FetchSettingsView.as_view(attrs=[
+    path("fetch/main/", FetchSettingsView.as_view(names=[
         "TITLE",
         "BOOKS__available_names",
     ]), name="fetch_main"),
-    path("fetch/home-detail/", FetchSettingsView.as_view(attrs=[
+    path("fetch/home-detail/", FetchSettingsView.as_view(names=[
         "DESCRIPTION",
         "OPEN_DATE",
         "TITLE",
