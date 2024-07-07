@@ -51,6 +51,10 @@ class SimpleString(BaseSetting):
     - default (str): The default value for the setting.
     - on_change: Tuple[Callable] - list of functions to call when the setting is changed
     - on_change_commited: Tuple[Callable] - list of functions to call when the setting is changed and commited
+    - admin_head_css: Tuple[str] - list of css urls to include in the admin head
+    - admin_head_js: Tuple[str] - list of js urls to include in the admin head
+    - admin_head_css_raw: Tuple[str] - list of css codes to include in the admin head
+    - admin_head_js_raw: Tuple[str] - list of js codes to include in the admin head
     """
 
     constant: bool = False
@@ -76,6 +80,10 @@ class SimpleString(BaseSetting):
     json_encoder: type = DjangoJSONEncoder
     on_change: Tuple[Callable] = ()
     on_change_commited: Tuple[Callable] = ()
+    admin_head_css: Tuple[str] = ()
+    admin_head_js: Tuple[str] = ()
+    admin_head_css_raw: Tuple[str] = ()
+    admin_head_js_raw: Tuple[str] = ()
 
     def __init__(
         self, default: Optional[Union[str, required, optional]] = None, **kwargs
@@ -139,6 +147,30 @@ class SimpleString(BaseSetting):
             tags = set(tags)
 
         self.tags = tags if self.tags is None else self.tags | tags
+
+    def get_admin_head_css(self) -> Tuple[str]:
+        """
+        Return the list of css urls to include in the admin head.
+        """
+        return self.admin_head_css
+
+    def get_admin_head_js(self) -> Tuple[str]:
+        """
+        Return the list of js urls to include in the admin head.
+        """
+        return self.admin_head_js
+
+    def get_admin_head_css_raw(self) -> Tuple[str]:
+        """
+        Return the list of css codes to include in the admin head.
+        """
+        return self.admin_head_css_raw
+
+    def get_admin_head_js_raw(self) -> Tuple[str]:
+        """
+        Return the list of js codes to include in the admin head.
+        """
+        return self.admin_head_js_raw
 
     def can_view(self, user):
         """

@@ -682,3 +682,29 @@ def test_edit_user_defined_variable(webtest_admin, testadmin):
 
     cs.refresh_from_db()
     assert cs.tags == "next_email"
+
+
+def test_admin_head(webtest_admin):
+
+    cs = ContentSetting.objects.get(name="TITLE")
+    URLS = [
+        f"/admin/content_settings/contentsetting/{cs.id}/change/",
+        f"/admin/content_settings/contentsetting/",
+        f"/admin/content_settings/contentsetting/add/",
+    ]
+    for url in URLS:
+        resp = webtest_admin.get(url)
+
+        assert resp.status_int == 200
+
+        assert "simple-line-icons.min.css" in resp.content.decode("utf-8")
+        assert resp.content.decode("utf-8").count("simple-line-icons.min.css") == 1
+        assert "simple-line-icons.min.js" in resp.content.decode("utf-8")
+        assert resp.content.decode("utf-8").count("simple-line-icons.min.js") == 1
+        assert ".some_block_css" in resp.content.decode("utf-8")
+        assert resp.content.decode("utf-8").count(".some_block_css") == 1
+        assert 'console.log("Hello, ADMIN HEAD JS");' in resp.content.decode("utf-8")
+        assert (
+            resp.content.decode("utf-8").count('console.log("Hello, ADMIN HEAD JS");')
+            == 1
+        )

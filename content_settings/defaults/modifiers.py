@@ -4,7 +4,7 @@
     Modifiers are using in `DEFAULTS` second element of the tuple and as `defaults` arguments.
 """
 
-from typing import Dict, Any, Callable, Set, Iterable
+from typing import Dict, Any, Callable, Set, Iterable, Tuple
 
 TModifier = Callable[[Dict[str, Any]], Dict[str, Any]]
 
@@ -150,6 +150,38 @@ class unite_set_remove(unite_empty_not_set):
         return set(up) - set(value) | (set(kw) if kw is not NotSet else set())
 
 
+class unite_tuple_add(unite):
+    """
+    unite that modifies a tuple by adding new values in it.
+    """
+
+    def process(
+        self, value: Iterable[Any], up: Iterable[Any], kw: Iterable[Any]
+    ) -> Tuple[Any]:
+        if up is not NotSet:
+            old_value = up
+        elif kw is not NotSet:
+            old_value = kw
+        else:
+            old_value = ()
+        return tuple(value) + old_value
+
+
+class unite_dict_update(unite):
+    """
+    unite that modifies a dictionary by updating it with new values.
+    """
+
+    def process(
+        self, value: Dict[str, Any], up: Dict[str, Any], kw: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        return {
+            **(up if up is not NotSet else {}),
+            **value,
+            **(kw if kw is not NotSet else {}),
+        }
+
+
 def add_tags(tags: Iterable[str], **kwargs) -> TModifier:
     """
     add tags to the setting
@@ -214,3 +246,29 @@ def help_suffix(suffix: str) -> TModifier:
     add suffix to help
     """
     return unite_str("{old_value}<br>{new_value}", help=suffix)
+
+
+def add_admin_head(
+    css: Iterable[str] = (),
+    js: Iterable[str] = (),
+    css_raw: Iterable[str] = (),
+    js_raw: Iterable[str] = (),
+) -> TModifier:
+    """
+    add css and js to the admin head
+    """
+    return unite_tuple_add(
+        admin_head_css=tuple(css),
+        admin_head_js=tuple(js),
+        admin_head_css_raw=tuple(css_raw),
+        admin_head_js_raw=tuple(js_raw),
+    )
+
+
+def update_widget_attrs(**kwargs) -> TModifier:
+    """
+    update widget attrs
+    """
+    if "class_attr" in kwargs:
+        kwargs["class"] = kwargs.pop("class_attr")
+    return unite_dict_update(widget_attrs=kwargs)

@@ -18,15 +18,22 @@ from content_settings.types.array import (
     SplitByFirstLine,
     split_validator_in,
 )
-from content_settings.types.markup import SimpleYAML
+from content_settings.types.markup import SimpleYAML, SimpleJSON
 from content_settings.types.each import EachMixin, Keys
-from content_settings.types.template import DjangoTemplateHTML, DjangoModelTemplateHTML
+from content_settings.types.template import (
+    DjangoTemplateHTML,
+    DjangoModelTemplateHTML,
+    SimpleEval,
+)
 
 from content_settings import permissions
 from content_settings.defaults.context import defaults
 from content_settings.defaults.modifiers import add_tags, help_suffix
 
 from .models import Artist
+
+MY_EVAL = SimpleEval("2**4", help="My eval")
+MY_JSON = SimpleJSON("""{"a": 1, "b": 2, "c": 3}""", help="My json")
 
 with defaults(add_tags(["main"]), fetch_permission=permissions.any):
     TITLE = SimpleString("My Site", help="Title of the site")

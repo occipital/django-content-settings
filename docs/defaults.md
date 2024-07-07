@@ -159,3 +159,27 @@ CONTENT_SETTINGS_DEFAULTS = [
     ), set_if_missing(update_permission=superuser)),
 ]
 ```
+
+### Defaults collections
+
+in the module [`content_settings.defaults.collections`](source.md#defaultscollections) we have functions that can be used as an element of `CONTENT_SETTINGS_DEFAULTS`
+
+For example, if you want to activate codemirror for all Python code text areas you can do the following:
+
+```python
+from content_settings.defaults.collections import codemirror_python
+
+CONTENT_SETTINGS_DEFAULTS = [
+    codemirror_python(),
+]
+```
+
+or, if you want to activate codemirrow for all supported types
+
+```python
+from content_settings.defaults.collections import codemirror_all
+
+CONTENT_SETTINGS_DEFAULTS = [
+    codemirror_all(),
+]
+```

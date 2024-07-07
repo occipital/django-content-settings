@@ -97,6 +97,11 @@
         $('.reset_default').click(function(){
             $id.val($(this).data('value'));
         })
-    })(django.jQuery)
+    })(django.jQuery);
+    {{CONTENT_SETTINGS.admin_raw_js|safe}}
 </script>
+{% endblock %}
+
+{% block extrahead %}{{block.super}}
+{{CONTENT_SETTINGS.admin_head|safe}}
 {% endblock %}

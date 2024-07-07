@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from content_settings.defaults.collections import codemirror_all
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -138,4 +139,8 @@ CONTENT_SETTINGS_USER_DEFINED_TYPES = [
 CONTENT_SETTINGS_TAGS = [
     "content_settings.tags.changed",
     "content_settings.tags.app_name",
+]
+
+CONTENT_SETTINGS_DEFAULTS = [
+    *codemirror_all(),
 ]

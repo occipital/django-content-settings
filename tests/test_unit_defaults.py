@@ -11,6 +11,7 @@ from content_settings.defaults.modifiers import (
     help_prefix,
     help_suffix,
     NotSet,
+    add_admin_head,
 )
 from content_settings.defaults.context import (
     defaults,
@@ -226,3 +227,17 @@ def test_adding_three_tags_and_removing_one():
     with defaults(add_tags({"first", "second", "third"})):
         with defaults(remove_tag("second")):
             assert process_modifiers({}) == {"tags": {"first", "third"}}
+
+
+def test_add_admin_head():
+    with defaults(
+        add_admin_head(
+            css=["a.css"], js=["b.js"], css_raw=[".style"], js_raw=["console.log"]
+        )
+    ):
+        assert process_modifiers({}) == {
+            "admin_head_css": ("a.css",),
+            "admin_head_js": ("b.js",),
+            "admin_head_css_raw": (".style",),
+            "admin_head_js_raw": ("console.log",),
+        }

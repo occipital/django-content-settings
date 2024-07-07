@@ -31,9 +31,30 @@ class PublicSimpleString(SimpleString):
     version = "3.0.0"
 
 
+class SimpleStringWithAdminHead(SimpleString):
+    admin_head_css = (
+        "https://cdn.jsdelivr.net/npm/simple-line-icons@5.0.0/dist/css/simple-line-icons.min.css",
+    )
+    admin_head_js = (
+        "https://cdn.jsdelivr.net/npm/simple-line-icons@5.0.0/dist/js/simple-line-icons.min.js",
+    )
+    admin_head_css_raw = (
+        """
+    .some_block_css {
+        font-weight: bold;
+    }
+    """,
+    )
+    admin_head_js_raw = (
+        """
+    console.log("Hello, ADMIN HEAD JS");
+    """,
+    )
+
+
 with defaults(add_tags({"general"})):
 
-    TITLE = SimpleString(
+    TITLE = SimpleStringWithAdminHead(
         "Book Store",
         fetch_permission=permissions.any,
         overwrite_user_defined=True,
@@ -96,7 +117,7 @@ BOOK_RICH_DESCRIPTION = DjangoModelTemplate(
     help="The description of the book",
 )
 
-AUTHOR = SimpleString(
+AUTHOR = SimpleStringWithAdminHead(
     "Alexandr Lyabah",
     constant=True,
     fetch_permission=permissions.any,

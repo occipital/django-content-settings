@@ -42,6 +42,27 @@ class BaseEach:
             return pre(value)
         return self.each_get_admin_preview_object(value, *args, **kwargs)
 
+    def get_all_cs_types(self):
+        return ()
+
+    def get_admin_head_css(self):
+        return sum(
+            (cs.get_admin_head_css() for cs in self.get_all_cs_types()), start=()
+        )
+
+    def get_admin_head_js(self):
+        return sum((cs.get_admin_head_js() for cs in self.get_all_cs_types()), start=())
+
+    def get_admin_head_css_raw(self):
+        return sum(
+            (cs.get_admin_head_css_raw() for cs in self.get_all_cs_types()), start=()
+        )
+
+    def get_admin_head_js_raw(self):
+        return sum(
+            (cs.get_admin_head_js_raw() for cs in self.get_all_cs_types()), start=()
+        )
+
 
 TCSType = Union[BaseEach, BaseSetting]
 
@@ -56,6 +77,9 @@ class Item(BaseEach):
 
     def is_each(self, value: Any):
         return isinstance(value, (list, tuple))
+
+    def get_all_cs_types(self):
+        return (self.cs_type,)
 
     def each_validate(self, value):
         for i, v in enumerate(value, start=1):
@@ -121,6 +145,9 @@ class Keys(BaseEach):
 
     def __init__(self, **kwargs: Dict[str, TCSType]):
         self.cs_types = kwargs
+
+    def get_all_cs_types(self):
+        return tuple(self.cs_types.values())
 
     def is_each(self, value):
         return isinstance(value, dict)
@@ -219,6 +246,9 @@ class Values(BaseEach):
 
     def __init__(self, cs_type: TCSType):
         self.cs_type = cs_type
+
+    def get_all_cs_types(self):
+        return (self.cs_type,)
 
     def is_each(self, value):
         return isinstance(value, dict)
@@ -355,3 +385,15 @@ class EachMixin:
 
     def get_admin_preview_object(self, *args, **kwargs) -> str:
         return self.each.get_admin_preview_object(*args, **kwargs)
+
+    def get_admin_head_css(self):
+        return super().get_admin_head_css() + self.each.get_admin_head_css()
+
+    def get_admin_head_js(self):
+        return super().get_admin_head_js() + self.each.get_admin_head_js()
+
+    def get_admin_head_css_raw(self):
+        return super().get_admin_head_css_raw() + self.each.get_admin_head_css_raw()
+
+    def get_admin_head_js_raw(self):
+        return super().get_admin_head_js_raw() + self.each.get_admin_head_js_raw()

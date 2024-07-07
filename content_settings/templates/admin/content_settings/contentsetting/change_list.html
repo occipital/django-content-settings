@@ -203,7 +203,7 @@ div.subitem {
                 $('#result_list tr').each(function(){
                     var name = $(this).find('.field-name a').text();
                     if (name !== currentName) {
-                        data['o_' + name] = $(this).find('.field-value textarea,.field-value input').val();
+                        data['o_' + name] = $(this).find('.field-value textarea[id],.field-value input[id]').val();
                     }
                 });
 
@@ -241,6 +241,12 @@ div.subitem {
                 refreshPreview();
             }, 1000);
         })
-    })(django.jQuery)
+    })(django.jQuery);
+
+{{CONTENT_SETTINGS.admin_raw_js|safe}}
 </script>
+{% endblock %}
+
+{% block extrahead %}{{block.super}}
+{{CONTENT_SETTINGS.admin_head|safe}}
 {% endblock %}

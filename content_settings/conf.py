@@ -5,6 +5,7 @@ the module collects all settings from all apps and makes them available as `cont
 from importlib import import_module
 from functools import partial
 from typing import Any, Callable, Optional, List, Set, Dict, Tuple
+from functools import cached_property
 
 from django.apps import apps
 
@@ -17,7 +18,7 @@ from .caching import (
     get_checksum_from_user_local,
 )
 from .settings import USER_DEFINED_TYPES, TAGS
-from .store import add_app_name
+from .store import add_app_name, get_admin_head, add_admin_head, get_admin_raw_js
 
 USER_DEFINED_TYPES_INSTANCE = {}
 USER_DEFINED_TYPES_INITIAL = {}
@@ -41,7 +42,9 @@ if USER_DEFINED_TYPES:
         USER_DEFINED_TYPES_INSTANCE[slug] = partial(
             type_class, user_defined_slug=slug, version=type_class.version
         )
-        USER_DEFINED_TYPES_INITIAL[slug] = USER_DEFINED_TYPES_INSTANCE[slug]()
+        initial_val = USER_DEFINED_TYPES_INSTANCE[slug]()
+        USER_DEFINED_TYPES_INITIAL[slug] = initial_val
+        add_admin_head(initial_val)
         USER_DEFINED_TYPES_NAME[slug] = name
 
 
@@ -161,6 +164,7 @@ for app_config in apps.app_configs.values():
         ), "Do not set user_defined_slug in content_settings.py"
 
         ALL[attr] = val
+        add_admin_head(val)
         add_app_name(attr, app)
 
 
@@ -348,6 +352,20 @@ class _Settings:
         used for validation of settings weren't changed over time.
         """
         return get_checksum_from_local() + get_checksum_from_user_local()
+
+    @cached_property
+    def admin_head(self):
+        """
+        the admin head.
+        """
+        return get_admin_head()
+
+    @cached_property
+    def admin_raw_js(self):
+        """
+        the admin raw js.
+        """
+        return get_admin_raw_js()
 
 
 content_settings = _Settings()
