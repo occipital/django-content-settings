@@ -21,7 +21,7 @@ CONTENT_SETTINGS_DEFAULTS = [
 
 from content_settings.functools import or_
 
-from .modifiers import add_admin_head, update_widget_attrs
+from .modifiers import add_admin_head, add_widget_class
 from .filters import full_name_exact
 
 DEFAULT_CODEMIRROR_PATH = "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/"
@@ -64,9 +64,7 @@ def codemirror_python(
             ],
             js_raw=[_codemirror_raw_js(class_attr, "python")],
         ),
-        update_widget_attrs(
-            class_attr=class_attr,
-        ),
+        add_widget_class(class_attr),
     )
 
 
@@ -86,9 +84,7 @@ def codemirror_json(
             ],
             js_raw=[_codemirror_raw_js(class_attr, "javascript")],
         ),
-        update_widget_attrs(
-            class_attr=class_attr,
-        ),
+        add_widget_class(class_attr),
     )
 
 
@@ -108,9 +104,7 @@ def codemirror_yaml(
             ],
             js_raw=[_codemirror_raw_js(class_attr, "yaml")],
         ),
-        update_widget_attrs(
-            class_attr=class_attr,
-        ),
+        add_widget_class(class_attr),
     )
 
 

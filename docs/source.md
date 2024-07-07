@@ -27,7 +27,34 @@
 - [defaults.filters](#defaultsfilters)
 - [defaults.modifiers](#defaultsmodifiers)
 
-rce](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L54)</sup>
+
+
+## caching
+
+
+
+the caching
+
+### def calc_checksum(values)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L47)</sup>
+
+generate md5 hash for a dict with keys and values as strings
+
+### def hash_value(value)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L58)</sup>
+
+generate md5 hash for a string
+
+
+## conf
+
+
+
+the module collects all settings from all apps and makes them available as `content_settings` object.
+
+### def import_object(path: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L30)</sup>
+
+getting an object from the module by the path. `full.path.to.Object` -> `Object`
+
+### def get_call_tags()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L54)</sup>
 
 returns list of functions from `CONTENT_SETTINGS_TAGS` setting that are used to generate tags for settings.
 the result is cached in `CALL_TAGS` variable.
@@ -103,7 +130,10 @@ the admin head.
 
 the admin raw js.
 
+
 ## context_managers
+
+
 
 context managers for the content settings, but not all `defaults` context manager can be found in `content_settings.defaults.context.defaults`
 
@@ -117,7 +147,10 @@ outside of the content_settings module can be used for testing.
 
 `_raise_errors: bool = True` - if False, then ignore errors when applying value of the setting.
 
+
 ## context_processors
+
+
 
 the module contains context processors for the django templates.
 
@@ -125,7 +158,10 @@ the module contains context processors for the django templates.
 
 context processor for the django templates that provides content_settings object into template as CONTENT_SETTINGS.
 
+
 ## functools
+
+
 
 in the same way as python has functools, the module also has a few functions
 to help with the function manipulation.
@@ -142,7 +178,10 @@ Returns a function that performs an 'or' operation on multiple functions.
 
 Returns a function that performs a 'not' operation on a function.
 
+
 ## middlewares
+
+
 
 Available middlewares for the content settings.
 
@@ -152,7 +191,10 @@ the middleware required for previewing the content settings on the site.
 
 It checks content_settings.can_preview_on_site permission for the user and if the user has it, then the middleware will preview the content settings for the user.
 
+
 ## models
+
+
 
 Django Models for the content settings.
 
@@ -202,7 +244,10 @@ Contains history of the user's preview settings. Because the settings can also c
 
 Making a record in the history of the user's preview settings.
 
+
 ## permissions
+
+
 
 A list of functions that are used as values for type attributes such as `fetch_permission`, `view_permission`, `update_permission`, and `view_history_permission`.
 
@@ -230,7 +275,10 @@ Returns True if the user is active and a superuser.
 
 Returns a function that checks if the user has a specific permission.
 
+
 ## signals
+
+
 
 the module is used for connecting signals to the content settings.
 
@@ -242,7 +290,10 @@ update the stored checksum of the settings.
 
 Trigger on_change and on_change_commited for the content setting
 
+
 ## store
+
+
 
 the module is used for collecting information.
 
@@ -284,11 +335,14 @@ add a setting to the admin head.
 
 get the admin head.
 
-### def get_admin_raw_js()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L98)</sup>
+### def get_admin_raw_js()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L100)</sup>
 
 get the admin raw js.
 
+
 ## tags
+
+
 
 the functions that can be used for `CONTENT_SETTINGS_TAGS` and generate tags for the content settings based on setting name, type and value.
 
@@ -302,7 +356,10 @@ the name of the tag can be changed in `CONTENT_SETTINGS_TAG_CHANGED` django sett
 
 returns a tag with the name of the app that uses the setting.
 
+
 ## utils
+
+
 
 A set of available utilites
 
@@ -314,7 +371,10 @@ Returns an iterator of classes that are subclasses of the given class.
 
 Returns an iterator of tuple with module and class name that are subclasses of the given class.
 
+
 ## views
+
+
 
 Those are the views can be used in the Integration with the Project.
 
@@ -365,7 +425,10 @@ or combinations of them
 FetchSettingsView.as_view(names=(gen_startswith("IS_"), "TITLE")),
 ```
 
+
 ## types.array
+
+
 
 Types that convert a string into a list of values.
 
@@ -428,7 +491,10 @@ split_type attribute is used to specify the type of the values. It can be a dict
 
 SplitByFirstLine where the default value will be chosen by the current language
 
+
 ## types.basic
+
+
 
 The most basic types for the content settings. SimpleString is used as the base for all other types.
 
@@ -699,7 +765,10 @@ Decimal setting type.
 
 Password setting type. It is not possible to fetch the value using API. In the admin panel, the value is hidden.
 
+
 ## types.datetime
+
+
 
 Types that convert a string into a datetime, date, time or timedelta object.
 
@@ -750,25 +819,28 @@ Attributes:
 
 Converts into a timedelta object.
 
+
 ## types.each
+
+
 
 EachMixin is the main mixin of the module, which allows types to have subtypes, that check, preview and converts the structure of the value.
 
 For example `array.TypedStringsList`
 
-### class Item(BaseEach)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/each.py#L72)</sup>
+### class Item(BaseEach)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/each.py#L70)</sup>
 
 Converts each element of the array into a specific type `cs_type`
 
-### class Keys(BaseEach)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/each.py#L143)</sup>
+### class Keys(BaseEach)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/each.py#L141)</sup>
 
 Converts values of the specific keys into specific types `cs_types`
 
-### class Values(BaseEach)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/each.py#L244)</sup>
+### class Values(BaseEach)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/each.py#L242)</sup>
 
 Converts each value of the given dict into `cs_type`
 
-### class EachMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/each.py#L316)</sup>
+### class EachMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/each.py#L314)</sup>
 
 Attributes:
 
@@ -776,13 +848,19 @@ Attributes:
 - `each_suffix_use` - how to use the suffixes. Can be `USE_OWN`, `USE_PARENT`, `SPLIT_OWN`, `SPLIT_PARENT`
 - `each_suffix_splitter` - the string that separates the suffixes. Applicable only when `each_suffix_use` is `SPLIT_OWN` or `SPLIT_PARENT`
 
+
 ## types.lazy
+
+
 
 Classes that uses for lazy loading of objects.
 
 Check `BaseString.lazy_give` and `conf.lazy_prefix`
 
+
 ## types.markup
+
+
 
 The module contains types of different formats such as JSON, YAML, CSV, and so on.
 
@@ -815,7 +893,10 @@ SimpleCSV(csv_fields={"name": SimpleString(), "price": SimpleDecimal()})
 SimpleCSV(csv_fields=["name", "price"], csv_fields_list_type=SimpleString())
 ```
 
+
 ## types.mixins
+
+
 
 
 
@@ -879,7 +960,10 @@ Mixin shows links to preview different suffixes of the value in the admin previe
 
 Mixin that adds actions to the admin preview.
 
+
 ## types.template
+
+
 
 One of the most complicated module contains callable types. The Python object for those types usually needs to be called.
 
@@ -998,7 +1082,10 @@ Same as `SimpleExec` but returns only one key (from attribute `one_key_name`) fr
 
 Same as `SimpleExecNoCall` but returns only one key (from attribute `one_key_name`) from the result dict.
 
+
 ## types.validators
+
+
 
 A list of functions that are used as values for validators attribute of a type.
 
@@ -1028,7 +1115,10 @@ Same as gen_call_validator, but only generates one arg.
 
 Same as gen_call_validator, but only generates the dict for kwargs.
 
+
 ## defaults.collections
+
+
 
 defaults collections for using in `CONTENT_SETTINGS_DEFAULTS`.
 
@@ -1049,23 +1139,26 @@ CONTENT_SETTINGS_DEFAULTS = [
 ]
 ```
 
-### def codemirror_python(path: str = DEFAULT_CODEMIRROR_PATH, class_attr: str = 'codemirror_python')<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/collections.py#L29)</sup>
+### def codemirror_python(path: str = DEFAULT_CODEMIRROR_PATH, class_attr: str = 'codemirror_python')<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/collections.py#L48)</sup>
 
 Replace Textarea with CodeMirror for python code for SimpleEval and SimpleExec.
 
-### def codemirror_json(path: str = DEFAULT_CODEMIRROR_PATH, class_attr: str = 'codemirror_json')<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/collections.py#L59)</sup>
+### def codemirror_json(path: str = DEFAULT_CODEMIRROR_PATH, class_attr: str = 'codemirror_json')<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/collections.py#L71)</sup>
 
 Replace Textarea with CodeMirror for json code for SimpleJSON.
 
-### def codemirror_yaml(path: str = DEFAULT_CODEMIRROR_PATH, class_attr: str = 'codemirror_yaml')<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/collections.py#L86)</sup>
+### def codemirror_yaml(path: str = DEFAULT_CODEMIRROR_PATH, class_attr: str = 'codemirror_yaml')<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/collections.py#L91)</sup>
 
 Replace Textarea with CodeMirror for yaml code for SimpleYAML.
 
-### def codemirror_all(path: str = DEFAULT_CODEMIRROR_PATH, class_attr_prefix: str = 'codemirror_')<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/collections.py#L112)</sup>
+### def codemirror_all(path: str = DEFAULT_CODEMIRROR_PATH, class_attr_prefix: str = 'codemirror_')<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/collections.py#L111)</sup>
 
 Replace Textarea with CodeMirror for python, json and yaml code.
 
+
 ## defaults.context
+
+
 
 
 
@@ -1093,7 +1186,10 @@ Generator for all modifiers for the given setting.
 
 Update paramas of the setting type by applying all of the modifiers from the defaults context.
 
+
 ## defaults.filters
+
+
 
 Functions that can be used as filters for the `DEFAULTS` setting.
 
@@ -1117,7 +1213,10 @@ Allow only settings with the exact full type name or parent type name. The name 
 Args:
     name (str): The exact full name to match, including the module.
 
+
 ## defaults.modifiers
+
+
 
 Modifiers are functions that take kwargs and return updates for that dict.
 
@@ -1203,27 +1302,27 @@ unite that modifies a set by removing given values.
 
 unite that modifies a tuple by adding new values in it.
 
-### class unite_dict_update(unite)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L168)</sup>
+### class unite_dict_update(unite)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L170)</sup>
 
 unite that modifies a dictionary by updating it with new values.
 
-### def add_tags(tags: Iterable[str])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L177)</sup>
+### def add_tags(tags: Iterable[str])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L185)</sup>
 
 add tags to the setting
 
-### def remove_tags(tags: Iterable[str])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L184)</sup>
+### def remove_tags(tags: Iterable[str])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L192)</sup>
 
 Removes tags from the update context.
 
-### def add_tag(tag: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L191)</sup>
+### def add_tag(tag: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L199)</sup>
 
 same as `add_tags` but only one.
 
-### def remove_tag(tag: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L198)</sup>
+### def remove_tag(tag: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L206)</sup>
 
 same as `remove_tags` but only one.
 
-### class unite_str(unite)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L205)</sup>
+### class unite_str(unite)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L213)</sup>
 
 unite that modifies a string by formatting it.
 
@@ -1231,18 +1330,27 @@ Args:
     _format: A string to format the value use `{new_value}` as a placeholder for the passed value in kwargs and `{old_value}` as a placeholder for the value in the update context.
     **kwargs: Arbitrary keyword arguments.
 
-### def help_prefix(prefix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L229)</sup>
+### def help_prefix(prefix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L237)</sup>
 
 add prefix to help
 
-### def help_suffix(suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L236)</sup>
+### def help_suffix(suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L244)</sup>
 
 add suffix to help
 
-### def add_admin_head(css: Iterable[str] = (), js: Iterable[str] = (), css_raw: Iterable[str] = (), js_raw: Iterable[str] = ())<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L242)</sup>
+### def add_admin_head(css: Iterable[str] = (), js: Iterable[str] = (), css_raw: Iterable[str] = (), js_raw: Iterable[str] = ())<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L251)</sup>
 
 add css and js to the admin head
 
-### def update_widget_attrs()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L248)</sup>
+* css -> admin_head_css
+* js -> admin_head_js
+* css_raw -> admin_head_css_raw
+* js_raw -> admin_head_js_raw
+
+### class add_widget_class(unite_dict_update)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L273)</sup>
+
+add widget class or classes splited by space.
+
+### def update_widget_attrs()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/defaults/modifiers.py#L299)</sup>
 
 update widget attrs

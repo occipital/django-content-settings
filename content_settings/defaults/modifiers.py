@@ -164,7 +164,7 @@ class unite_tuple_add(unite):
             old_value = kw
         else:
             old_value = ()
-        return tuple(value) + old_value
+        return tuple(value) + tuple(old_value)
 
 
 class unite_dict_update(unite):
@@ -256,19 +256,53 @@ def add_admin_head(
 ) -> TModifier:
     """
     add css and js to the admin head
+
+    * css -> admin_head_css
+    * js -> admin_head_js
+    * css_raw -> admin_head_css_raw
+    * js_raw -> admin_head_js_raw
     """
     return unite_tuple_add(
-        admin_head_css=tuple(css),
-        admin_head_js=tuple(js),
-        admin_head_css_raw=tuple(css_raw),
-        admin_head_js_raw=tuple(js_raw),
+        **({"admin_head_css": css} if css else {}),
+        **({"admin_head_js": js} if js else {}),
+        **({"admin_head_css_raw": css_raw} if css_raw else {}),
+        **({"admin_head_js_raw": js_raw} if js_raw else {}),
     )
+
+
+class add_widget_class(unite_dict_update):
+    """
+    add widget class or classes splited by space.
+    """
+
+    def __init__(self, class_name: str):
+        super().__init__(widget_attrs={"class": class_name})
+
+    def process(
+        self, value: Dict[str, Any], up: Dict[str, Any], kw: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        ret = super().process(value, up, kw)
+        if up is NotSet and kw is NotSet:
+            return ret
+
+        ret["class"] = " ".join(
+            set(value["class"].split())
+            | (
+                set(up["class"].split())
+                if up is not NotSet and "class" in up
+                else set()
+            )
+            | (
+                set(kw["class"].split())
+                if kw is not NotSet and "class" in kw
+                else set()
+            )
+        )
+        return ret
 
 
 def update_widget_attrs(**kwargs) -> TModifier:
     """
     update widget attrs
     """
-    if "class_attr" in kwargs:
-        kwargs["class"] = kwargs.pop("class_attr")
     return unite_dict_update(widget_attrs=kwargs)

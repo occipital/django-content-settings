@@ -79,33 +79,35 @@ def md_from_file(file_path):
 
 
 module_list = []
+main_lines = []
 
-with open(os.path.join("docs", "source.md"), "w") as fh:
-    for dirname, dirs, files in os.walk(SOURCE_FOLDER):
-        if dirname.endswith("__pycache__"):
+for dirname, dirs, files in os.walk(SOURCE_FOLDER):
+    if dirname.endswith("__pycache__"):
+        continue
+
+    for name in sorted(files):
+        if not name.endswith(".py"):
             continue
 
-        for name in sorted(files):
-            if not name.endswith(".py"):
-                continue
+        mddoc = "".join(md_from_file(os.path.join(dirname, name)))
+        if not mddoc:
+            continue
 
-            mddoc = "".join(md_from_file(os.path.join(dirname, name)))
-            if not mddoc:
-                continue
+        # Save generated doc to the docfile
 
-            # Save generated doc to the docfile
+        dir = dirname[len(SOURCE_FOLDER) + 1 :]
+        module_name = ".".join(Path(dir).parts + (os.path.splitext(name)[0],))
 
-            dir = dirname[len(SOURCE_FOLDER) + 1 :]
-            module_name = ".".join(Path(dir).parts + (os.path.splitext(name)[0],))
+        main_lines.append(f"\n\n## {module_name}")
+        module_list.append(f"- [{module_name}](#{module_name.replace('.', '')})")
 
-            fh.write(f"\n\n## {module_name}")
-            module_list.append(f"- [{module_name}](#{module_name.replace('.', '')})")
+        main_lines.append("\n\n")
+        main_lines.append(mddoc)
 
-            fh.write("\n\n")
-            fh.write(mddoc)
+with open(os.path.join("docs", "source.md"), "w") as fh:
 
-    # Write the module list at the beginning of the file
-    fh.seek(0, 0)
     fh.write("# Module List\n\n")
     fh.write("\n".join(module_list))
     fh.write("\n\n")
+
+    fh.write("\n".join(main_lines))

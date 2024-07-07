@@ -3,15 +3,15 @@ import pytest
 from content_settings.defaults.filters import any_name, name_exact
 from content_settings.defaults.modifiers import (
     set_if_missing,
-    unite_set_remove,
     add_tags,
-    remove_tags,
     add_tag,
     remove_tag,
     help_prefix,
     help_suffix,
     NotSet,
     add_admin_head,
+    update_widget_attrs,
+    add_widget_class,
 )
 from content_settings.defaults.context import (
     defaults,
@@ -241,3 +241,94 @@ def test_add_admin_head():
             "admin_head_css_raw": (".style",),
             "admin_head_js_raw": ("console.log",),
         }
+
+
+def test_add_admin_head_with_raw_css_set():
+    with defaults(
+        add_admin_head(
+            css=["a.css"], js=["b.js"], css_raw=[".style"], js_raw=["console.log"]
+        )
+    ):
+        assert process_modifiers({"admin_head_css_raw": ["gtt()"]}) == {
+            "admin_head_css": ("a.css",),
+            "admin_head_js": ("b.js",),
+            "admin_head_css_raw": (".style", "gtt()"),
+            "admin_head_js_raw": ("console.log",),
+        }
+
+
+def test_add_admin_head_with_two_conexts():
+    with defaults(add_admin_head(css=["a.css"])):
+        with defaults(add_admin_head(css=["b.css"])):
+            assert process_modifiers({"admin_head_css": ["c.css"]}) == {
+                "admin_head_css": ("b.css", "a.css", "c.css"),
+            }
+
+
+def test_update_widget_attrs_options():
+    with defaults(update_widget_attrs(options="mike")):
+        assert process_modifiers({}) == {"widget_attrs": {"options": "mike"}}
+
+
+def test_update_widget_attrs_options_with_existing_options():
+    with defaults(update_widget_attrs(options="mike")):
+        assert process_modifiers({"widget_attrs": {"options": "john"}}) == {
+            "widget_attrs": {"options": "john"}
+        }
+
+
+def test_update_widget_attrs_options_and_style_with_existing_options():
+    with defaults(update_widget_attrs(options="mike", style="bold")):
+        assert process_modifiers({"widget_attrs": {"options": "john"}}) == {
+            "widget_attrs": {"options": "john", "style": "bold"}
+        }
+
+
+def test_update_widget_attrs_options_and_style_in_double_context_with_existing_options():
+    with defaults(update_widget_attrs(options="mike", style="bold")):
+        with defaults(update_widget_attrs(style="italic")):
+            assert process_modifiers({"widget_attrs": {"options": "john"}}) == {
+                "widget_attrs": {"options": "john", "style": "italic"}
+            }
+
+
+def test_add_widget_class():
+    with defaults(add_widget_class("mike")):
+        assert process_modifiers({}) == {"widget_attrs": {"class": "mike"}}
+
+
+def test_add_widget_class_with_existing_class():
+    with defaults(add_widget_class("mike")):
+        assert set(
+            process_modifiers({"widget_attrs": {"class": "john"}})["widget_attrs"][
+                "class"
+            ].split()
+        ) == {"john", "mike"}
+
+
+def test_add_widget_class_with_two_contexts():
+    with defaults(add_widget_class("mike")):
+        with defaults(add_widget_class("john")):
+            assert set(process_modifiers({})["widget_attrs"]["class"].split()) == {
+                "john",
+                "mike",
+            }
+
+
+def test_add_widget_class_with_two_contexts_and_existed():
+    with defaults(add_widget_class("mike")):
+        with defaults(add_widget_class("john")):
+            assert set(
+                process_modifiers({"widget_attrs": {"class": "bob"}})["widget_attrs"][
+                    "class"
+                ].split()
+            ) == {"bob", "john", "mike"}
+
+
+def test_add_widget_class_with_existing_class_by_adding_two():
+    with defaults(add_widget_class("mike bob")):
+        assert set(
+            process_modifiers({"widget_attrs": {"class": "john"}})["widget_attrs"][
+                "class"
+            ].split()
+        ) == {"bob", "john", "mike"}
