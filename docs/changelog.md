@@ -6,6 +6,19 @@
 
 [Issuses left for releasing v1](https://github.com/occipital/django-content-settings/labels/v1)
 
+### 0.17 CodeMirror
+
+* new attributes for css and js
+    * `admin_head_css: Tuple[str] = ()`
+    * `admin_head_js: Tuple[str] = ()`
+    * `admin_head_css_raw: Tuple[str] = ()`
+    * `admin_head_js_raw: Tuple[str] = ()`
+* new `defaults.modifiers`
+    * `update_widget_attrs`
+    * `add_widget_class`
+    * `add_admin_head`
+* `defaults.collections` - allows you to add [CodeMirror 5](https://codemirror.net/5/) support
+
 ### 0.16
 
 * remove `urls.py` now the only quick way to connect API is to use [Views](api.md)
