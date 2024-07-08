@@ -21,7 +21,6 @@ from .basic import SimpleText
 from .mixins import CallToPythonMixin, GiveCallMixin, HTMLMixin
 from .validators import call_validator, gen_signle_arg_call_validator
 from . import PREVIEW, required
-from ..permissions import superuser
 
 
 class STATIC_INCLUDES(Enum):
