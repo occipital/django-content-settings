@@ -501,6 +501,9 @@ class EmailString(SimpleString):
     help_format: str = "Email"
     widget_attrs: dict = {"style": "max-width: 600px; width: 100%"}
 
+    def json_view_value(self, value: Any, **kwargs) -> Any:
+        return f'"{value}"'
+
 
 class SimpleInt(SimpleString):
     """
@@ -511,10 +514,14 @@ class SimpleInt(SimpleString):
     cls_field: forms.Field = forms.IntegerField
     help_format: str = "Any number"
 
+    def json_view_value(self, value: Any, **kwargs) -> Any:
+        return str(value)
+
 
 class SimpleBool(SimpleString):
     """
     Boolean setting type.
+
     Attributes:
     - yeses (Tuple[str]): Accepted values for True.
     - noes (Tuple[str]): Accepted values for False.
@@ -546,15 +553,25 @@ class SimpleBool(SimpleString):
         yield "boolean (True/False) value. "
         yield f"Accepted values: {', '.join(self.explained_accepted_values)}"
 
+    def json_view_value(self, value: Any, **kwargs) -> Any:
+        return "true" if value else "false"
+
 
 class SimpleDecimal(SimpleString):
     """
     Decimal setting type.
+
+    Attributes:
+    - decimal_json_as_string (bool): set False if you want to return the decimal as a float in the JSON view.
     """
 
     admin_preview_as: PREVIEW = PREVIEW.PYTHON
     cls_field: forms.Field = forms.DecimalField
     help_format: str = "Decimal number with floating point"
+    decimal_json_as_string: bool = True
+
+    def json_view_value(self, value: Any, **kwargs) -> Any:
+        return f'"{value}"' if self.decimal_json_as_string else str(value)
 
 
 class SimplePassword(SimpleString):
