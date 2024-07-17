@@ -22,3 +22,7 @@ def adjust_id_params(params):
                 yield pytest.param(*v, None, id=id)
 
     return list(_())
+
+
+def extract_messages(resp):
+    return [m.message for m in resp.context["messages"]]

@@ -50,6 +50,8 @@ ADMIN_CHECKSUM_CHECK_BEFORE_SAVE = get_setting(
     "ADMIN_CHECKSUM_CHECK_BEFORE_SAVE", False
 )
 
+CHAIN_VALIDATE = get_setting("CHAIN_VALIDATE", True)
+
 assert isinstance(USER_DEFINED_TYPES, list), "USER_DEFINED_TYPES must be a list"
 assert len(USER_DEFINED_TYPES) == len(
     set([val[0] for val in USER_DEFINED_TYPES])

@@ -8,17 +8,21 @@ from typing import Any, Callable, Optional, List, Set, Dict, Tuple
 from functools import cached_property
 
 from django.apps import apps
+from django.core.exceptions import ValidationError
 
 from .types.basic import BaseSetting
 from .caching import (
     get_value,
+    get_py_value,
+    get_raw_value,
     get_type_by_name,
     get_all_names,
     get_checksum_from_local,
     get_checksum_from_user_local,
 )
-from .settings import USER_DEFINED_TYPES, TAGS
+from .settings import USER_DEFINED_TYPES, TAGS, CHAIN_VALIDATE
 from .store import add_app_name, get_admin_head, add_admin_head, get_admin_raw_js
+from .context_managers import content_settings_context
 
 USER_DEFINED_TYPES_INSTANCE = {}
 USER_DEFINED_TYPES_INITIAL = {}
@@ -197,6 +201,26 @@ def split_attr(value: str) -> Tuple[Optional[str], str, Optional[str]]:
         return prefix, name, "__".join(parts).lower()
 
     return prefix, name, None
+
+
+def validate_all_with_context(context: Dict[str, Any]):
+    """
+    validate all settings with the given context to make sure all of them are valid.
+
+    Do not perform if `CONTENT_SETTINGS_CHAIN_VALIDATE = False`
+    """
+    if not CHAIN_VALIDATE:
+        return
+
+    with content_settings_context(**context):
+        for name, cs_type in ALL.items():
+            try:
+                if name in context:
+                    cs_type.validate_raw_value(context[name])
+                else:
+                    cs_type.validate(get_py_value(name))
+            except Exception as e:
+                raise ValidationError(f"Error validating {name}: {e}")
 
 
 def get_str_tags(

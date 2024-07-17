@@ -23,7 +23,7 @@ def preivew_on_site(get_response):
         if not preview_settings:
             return get_response(request)
 
-        with content_settings_context(**preview_settings):
+        with content_settings_context(**preview_settings, _raise_errors=False):
             return get_response(request)
 
     return middleware

@@ -17,7 +17,11 @@ from content_settings.types.mixins import (
     DictSuffixesPreviewMixin,
 )
 from content_settings.types.markup import SimpleCSV
-from content_settings.types.template import DjangoModelTemplate, DjangoTemplateNoArgs
+from content_settings.types.template import (
+    DjangoModelTemplate,
+    DjangoTemplateNoArgs,
+    SimpleEval,
+)
 from content_settings.types.array import SplitTranslation
 from content_settings import permissions
 from content_settings.defaults.context import defaults
@@ -154,4 +158,30 @@ REFFERAL_URL = URLString(
     "https://checkio.org",
     view_history_permission=permissions.superuser,
     help="url",
+)
+
+
+XYARCHER_DEVIDER_SUPER = SimpleInt(
+    "10",
+    update_permission=permissions.superuser,
+    help="The devider for archer (with only superuser permission to update)",
+)
+
+# testing circle updates
+
+XARCHER_DEVIDER = SimpleInt(
+    "10",
+    help="The devider for archer",
+)
+
+XSHOT_CALCULATION = SimpleEval(
+    "value / CONTENT_SETTINGS.YARCHER_DEVIDER()",
+    template_args_default={"value": 100},
+    help="The calculation for archer",
+)
+
+# just not to have XSHOT_CALCULATION on the same page with XARCHER_DEVIDER
+YARCHER_DEVIDER = SimpleEval(
+    "CONTENT_SETTINGS.XARCHER_DEVIDER",
+    help="Same as XARCHER_DEVIDER",
 )

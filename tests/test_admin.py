@@ -9,6 +9,8 @@ from content_settings.models import UserPreview, ContentSetting, UserPreviewHist
 
 from tests.books.models import Book
 
+from .tools import extract_messages
+
 pytestmark = [pytest.mark.django_db(transaction=True)]
 
 
@@ -579,6 +581,9 @@ def test_admin_preview_on_site_add_from_change_page_update(webtest_admin, testad
 
 
 def test_admin_preview_on_site_applied(webtest_admin, testadmin):
+    """
+    Successfully applied preview, preview should be deleted, and the raw value of the setting should be updated
+    """
     UserPreview.objects.create(
         user=testadmin,
         name="TITLE",
@@ -593,6 +598,130 @@ def test_admin_preview_on_site_applied(webtest_admin, testadmin):
 
     assert UserPreview.objects.all().count() == 0
     assert ContentSetting.objects.get(name="TITLE").value == "Supper New Title"
+
+    resp = webtest_admin.get("/admin/content_settings/contentsetting/")
+    assert resp.status_int == 200
+    assert extract_messages(resp) == ["Preview settings applied"]
+
+
+def test_admin_preview_appliy_fail_no_preview(webtest_admin, testadmin):
+    """
+    Trying to apply preview when there is no preview settings
+    """
+    resp = webtest_admin.get(
+        "/admin/content_settings/contentsetting/apply-preview-on-site/"
+    )
+    assert resp.status_int == 302
+
+    assert UserPreview.objects.all().count() == 0
+
+    resp = webtest_admin.get("/admin/content_settings/contentsetting/")
+    assert resp.status_int == 200
+    assert extract_messages(resp) == ["No preview settings to apply"]
+
+
+def test_admin_preview_appliy_fail_validation(webtest_admin, testadmin):
+    """
+    Trying to apply preview when one of the previewed values is not valid
+    """
+    UserPreview.objects.create(
+        user=testadmin,
+        name="XARCHER_DEVIDER",
+        from_value="10",
+        value="ten",
+    )
+
+    resp = webtest_admin.get(
+        "/admin/content_settings/contentsetting/apply-preview-on-site/"
+    )
+    assert resp.status_int == 302
+
+    assert UserPreview.objects.all().count() == 1
+    assert ContentSetting.objects.get(name="XARCHER_DEVIDER").value == "10"
+
+    resp = webtest_admin.get("/admin/content_settings/contentsetting/")
+    assert resp.status_int == 200
+    assert extract_messages(resp) == ["XARCHER_DEVIDER: ['Enter a whole number.']"]
+
+
+def test_admin_preview_appliy_fail_previous_doesnt_match(webtest_admin, testadmin):
+    """
+    Trying to apply preview when the setting was updated after the preview was added
+    """
+    UserPreview.objects.create(
+        user=testadmin,
+        name="XARCHER_DEVIDER",
+        from_value="11",
+        value="0",
+    )
+
+    resp = webtest_admin.get(
+        "/admin/content_settings/contentsetting/apply-preview-on-site/"
+    )
+    assert resp.status_int == 302
+
+    assert UserPreview.objects.all().count() == 1
+    assert ContentSetting.objects.get(name="XARCHER_DEVIDER").value == "10"
+
+    resp = webtest_admin.get("/admin/content_settings/contentsetting/")
+    assert resp.status_int == 200
+    assert extract_messages(resp) == [
+        "The value XARCHER_DEVIDER was changed before applying the preview (check and apply again)"
+    ]
+
+
+def test_admin_preview_appliy_fail_previous_doesnt_match_but_ignored(
+    webtest_admin, testadmin
+):
+    """
+    Trying to apply preview when the setting was updated before to the value for the preview settings - in that case preview was removed
+    """
+    UserPreview.objects.create(
+        user=testadmin,
+        name="XARCHER_DEVIDER",
+        from_value="11",
+        value="10",
+    )
+
+    resp = webtest_admin.get(
+        "/admin/content_settings/contentsetting/apply-preview-on-site/"
+    )
+    assert resp.status_int == 302
+
+    assert UserPreview.objects.all().count() == 0
+    assert ContentSetting.objects.get(name="XARCHER_DEVIDER").value == "10"
+
+    resp = webtest_admin.get("/admin/content_settings/contentsetting/")
+    assert resp.status_int == 200
+    assert extract_messages(resp) == [
+        "The value XARCHER_DEVIDER was changed already applied"
+    ]
+
+
+def test_admin_preview_appliy_fail_permission(webtest_staff, teststaff):
+    """
+    Trying to apply preview for staff user who doesn't have permissions to update XYARCHER_DEVIDER_SUPER
+    """
+    UserPreview.objects.create(
+        user=teststaff,
+        name="XYARCHER_DEVIDER_SUPER",
+        from_value="10",
+        value="0",
+    )
+
+    resp = webtest_staff.get(
+        "/admin/content_settings/contentsetting/apply-preview-on-site/"
+    )
+    assert resp.status_int == 302
+
+    assert UserPreview.objects.all().count() == 1
+    assert ContentSetting.objects.get(name="XYARCHER_DEVIDER_SUPER").value == "10"
+
+    resp = webtest_staff.get("/admin/content_settings/contentsetting/")
+    assert resp.status_int == 200
+    assert extract_messages(resp) == [
+        "You don't have permissions to update the setting XYARCHER_DEVIDER_SUPER"
+    ]
 
 
 def test_admin_preview_on_site_reset(webtest_admin, testadmin):
@@ -708,3 +837,123 @@ def test_admin_head(webtest_admin):
             resp.content.decode("utf-8").count('console.log("Hello, ADMIN HEAD JS");')
             == 1
         )
+
+
+def test_admin_changelist_changechain_valid(webtest_admin, testadmin):
+    """
+    (changelist interface)
+    we have 3 variables:
+    XARCHER_DEVIDER -> YARCHER_DEVIDER -> XSHOT_CALCULATION
+
+    by changing XARCHER_DEVIDER to 1 we should have no validation error for variable XSHOT_CALCULATION
+    """
+
+    resp = webtest_admin.get(
+        "/admin/content_settings/contentsetting/?q=XARCHER_DEVIDER"
+    )
+    assert resp.status_int == 200
+
+    form = resp.forms["changelist-form"]
+    form["form-0-value"] = "1"
+    resp = form.submit(name="_save")
+
+    assert resp.status_int == 302
+
+
+def test_admin_changelist_changechain_to_zero(webtest_admin, testadmin):
+    """
+    (changelist interface)
+    we have 3 variables:
+    XARCHER_DEVIDER -> YARCHER_DEVIDER -> XSHOT_CALCULATION
+
+    by changing XARCHER_DEVIDER to 0 we should have a validation error for variable XSHOT_CALCULATION
+    """
+
+    resp = webtest_admin.get(
+        "/admin/content_settings/contentsetting/?q=XARCHER_DEVIDER"
+    )
+    assert resp.status_int == 200
+
+    form = resp.forms["changelist-form"]
+    form["form-0-value"] = "0"
+    resp = form.submit(name="_save")
+
+    assert resp.status_int == 200
+    assert resp.context["errors"] == [
+        "Error validating XSHOT_CALCULATION: ['division by zero']"
+    ]
+
+
+def test_admin_single_changechain_valid(webtest_admin, testadmin):
+    """
+    (single change interface)
+    we have 3 variables:
+    XARCHER_DEVIDER -> YARCHER_DEVIDER -> XSHOT_CALCULATION
+
+    by changing XARCHER_DEVIDER to 1 we should have no validation error for variable XSHOT_CALCULATION
+    """
+
+    cs = ContentSetting.objects.get(name="XARCHER_DEVIDER")
+
+    resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/change/")
+    assert resp.status_int == 200
+
+    form = resp.forms["contentsetting_form"]
+    form["value"] = "1"
+    resp = form.submit(name="_save")
+
+    assert resp.status_int == 302
+    cs.refresh_from_db()
+    assert cs.value == "1"
+
+
+def test_admin_single_changechain_to_zero(webtest_admin, testadmin):
+    """
+    (single change interface)
+    we have 3 variables:
+    XARCHER_DEVIDER -> YARCHER_DEVIDER -> XSHOT_CALCULATION
+
+    by changing XARCHER_DEVIDER to 0 we should have a validation error for variable XSHOT_CALCULATION
+    """
+
+    cs = ContentSetting.objects.get(name="XARCHER_DEVIDER")
+
+    resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/change/")
+    assert resp.status_int == 200
+
+    form = resp.forms["contentsetting_form"]
+    form["value"] = "0"
+    resp = form.submit(name="_save")
+
+    assert resp.status_int == 200
+    assert resp.context["errors"] == [
+        ["Error validating XSHOT_CALCULATION: ['division by zero']"]
+    ]
+    cs.refresh_from_db()
+    assert cs.value == "10"
+
+
+def test_admin_preview_appliy_fail_chained(webtest_admin, testadmin):
+    """
+    Trying to apply preview for XARCHER_DEVIDER if it has a chain reaction to XSHOT_CALCULATION so the value wasn't applied
+    """
+    UserPreview.objects.create(
+        user=testadmin,
+        name="XARCHER_DEVIDER",
+        from_value="10",
+        value="0",
+    )
+
+    resp = webtest_admin.get(
+        "/admin/content_settings/contentsetting/apply-preview-on-site/"
+    )
+    assert resp.status_int == 302
+
+    assert UserPreview.objects.all().count() == 1
+    assert ContentSetting.objects.get(name="XARCHER_DEVIDER").value == "10"
+
+    resp = webtest_admin.get("/admin/content_settings/contentsetting/")
+    assert resp.status_int == 200
+    assert extract_messages(resp) == [
+        "[\"Error validating XSHOT_CALCULATION: ['division by zero']\"]"
+    ]

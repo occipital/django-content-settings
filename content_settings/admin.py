@@ -1,3 +1,4 @@
+from typing import Any
 import urllib.parse
 from collections import defaultdict
 import inspect
@@ -23,6 +24,7 @@ from django.contrib import messages
 from django.shortcuts import resolve_url
 from django.shortcuts import get_object_or_404
 from django.utils.html import escape
+from django.core.exceptions import ValidationError
 
 from .models import (
     ContentSetting,
@@ -32,7 +34,11 @@ from .models import (
     UserPreviewHistory,
 )
 from .context_managers import content_settings_context
-from .conf import USER_DEFINED_TYPES_INSTANCE, content_settings
+from .conf import (
+    USER_DEFINED_TYPES_INSTANCE,
+    content_settings,
+    validate_all_with_context,
+)
 from .settings import (
     USER_TAGS,
     USER_DEFINED_TYPES,
@@ -124,9 +130,9 @@ class SettingsChangeList(ChangeList):
         )
 
 
-class ContentSettinForm(ModelForm):
+class ContentSettingForm(ModelForm):
     def __init__(self, *args, **kwargs):
-        super(ContentSettinForm, self).__init__(*args, **kwargs)
+        super(ContentSettingForm, self).__init__(*args, **kwargs)
         if self.instance.name:
             cs_type = get_type_by_name(self.instance.name)
             if cs_type:
@@ -138,12 +144,19 @@ class ContentSettinForm(ModelForm):
                 choices=[(v[0], v[2]) for v in USER_DEFINED_TYPES]
             )
 
-    def save(self, *args, **kwargs):
-        return super().save(*args, **kwargs)
-
     class Meta:
         model = ContentSetting
         fields = ["value"]
+
+
+# we want to have a separate form for a single edit interface
+# because we want to validate the chain of content setting changes
+class ContentSettingFormWithChainValidation(ContentSettingForm):
+    def clean(self):
+        ret = super().clean()
+        if self.instance and not self.errors:
+            validate_all_with_context({self.instance.name: self.cleaned_data["value"]})
+        return ret
 
 
 class ContentSettingAdmin(admin.ModelAdmin):
@@ -161,7 +174,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
         "default_value",
     ]
     history_list_display = ["value"]
-    form = ContentSettinForm
+    form = ContentSettingFormWithChainValidation
 
     def save_model(self, request, obj, form, change):
         if user_able_to_update(request.user, obj.name, obj.user_defined_type):
@@ -316,6 +329,22 @@ class ContentSettingAdmin(admin.ModelAdmin):
             return HttpResponseRedirect(request.path)
         return super().changeform_view(request, *args, **kwargs)
 
+    def get_changelist_formset(self, request, **kwargs):
+        # validation of changing this particular value didn't change other values in the chain
+        # this is done by using validate_all_with_context
+        BaseFormset = super().get_changelist_formset(request, **kwargs)
+
+        class ContentSettingFormset(BaseFormset):
+            def clean(self):
+                ret = super().clean()
+                if hasattr(self, "cleaned_data"):
+                    validate_all_with_context(
+                        {data["id"].name: data["value"] for data in self.cleaned_data}
+                    )
+                return ret
+
+        return ContentSettingFormset
+
     def changelist_view(self, request, extra_context=None):
         if request.method == "POST" and not self.full_checksum_valid(request):
             return HttpResponseRedirect(request.path)
@@ -409,7 +438,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
         )
 
     def get_changelist_form(self, request, **kwargs):
-        return ContentSettinForm
+        return ContentSettingForm
 
     def has_delete_permission(self, request, obj=None):
         default_del_permission = super().has_delete_permission(request, obj)
@@ -548,33 +577,130 @@ class ContentSettingAdmin(admin.ModelAdmin):
         )
 
     def apply_preview_on_site(self, request):
-        for preview_setting in UserPreview.objects.filter(user=request.user):
+        """
+        The view that applies collected preview settings to the actual settings.
+
+        Consist of the following stages:
+
+        * validate each value independently
+        * previous value was updated before applying
+        * validate the whole chain of values
+        * apply the values
+
+        Edge cases:
+
+        * preview settings will be automatically removed in case the value is not longer passible to apply
+        * if setting was changed and now it is equal to preview setting - the preview will be removed
+        """
+
+        def redirect_back():
+            return HttpResponseRedirect(
+                request.META.get(
+                    "HTTP_REFERER",
+                    resolve_url("admin:content_settings_contentsetting_changelist"),
+                )
+            )
+
+        preview_context = {
+            p.name: p.value for p in UserPreview.objects.filter(user=request.user)
+        }
+
+        if not preview_context:
+            self.message_user(
+                request, _("No preview settings to apply"), messages.WARNING
+            )
+            return redirect_back()
+
+        apply = True
+        for name, value in preview_context.items():
             try:
-                setting = ContentSetting.objects.get(name=preview_setting.name)
+                setting = ContentSetting.objects.get(name=name)
             except ContentSetting.DoesNotExist:
-                UserPreviewHistory.user_record(
-                    request.user, preview_setting, UserPreviewHistory.STATUS_IGNORED
+                UserPreviewHistory.user_record_by_name(
+                    request.user, name, value, UserPreviewHistory.STATUS_IGNORED
                 )
+                UserPreview.objects.filter(user=request.user, name=name).delete()
+                self.message_user(
+                    request,
+                    _(
+                        "Preview setting %s removed because the setting itself doesn't exist"
+                    )
+                    % name,
+                    messages.WARNING,
+                )
+                apply = False
             else:
-                cs_type = get_type_by_name(preview_setting.name)
-                assert cs_type.can_update(request.user)
-                cs_type.validate_value(preview_setting.value)
+                cs_type = get_type_by_name(name)
+                if not cs_type.can_update(request.user):
+                    self.message_user(
+                        request,
+                        _("You don't have permissions to update the setting %s") % name,
+                        messages.ERROR,
+                    )
+                    apply = False
+                    continue
 
-                UserPreviewHistory.user_record(
-                    request.user, preview_setting, UserPreviewHistory.STATUS_APPLIED
-                )
-                setting.value = preview_setting.value
-                setting.save()
-                HistoryContentSetting.update_last_record_for_name(
-                    setting.name, request.user
-                )
+                try:
+                    cs_type.validate_value(value)
+                except ValidationError as e:
+                    self.message_user(request, name + ": " + str(e), messages.ERROR)
+                    apply = False
+                    continue
 
-            preview_setting.delete()
+                preview = UserPreview.objects.get(user=request.user, name=name)
+                if preview.from_value != setting.value:
+                    if setting.value == preview.value:
+                        UserPreviewHistory.user_record_by_name(
+                            request.user, name, value, UserPreviewHistory.STATUS_IGNORED
+                        )
+                        UserPreview.objects.filter(
+                            user=request.user, name=name
+                        ).delete()
+                        self.message_user(
+                            request,
+                            _("The value %s was changed already applied") % name,
+                            messages.WARNING,
+                        )
+                    else:
+                        self.message_user(
+                            request,
+                            _(
+                                "The value %s was changed before applying the preview (check and apply again)"
+                            )
+                            % name,
+                            messages.WARNING,
+                        )
+                        preview.from_value = setting.value
+                        preview.save()
+                    apply = False
+                    continue
 
+        if not apply:
+            return redirect_back()
+
+        try:
+            validate_all_with_context(preview_context)
+        except ValidationError as e:
+            self.message_user(request, str(e), messages.ERROR)
+            return redirect_back()
+
+        for name, value in preview_context.items():
+            setting = ContentSetting.objects.get(name=name)
+            setting.value = value
+            setting.save()
+            HistoryContentSetting.update_last_record_for_name(
+                setting.name, request.user
+            )
+            UserPreviewHistory.user_record_by_name(
+                request.user, name, value, UserPreviewHistory.STATUS_APPLIED
+            )
+
+        UserPreview.objects.filter(
+            user=request.user, name__in=preview_context.keys()
+        ).delete()
         self.message_user(request, _("Preview settings applied"), messages.SUCCESS)
-        return HttpResponseRedirect(
-            request.META.get("HTTP_REFERER", resolve_url("admin:index"))
-        )
+
+        return redirect_back()
 
     def reset_preview_on_site(self, request):
         for preview_setting in UserPreview.objects.filter(user=request.user):

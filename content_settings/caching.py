@@ -172,13 +172,19 @@ def get_value(name, suffix=None):
     if cs_type is None:
         raise AttributeError(f"{name} is not defined in any content_settings.py file")
 
-    return cs_type.give(DATA.ALL_VALUES[name], suffix)
+    return cs_type.give(get_py_value(name), suffix)
 
 
 def get_raw_value(name):
     assert DATA.POPULATED
 
     return DATA.ALL_RAW_VALUES[name]
+
+
+def get_py_value(name):
+    assert DATA.POPULATED
+
+    return DATA.ALL_VALUES[name]
 
 
 def is_populated():  # better name?

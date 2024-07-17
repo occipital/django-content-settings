@@ -59,6 +59,12 @@ In this default setting, users can tag variables as 'favorites' or 'marked' with
 
 make check of the current checksum before saving data in django admin. If the page is opened for too long, and someone change any settings between page is opened and submited - changes wouldn't be applied.
 
+### `CONTENT_SETTINGS_CHAIN_VALIDATE`
+
+*default: True*
+
+the settings can be connected with each other through the template types or one setting is included into validation of another setting. With having a chain `CONTENT_SETTINGS_CHAIN_VALIDATE = True` the system validates all of the py values before applying a new value.
+
 ## Other
 
 ### `CONTENT_SETTINGS_VALUES_ONLY_FROM_DB`
@@ -107,4 +113,3 @@ Available built in types:
 
 * `"content_settings.tags.changed"` - changed tag to filter only changed settings (the name of the tag can changed in setting `CONTENT_SETTINGS_TAG_CHANGED`)
 * `"content_settings.tags.app_name"` - every setting will have a tag with app name where one was defined
-

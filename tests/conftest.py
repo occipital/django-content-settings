@@ -117,16 +117,22 @@ def webtest_user(django_app_factory, testuser):
 
 
 @pytest.fixture
-def webtest_staff(django_app_factory):
+def teststaff():
     from django.contrib.auth.models import Permission
 
-    user, _ = get_user_model().objects.get_or_create(
-        username="teststaff", is_staff=True
-    )
+    user = get_user_model().objects.get_or_create(
+        username="testadmin", is_staff=True, is_superuser=False
+    )[0]
+
     for codename in ("change_contentsetting", "view_contentsetting"):
         perm = Permission.objects.get(codename=codename)
         user.user_permissions.add(perm)
 
+    return user
+
+
+@pytest.fixture
+def webtest_staff(django_app_factory, teststaff):
     web = django_app_factory(csrf_checks=False)
-    web.set_user(user)
+    web.set_user(teststaff)
     return web

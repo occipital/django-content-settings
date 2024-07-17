@@ -265,5 +265,19 @@ class UserPreviewHistory(models.Model):
             status=status,
         )
 
+    @classmethod
+    def user_record_by_name(
+        cls, user: User, name: str, value: str, status: int = STATUS_CREATED
+    ):
+        """
+        Making a record in the history of the user's preview settings by the name of the setting and the value.
+        """
+        return cls.objects.create(
+            user=user,
+            name=name,
+            value=value,
+            status=status,
+        )
+
     def __str__(self):
         return f"{self.user} - {self.name}"
