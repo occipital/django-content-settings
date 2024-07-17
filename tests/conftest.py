@@ -84,7 +84,7 @@ def pytest_configure(config):
 
 
 @pytest.fixture(autouse=True)
-def reset_all_values():
+def do_reset_all_values():
     from content_settings.caching import reset_all_values
 
     reset_all_values()

@@ -222,6 +222,14 @@ def reset_all_values():
 
     DATA.POPULATED = True
 
+    from .conf import ALL
+
+    for name, cs_type in ALL.items():
+        try:
+            cs_type.validate(get_py_value(name))
+        except Exception as e:
+            raise AssertionError(f"Error validating {name}: {e}")
+
 
 def reset_user_values(db=None, trigger_checksum=None):
 

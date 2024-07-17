@@ -331,6 +331,7 @@ class SimpleString(BaseSetting):
     def validate_raw_value(self, value: str) -> None:
         """
         Validate the text value of the setting.
+        In the validation you only need to make sure the value is possible to be converted into py object.
         """
         for validator in self.get_validators_raw():
             validator(value)
@@ -347,7 +348,7 @@ class SimpleString(BaseSetting):
 
     def validate(self, value: Any):
         """
-        Validate the setting python value.
+        Validate py object. Validate consistency of the object with the project.
         """
         for validator in self.get_validators():
             validator(value)
