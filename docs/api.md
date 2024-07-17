@@ -1,10 +1,29 @@
 # API & Views
 
-## Simple Example
+## Simple Example - FetchAllSettingsView
 
 Sometimes, you need to organize access to your content settings by API for your front-end applications. You can do it yourself since you can access content settings in Python code, but we have a fetching view that can help you simplify organizing content settings into APIs.
 
 All you need to do is to add fetching view into your `urls.py`
+
+```python
+from django.urls import path
+from content_settings.views import FetchAllSettingsView
+
+urlpatterns = [
+    path(
+        "fetch/all/",
+        FetchAllSettingsView.as_view(),
+        name="fetch_all_info",
+    ),
+]
+```
+
+The API call, as a response, gives all registered content settings user has permission to fetch (see `fetch_permission`, will be explained later in the article)
+
+## Group of settings to fetch - FetchSettingsView
+
+When you don't need to fetch all of the settings, but limit the result by specific names
 
 Here is a simple example:
 

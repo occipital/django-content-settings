@@ -123,7 +123,7 @@ def test_get_simple_text_updated_twice():
 
 def test_fetch_suffix():
     client = get_anonymous_client()
-    resp = client.get("/books/fetch/all/")
+    resp = client.get("/books/fetch/all-extended/")
     assert resp.status_code == 200
     assert resp.json()["BOOKS__available_names"] == [
         "Kateryna",

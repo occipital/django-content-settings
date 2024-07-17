@@ -37,6 +37,18 @@ def gen_hastag(tag: str):
     return _
 
 
+def gen_all():
+    """
+    for names attribute of FetchSettingsView, to find all settings
+    """
+
+    def _(request):
+        for name in dir(content_settings):
+            yield name
+
+    return _
+
+
 class FetchSettingsView(View):
     """
     A View for featching settings from the content settings.
@@ -131,3 +143,7 @@ class FetchSettingsView(View):
                 else {}
             ),
         )
+
+
+class FetchAllSettingsView(FetchSettingsView):
+    names = staticmethod(gen_all())
