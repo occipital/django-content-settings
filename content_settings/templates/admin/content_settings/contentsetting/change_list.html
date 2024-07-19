@@ -34,6 +34,17 @@
 div.subitem {
     margin-left: 10px;
 }
+nav[aria-label=Breadcrumbs] {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+nav[aria-label=Breadcrumbs] .breadcrumbs {
+    width: 100%;
+}
+nav[aria-label=Breadcrumbs] .breadcrumbs.breadcrumbs_help {
+    width: initial;
+}
 </style>
 {% endblock %}
 
@@ -73,6 +84,14 @@ div.subitem {
 
 <input type="hidden" name="content_settings_full_checksum" value="{{CONTENT_SETTINGS.full_checksum}}">
 {% endblock%}
+
+{% block breadcrumbs %}
+{{block.super}}
+
+{% if breadcrumbs_help_link %}
+<div class="breadcrumbs breadcrumbs_help"><a href="{{ breadcrumbs_help_link }}">Help</a></div>
+{% endif %}
+{% endblock %}
 
 
 

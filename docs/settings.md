@@ -65,6 +65,12 @@ make check of the current checksum before saving data in django admin. If the pa
 
 the settings can be connected with each other through the template types or one setting is included into validation of another setting. With having a chain `CONTENT_SETTINGS_CHAIN_VALIDATE = True` the system validates all of the py values before applying a new value.
 
+### `CONTENT_SETTINGS_UI_DOC_URL`
+
+*default: https://django-content-settings.readthedocs.io/en/0.18/ui/*
+
+Link to the help page of the UI of Django Content settings. The link is shown in Django Admin panel. If the value is `None` - the link woudn't be shown.
+
 ## Other
 
 ### `CONTENT_SETTINGS_VALUES_ONLY_FROM_DB`

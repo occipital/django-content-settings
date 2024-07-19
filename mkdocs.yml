@@ -5,12 +5,12 @@ nav:
   - Variable Types and Attributeses: types.md
   - Using Variables in your project: access.md
   - User Defined Variables: uservar.md
-  - "[wip] Custom Type": custom.md
   - Enhancements to Admin Panel: admin.md
   - Permissions: permissions.md
   - Defaults Context: defaults.md
   - API & Views: api.md
   - Available Settings: settings.md
+  - User Interface for Django Admin: ui.md
   - How Caching is Organized: caching.md
   - Cookbook: cookbook.md
   - Frequently Asked Questions: faq.md

@@ -44,6 +44,7 @@ from .settings import (
     USER_DEFINED_TYPES,
     PREVIEW_ON_SITE_HREF,
     ADMIN_CHECKSUM_CHECK_BEFORE_SAVE,
+    UI_DOC_URL,
 )
 from .caching import get_type_by_name
 from .utils import class_names
@@ -366,6 +367,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
                     **(extra_context or {}),
                     **self.context_tags(request),
                     **self.context_preview_settings(request),
+                    "breadcrumbs_help_link": UI_DOC_URL,
                 },
             )
 

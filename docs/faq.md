@@ -20,4 +20,15 @@ The function give is designed to adapt data specifically for use in the project'
 
 ### Why it is still version 0?
 
-I'm still working on design of the module, the name of the types might be changes soon. Version 1 - will have a much more stable design
+I'm still working on design of the module, the name of the types might be changes soon. Version 1 - will have a much more stable design.
+
+[The tasks that left for the first version can be found in github issues with tag "v1"](https://github.com/occipital/django-content-settings/labels/v1)
+
+### Can I see the changes on site before applying those to all users
+
+use preview function
+
+### I need to change multiple variables at once to get a desirable effect. If I change variables one by one the user has a chance to see a half working project
+
+* use change view + user tags
+* use preview function
