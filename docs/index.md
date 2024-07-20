@@ -101,7 +101,3 @@ Simple as that, we have a lot of *setting types* you can use `SimpleText`, `Simp
 - [**How to contribute**](contribute.md) - if you are willing to help - welcome to the team.
 - [**Changelog**](changelog.md) - what was introduces in every version.
 - [**Source Doc**](source.md) - we collect all the doc strings in one article for future reference.
-
-It is also very fast thanks to our caching system. [Read more about it](caching.md).
-
-Some fancy things you can find in our [cookbook](cookbook.md).
