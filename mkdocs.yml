@@ -3,7 +3,7 @@ nav:
   - Home: index.md
   - Getting Started: first.md
   - Setting Types and Attributes: types.md
-  - Using Variables in your project: access.md
+  - Using Settings: access.md
   - Permissions: permissions.md
   - Defaults Context: defaults.md
   - API & Views: api.md
