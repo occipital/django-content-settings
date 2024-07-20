@@ -60,14 +60,14 @@ with defaults(add_tags({"general"})):
 
     TITLE = SimpleStringWithAdminHead(
         "Book Store",
-        fetch_permission=permissions.any,
+        fetch_permission="any",
         overwrite_user_defined=True,
         help="The title of the book store",
     )
 
     DESCRIPTION = DjangoTemplateNoArgs(
         "{{CONTENT_SETTINGS.TITLE}} is the best book store in the world",
-        fetch_permission=permissions.any,
+        fetch_permission="any",
         help="The description of the book store",
     )
 

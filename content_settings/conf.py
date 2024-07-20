@@ -23,21 +23,13 @@ from .caching import (
 from .settings import USER_DEFINED_TYPES, TAGS, CHAIN_VALIDATE
 from .store import add_app_name, get_admin_head, add_admin_head, get_admin_raw_js
 from .context_managers import content_settings_context
+from .utils import import_object
 
 USER_DEFINED_TYPES_INSTANCE = {}
 USER_DEFINED_TYPES_INITIAL = {}
 USER_DEFINED_TYPES_NAME = {}
 ALL = {}
 PREFIXSES = {}
-
-
-def import_object(path: str) -> Any:
-    """
-    getting an object from the module by the path. `full.path.to.Object` -> `Object`
-    """
-    parts = path.split(".")
-    module = import_module(".".join(parts[:-1]))
-    return getattr(module, parts[-1])
 
 
 if USER_DEFINED_TYPES:

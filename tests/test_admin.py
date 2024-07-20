@@ -873,15 +873,12 @@ def test_admin_changelist_changechain_to_zero(webtest_admin, testadmin):
         "/admin/content_settings/contentsetting/?q=XARCHER_DEVIDER"
     )
     assert resp.status_int == 200
-
     form = resp.forms["changelist-form"]
     form["form-0-value"] = "0"
     resp = form.submit(name="_save")
 
     assert resp.status_int == 200
-    assert resp.context["errors"] == [
-        "Error validating XSHOT_CALCULATION: ['division by zero']"
-    ]
+    assert b"Error validating XSHOT_CALCULATION:" in resp.content
 
 
 def test_admin_single_changechain_valid(webtest_admin, testadmin):

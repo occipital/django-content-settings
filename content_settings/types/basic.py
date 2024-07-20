@@ -4,7 +4,6 @@ The most basic types for the content settings. SimpleString is used as the base 
 
 from __future__ import annotations
 
-from inspect import isclass
 from functools import cached_property
 from pprint import pformat
 from typing import Optional, Set, Tuple, Union, Any, Callable
@@ -12,45 +11,53 @@ from collections.abc import Iterable
 from json import dumps
 
 from django import forms
+from django.contrib.auth.models import User
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.exceptions import ValidationError
 
 from content_settings.settings import CACHE_SPLITER
 from content_settings.types.lazy import LazyObject
-from content_settings.types import PREVIEW, required, optional, pre, BaseSetting
+from content_settings.types import (
+    PREVIEW,
+    required,
+    optional,
+    pre,
+    BaseSetting,
+    TCallableStr,
+)
 from content_settings.types.mixins import HTMLMixin
-from content_settings.permissions import none, staff
 from content_settings.defaults.context import update_defaults
+from content_settings.utils import call_base_str, func_base_str
 
 
 class SimpleString(BaseSetting):
     """
     A very basic class that returns the string value, the same as a given value.
 
-    Attributes:
+    Attributes (TCallableStr - type for attribute that can be either a string and an import line):
 
     - constant (bool): Whether the setting is constant (can not be changed).
-    - cls_field (forms.CharField): The form field class to use for the setting.
-    - widget (forms.Widget): The form widget to use for the cls_field.
+    - cls_field (TCallableStr): The form field class to use for the setting. For str value class from django.forms.fields is used.
+    - widget (TCallableStr): The form widget to use for the cls_field. For str value class from django.forms.widgets is used.
     - widget_attrs (Optional[dict]): Optional attributes for the widget initiation.
-    - fetch_permission (Callable): `permissions.none` by default. Permission required to fetch the setting in API.
-    - update_permission (Callable): `permissions.staff` by default. Optional permission required to update the setting in Django Admin.
-    - view_permission (Callable): `permissions.staff` by default. Optional permission required to view the setting in Django Admin.
-    - view_history_permission (Callable): Optional permission required to see the hisotry of changes. `None` means the permission is taken from `view_permission`.
+    - fetch_permission (TCallableStr): `"none"` by default. Permission required to fetch the setting in API. For str value function from content_settings.permissions is used
+    - update_permission (TCallableStr): `"staff"` by default. Optional permission required to update  the setting in Django Admin. For str value function from content_settings.permissions is used
+    - view_permission (TCallableStr): `"staff"` by default. Optional permission required to view the setting in Django Admin. For str value function from content_settings.permissions is used
+    - view_history_permission (Optional[TCallableStr]): Optional permission required to see the hisotry of changes. `None` means the permission is taken from `view_permission`. For str value function from content_settings.permissions is used
     - help_format (Optional[str]): Optional format string for the help text for the format (align to the type).
     - help (Optional[str]): Optional help text for the setting.
     - value_required (bool): Whether a value is required for the setting.
     - version (str): The version of the setting (using for caching).
     - tags (Optional[Iterable[str]]): Optional tags associated with the setting.
-    - validators (Tuple[Callable]): Validators to apply to the setting value.
-    - validators_raw (Tuple[Callable]): Validators to apply to the text value of the setting.
+    - validators (Tuple[TCallableStr]): Validators to apply to the setting value.
+    - validators_raw (Tuple[TCallableStr]): Validators to apply to the text value of the setting.
     - admin_preview_as (PREVIEW): The format to use for the admin preview.
     - suffixes (Tuple[str]): Suffixes that can be appended to the setting value.
     - user_defined_slug (str): it contains a slug from db If the setting is defined in DB only (should not be set in content_settings)
     - overwrite_user_defined (bool): Whether the setting can overwrite a user defined setting.
     - default (str): The default value for the setting.
-    - on_change: Tuple[Callable] - list of functions to call when the setting is changed
-    - on_change_commited: Tuple[Callable] - list of functions to call when the setting is changed and commited
+    - on_change: Tuple[TCallableStr] - list of functions to call when the setting is changed
+    - on_change_commited: Tuple[TCallableStr] - list of functions to call when the setting is changed and commited
     - admin_head_css: Tuple[str] - list of css urls to include in the admin head
     - admin_head_js: Tuple[str] - list of js urls to include in the admin head
     - admin_head_css_raw: Tuple[str] - list of css codes to include in the admin head
@@ -58,28 +65,28 @@ class SimpleString(BaseSetting):
     """
 
     constant: bool = False
-    cls_field: forms.CharField = forms.CharField
-    widget: forms.Widget = forms.TextInput
+    cls_field: TCallableStr = "CharField"
+    widget: TCallableStr = "TextInput"
     widget_attrs: Optional[dict] = None
-    fetch_permission: Callable = staticmethod(none)
-    update_permission: Callable = staticmethod(staff)
-    view_permission: Callable = staticmethod(staff)
-    view_history_permission: Optional[Callable] = None
+    fetch_permission: TCallableStr = "none"
+    update_permission: TCallableStr = "staff"
+    view_permission: TCallableStr = "staff"
+    view_history_permission: Optional[TCallableStr] = None
     help_format: str = "string"
     help: str = ""
     value_required: bool = False
     version: str = ""
     tags: Optional[Iterable[str]] = None
-    validators: Tuple[Callable] = ()
-    validators_raw: Tuple[Callable] = ()
+    validators: Tuple[TCallableStr] = ()
+    validators_raw: Tuple[TCallableStr] = ()
     admin_preview_as: PREVIEW = PREVIEW.NONE
     suffixes: Tuple[str] = ()
     user_defined_slug: Optional[str] = None
     overwrite_user_defined: bool = False
     default: Union[str, required, optional] = ""
     json_encoder: type = DjangoJSONEncoder
-    on_change: Tuple[Callable] = ()
-    on_change_commited: Tuple[Callable] = ()
+    on_change: Tuple[TCallableStr] = ()
+    on_change_commited: Tuple[TCallableStr] = ()
     admin_head_css: Tuple[str] = ()
     admin_head_js: Tuple[str] = ()
     admin_head_css_raw: Tuple[str] = ()
@@ -172,15 +179,17 @@ class SimpleString(BaseSetting):
         """
         return self.admin_head_js_raw
 
-    def can_view(self, user):
+    def can_view(self, user: User) -> bool:
         """
         Return True if the user has permission to view the setting in the django admin panel.
 
         Use view_permission attribute
         """
-        return self.view_permission(user)
+        return call_base_str(
+            self.view_permission, user, call_base="content_settings.permissions"
+        )
 
-    def can_view_history(self, user):
+    def can_view_history(self, user: User) -> bool:
         """
         Return True if the user has permission to view the setting changing history in the django admin panel.
 
@@ -189,24 +198,32 @@ class SimpleString(BaseSetting):
         return (
             self.can_view(user)
             if self.view_history_permission is None
-            else self.view_history_permission(user)
+            else call_base_str(
+                self.view_history_permission,
+                user,
+                call_base="content_settings.permissions",
+            )
         )
 
-    def can_update(self, user):
+    def can_update(self, user: User) -> bool:
         """
         Return True if the user has permission to update the setting in the django admin panel.
 
         Use update_permission attribute
         """
-        return self.update_permission(user)
+        return call_base_str(
+            self.update_permission, user, call_base="content_settings.permissions"
+        )
 
-    def can_fetch(self, user):
+    def can_fetch(self, user: User) -> bool:
         """
         Return True if the user has permission to fetch the setting value using API.
 
         Use fetch_permission attribute
         """
-        return self.fetch_permission(user)
+        return call_base_str(
+            self.fetch_permission, user, call_base="content_settings.permissions"
+        )
 
     def get_admin_preview_as(self) -> str:
         """
@@ -301,7 +318,7 @@ class SimpleString(BaseSetting):
         """
         Return the list of validators to apply to the setting python value.
         """
-        return tuple(self.validators) + tuple(self.cls_field.default_validators)
+        return tuple(self.validators) + tuple(self.get_field().default_validators)
 
     def get_validators_raw(self) -> Tuple[Callable]:
         """
@@ -313,7 +330,9 @@ class SimpleString(BaseSetting):
         """
         Generate the form field for the setting. Which will be used in the django admin panel.
         """
-        return self.cls_field(
+        return call_base_str(
+            self.cls_field,
+            call_base="django.forms.fields",
             widget=self.get_widget(),
             validators=(self.validate_value,),
             required=self.value_required,
@@ -323,10 +342,13 @@ class SimpleString(BaseSetting):
         """
         Generate the form widget for the setting. Which will be used in the django admin panel.
         """
-        if isclass(self.widget) and self.widget_attrs is not None:
-            return self.widget(attrs=self.widget_attrs)
-        else:
+        if isinstance(self.widget, forms.Widget):
             return self.widget
+        return call_base_str(
+            self.widget,
+            call_base="django.forms.widgets",
+            attrs=self.widget_attrs,
+        )
 
     def validate_raw_value(self, value: str) -> None:
         """
@@ -334,7 +356,9 @@ class SimpleString(BaseSetting):
         In the validation you only need to make sure the value is possible to be converted into py object.
         """
         for validator in self.get_validators_raw():
-            validator(value)
+            call_base_str(
+                validator, value, call_base="content_settings.types.validators"
+            )
 
     def validate_value(self, value: str) -> Any:
         """
@@ -351,7 +375,9 @@ class SimpleString(BaseSetting):
         Validate py object. Validate consistency of the object with the project.
         """
         for validator in self.get_validators():
-            validator(value)
+            call_base_str(
+                validator, value, call_base="content_settings.types.validators"
+            )
 
     def to_python(self, value: str) -> Any:
         """
@@ -582,4 +608,3 @@ class SimplePassword(SimpleString):
 
     admin_preview_as: PREVIEW = PREVIEW.NONE
     widget_attrs: dict = {"type": "password"}
-    fetch_permission: Callable = staticmethod(none)

@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from typing import Callable, Union
 
 
 class PREVIEW(Enum):
@@ -22,3 +23,6 @@ def pre(value: str) -> str:
 
 class BaseSetting:
     pass
+
+
+TCallableStr = Union[str, Callable]

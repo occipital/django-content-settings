@@ -1,7 +1,5 @@
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
 
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-
 ![Django Content Settings](img/title.png)
 
 # Django Content Settings - the most advanced admin editable setting
@@ -17,8 +15,9 @@ With `django-content-settings` allows you to store variables with specific funct
 1. **Type-Agnostic Variable Creation**: Users can create variables of any type, making the module highly adaptable to various needs.
 2. **Editability from Django Admin Panel**: Seamless integration with the Django admin panel allows for effortless editing of variables.
 3. **Flaxable permission model**: Every setting can have own permission rule for view, edit, fetch in API and view changes history.
-4. **Preview**: Preview setting before apply and addition option to preview setting change right on site.
-5. **Caching System**: Ensures high performance, negating the impact of variable complexity on code execution speed.
+4. **Validation**: Every setting can have own validation not only for itself but for the other settings. So you can control so the setting update doesn't break the system.
+5. **Preview**: Preview setting before apply and addition option to preview setting change right on site.
+6. **Caching System**: Ensures high performance, negating the impact of variable complexity on code execution speed.
 
 ### Additional Admin Panel Functionalities
 
@@ -35,8 +34,6 @@ The module comes with a built-in API system, enabling:
 - **Access Permissions**: Manage who can read the variables, ensuring data privacy and security.
 
 ### How does it look
-
-*[glossary](glossary.md)*
 
 - **Setup**. [Here](first.md) you can get step-by-step instruction.
 
@@ -85,6 +82,25 @@ In template:
 ```
 
 Simple as that, we have a lot of *setting types* you can use `SimpleText`, `SimpleHTML`, `SimpleInt`, `SimpleBool`, `SimpleDecimal`, `DateTimeString`, `SimpleTimedelta`, `SimpleYAML`, `SimpleJSON`, `SimpleCSV`, `DjangoTemplate`, `DjangoModelTemplate`, `SimpleEval`, `SimpleExec` and so on... [Read more](types.md) about the types available for you.
+
+# Whats next?
+
+- [**Getting Started**](first.md) - this is a step-by-step guide to configure content settings in your project and add your first setting.
+- [**Setting Types and Attributes**](types.md) - the guide of all available types and attributes, including some examples.
+- [**Using Settings**](access.md) - multiple ways to access content settings in your project.
+- [**Permissions**](permissions.md) - different settings can have different permissions for different settings' functionality.
+- [**Defaults Context**](defaults.md) - allows you to group settings with common parameters, reducing redundancy and making your code cleaner and more maintainable.
+- [**API & Views**](api.md) - how to organize access to content settings through the API
+- [**User Interface for Django Admin**](ui.md) - the guide is for end users, not only developers. It explains how to use the Django Admin panel for content settings.
+- [**How Caching is Organized**](caching.md) - we want to make sure your content settings work as fast as possible. The guide explains how it is organized and what you can configure.
+- [**Available Django Settings**](settings.md) - reference all available Django settings for content settings.
+- [**User Defined Settings**](uservar.md) - *experimental functionality* - how to give Django Admin users functionality for creation settings right from Django Admin UI.
+- [**Cookbook**](cookbook.md) - several simple receipts you can use in your project.
+- [**Frequently Asked Questions**](faq.md) - before asking questions, you might want to visit this section.
+- [**Glossary**](glossary.md) - the concept of content settings introduces several new terms, which we collected in this article
+- [**How to contribute**](contribute.md) - if you are willing to help - welcome to the team.
+- [**Changelog**](changelog.md) - what was introduces in every version.
+- [**Source Doc**](source.md) - we collect all the doc strings in one article for future reference.
 
 It is also very fast thanks to our caching system. [Read more about it](caching.md).
 

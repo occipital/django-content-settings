@@ -679,7 +679,6 @@ class ContentSettingAdmin(admin.ModelAdmin):
 
         if not apply:
             return redirect_back()
-
         try:
             validate_all_with_context(preview_context)
         except ValidationError as e:

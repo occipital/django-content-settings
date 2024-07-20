@@ -82,7 +82,7 @@ from content_settings.functools import or_
 
 TITLE = SimpleString(
     "default value",
-    update_permission=or_(staff, has_perm('app_label.permission_codename'))
+    update_permission=or_(staff, has_perm("app_label.permission_codename"))
 )
 
 MAX_PRICE = SimpleDecimal(
@@ -92,6 +92,38 @@ MAX_PRICE = SimpleDecimal(
 ```
 
 In this example, `SOME_VARIABLE` can be updated either by staff members or by users who have the specified permission and `MAX_PRICE` can be fetched by only staff
+
+#### Using permission name instead of functions
+
+You can use permission name if it is from the `content_settings.permissions` module:
+
+```python
+from content_settings.types.basic import SimpleString, SimpleDecimal
+from content_settings.permissions import has_perm
+from content_settings.functools import or_
+
+TITLE = SimpleString(
+    "default value",
+    update_permission=or_("staff", has_perm("app_label.permission_codename"))
+)
+
+MAX_PRICE = SimpleDecimal(
+    "9.99",
+    fetch_permission="staff",
+)
+```
+
+Or you can use the full import line to the function:
+
+```python
+from content_settings.types.basic import SimpleDecimal
+
+MAX_PRICE = SimpleDecimal(
+    "9.99",
+    fetch_permission="my_project.permissions.main_users",
+)
+```
+
 
 ---
 

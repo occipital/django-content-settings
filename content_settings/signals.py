@@ -19,6 +19,7 @@ from .caching import (
 )
 from .conf import set_initial_values_for_db, get_type_by_name, get_str_tags
 from .models import ContentSetting, HistoryContentSetting
+from .utils import call_base_str
 
 
 @receiver(post_delete, sender=ContentSetting)
@@ -47,7 +48,7 @@ def trigger_on_change(sender, instance, created, **kwargs):
         return
 
     for on_change in cs_type.get_on_change():
-        on_change(instance)
+        call_base_str(on_change, instance)
 
     on_changes = cs_type.get_on_change_commited()
     if not on_changes:
@@ -55,10 +56,10 @@ def trigger_on_change(sender, instance, created, **kwargs):
 
     connection = transaction.get_connection()
     if connection.in_atomic_block:
-        transaction.on_commit(lambda: [f(instance) for f in on_changes])
+        transaction.on_commit(lambda: [call_base_str(f, instance) for f in on_changes])
     else:
         for on_change in on_changes:
-            on_change(instance)
+            call_base_str(on_change, instance)
 
 
 @receiver(post_save, sender=ContentSetting)

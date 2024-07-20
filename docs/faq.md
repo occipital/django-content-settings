@@ -26,9 +26,21 @@ I'm still working on design of the module, the name of the types might be change
 
 ### Can I see the changes on site before applying those to all users
 
-use preview function
+Yes. You can use preview settings functionality, read more about it in [UI artitle](ui.md#preview-functionality)
 
 ### I need to change multiple variables at once to get a desirable effect. If I change variables one by one the user has a chance to see a half working project
 
-* use change view + user tags
-* use preview function
+Yes, this can be done in multiple ways
+
+* In change list form you can edit multiple values and submit those at once. You can use "mark" functionality to put all the values you need on the same page. Read more about it in [UI artitle](ui.md#apply-multiple-settings-at-once)
+* Using preview settings functionality you can add multiple changes in preview and then apply those changes in one click. Read more about it in [UI artitle](ui.md#preview-functionality)
+
+### The guide didn't help
+
+That happens, the documentation is still work in progress, so not everything is covered.
+
+If you have a specific question, please use [Discussions in github.com](https://github.com/occipital/django-content-settings/discussions).
+
+If you find a bug, or unexpected behaviour use [Issues in github.com](https://github.com/occipital/django-content-settings/issues).
+
+And, of course, you are very welcome to contribute changes in documentation. You can find markdown sources of the documentation in [docs folder](https://github.com/occipital/django-content-settings/tree/master/docs).
