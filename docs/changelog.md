@@ -6,6 +6,17 @@
 
 [Issuses left for releasing v1](https://github.com/occipital/django-content-settings/labels/v1)
 
+### 0.18 Better validation
+
+* attributes that accept function can also accept string as name of the function. `fetch_permission="staff"` or `fetch_permission="content_settings.permissions.staff"`
+* `FetchAllSettingsView.as_view()` - new view for getting all avaliable settings in the system
+    * `FetchAllSettingsView.as_view(names=gen_all())` - works in the same way
+* py objects validation at the time when the project is started. 
+* `CONTENT_SETTINGS_CHAIN_VALIDATE` - new django setting, by default True. Every time you change the variable it not only test the variable you've changed, but also all other variables to make sure your changes doesn't break other variables.
+* [article](ui.md) about Admin User interface with the link in the interface.
+* simplify `json_view_value` for simple values, to speed up the API
+
+
 ### 0.17 CodeMirror
 
 * new attributes for css and js
