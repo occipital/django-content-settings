@@ -6,9 +6,10 @@
 
 [Issuses left for releasing v1](https://github.com/occipital/django-content-settings/labels/v1)
 
-### master
+#### 0.18.1
 
 * setting `CONTENT_SETTINGS_PREVIEW_ON_SITE_SHOW = False` hides preview on site functionality
+* fix some bugs
 
 ### 0.18 Better validation
 
