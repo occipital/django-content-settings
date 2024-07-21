@@ -1,6 +1,12 @@
 init:
 	poetry install
 
+test-min:
+	TESTING_SETTINGS=min poetry run pytest
+
+test-full:
+	TESTING_SETTINGS=full poetry run pytest
+
 test:
 	poetry run pytest
 

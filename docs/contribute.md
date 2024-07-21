@@ -47,6 +47,8 @@ nox = "^2023.4.22"
 Some of the make-commands that we have already can make your testing process more confortable:
 
 * `make test` just run all of the tests in current poetry env
+* `make test-full` run tests with extended settings
+* `make test-min` run tests with settings that limits functionality
 * `make test-cov` to check the corrent test covarage
 * `make test-cov-xml` generate test covarage in `cov.xml` which can me later used for seing places with no tests
 * `make test-nox` (will be long) - running tests under all supported python versions and Django versions

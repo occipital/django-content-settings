@@ -34,7 +34,7 @@ from content_settings.types.array import (
 
 from tests.books.models import Book
 from tests.tools import adjust_id_params
-from tests import yaml_installed
+from tests import yaml_installed, testing_settings_full
 
 pytestmark = [pytest.mark.django_db(transaction=True)]
 
@@ -106,7 +106,11 @@ pytestmark = [pytest.mark.django_db(transaction=True)]
             (
                 "SimplePassword_with_help",
                 SimplePassword(help="A value"),
-                "<i>Do Not Share</i><br>A value<br><br>string",
+                (
+                    "<i>Do Not Share</i><br>A value<br><br>string"
+                    if testing_settings_full
+                    else "A value<br><br>string"
+                ),
             ),
             (
                 "DateTimeString_with_help",

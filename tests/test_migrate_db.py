@@ -2,6 +2,7 @@ import pytest
 
 from content_settings.conf import set_initial_values_for_db
 from content_settings.models import ContentSetting
+from tests import testing_settings_full
 
 pytestmark = [pytest.mark.django_db(transaction=True)]
 
@@ -45,7 +46,10 @@ def test_update_tags_only():
 
     cs = ContentSetting.objects.get(name="TITLE")
     assert cs.value == "old value"
-    assert cs.tags == "changed\ngeneral"
+    if testing_settings_full:
+        assert cs.tags == "changed\ngeneral\ntests.books"
+    else:
+        assert cs.tags == "general"
 
 
 def test_overwrite_user_defined_allowed_without_version_change():

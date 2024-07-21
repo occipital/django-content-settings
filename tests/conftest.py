@@ -3,11 +3,44 @@ import pytest
 
 from django.contrib.auth import get_user_model
 
+from tests import testing_settings_full, testing_settings_min
+
 
 def pytest_configure(config):
     from django.conf import settings
     from content_settings.defaults.filters import full_name_exact
     from content_settings.defaults.modifiers import help_prefix
+
+    if testing_settings_full:
+        content_settings_settings = dict(
+            CONTENT_SETTINGS_USER_DEFINED_TYPES=[
+                (
+                    "line",
+                    "tests.books.content_settings.PublicSimpleString",
+                    "Line (Public)",
+                ),
+                ("text", "content_settings.types.basic.SimpleText", "Text"),
+                ("html", "content_settings.types.basic.SimpleHTML", "HTML"),
+            ],
+            CONTENT_SETTINGS_DEFAULTS=[
+                (
+                    full_name_exact("content_settings.types.basic.SimplePassword"),
+                    help_prefix("<i>Do Not Share</i>"),
+                ),
+            ],
+            CONTENT_SETTINGS_ADMIN_CHECKSUM_CHECK_BEFORE_SAVE=True,
+            CONTENT_SETTINGS_TAGS=[
+                "content_settings.tags.changed",
+                "content_settings.tags.app_name",
+            ],
+        )
+    elif testing_settings_min:
+        content_settings_settings = dict(
+            CONTENT_SETTINGS_CHAIN_VALIDATE=False,
+            CONTENT_SETTINGS_PREVIEW_ON_SITE_SHOW=False,
+        )
+    else:
+        content_settings_settings = {}
 
     settings.configure(
         DEBUG_PROPAGATE_EXCEPTIONS=True,
@@ -59,25 +92,7 @@ def pytest_configure(config):
             "tests.books",
         ),
         PASSWORD_HASHERS=("django.contrib.auth.hashers.MD5PasswordHasher",),
-        CONTENT_SETTINGS_USER_DEFINED_TYPES=[
-            (
-                "line",
-                "tests.books.content_settings.PublicSimpleString",
-                "Line (Public)",
-            ),
-            ("text", "content_settings.types.basic.SimpleText", "Text"),
-            ("html", "content_settings.types.basic.SimpleHTML", "HTML"),
-        ],
-        CONTENT_SETTINGS_DEFAULTS=[
-            (
-                full_name_exact("content_settings.types.basic.SimplePassword"),
-                help_prefix("<i>Do Not Share</i>"),
-            ),
-        ],
-        CONTENT_SETTINGS_ADMIN_CHECKSUM_CHECK_BEFORE_SAVE=True,
-        CONTENT_SETTINGS_TAGS=[
-            "content_settings.tags.changed",
-        ],
+        **content_settings_settings,
     )
 
     django.setup()

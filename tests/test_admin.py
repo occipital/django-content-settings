@@ -10,6 +10,7 @@ from content_settings.models import UserPreview, ContentSetting, UserPreviewHist
 from tests.books.models import Book
 
 from .tools import extract_messages
+from tests import testing_settings_full, testing_settings_min
 
 pytestmark = [pytest.mark.django_db(transaction=True)]
 
@@ -31,6 +32,9 @@ def test_admin(webtest_admin):
     assert resp.json["TITLE"] == "New Title"
 
 
+@pytest.mark.skipif(
+    not testing_settings_full, reason="skipping because not testing_settings_full"
+)
 def test_admin_checksum_check(webtest_admin):
     cs = ContentSetting.objects.get(name="TITLE")
     resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/change/")
@@ -67,6 +71,9 @@ def test_admin_list_view(webtest_admin):
     assert cs.value == "4"
 
 
+@pytest.mark.skipif(
+    not testing_settings_full, reason="skipping because of  not testing_settings_full"
+)
 def test_admin_list_view_checksum_check(webtest_admin):
     cs = ContentSetting.objects.get(name="BOOKS_ON_HOME_PAGE")
     resp = webtest_admin.get(
@@ -456,6 +463,9 @@ def test_view_history_permission_staff(webtest_staff):
     assert resp.status_int == 403
 
 
+@pytest.mark.skipif(
+    testing_settings_min, reason="skipping because of testing_settings_min"
+)
 def test_admin_preview_on_site(webtest_admin, webtest_user, testadmin):
     us = UserPreview.objects.create(
         user=testadmin,
@@ -479,6 +489,9 @@ def test_admin_preview_on_site(webtest_admin, webtest_user, testadmin):
     assert resp.html.find("title").text == "Book Store"
 
 
+@pytest.mark.skipif(
+    testing_settings_min, reason="skipping because of testing_settings_min"
+)
 def test_admin_preview_on_site_see_the_preview(webtest_admin, testadmin):
     us = UserPreview.objects.create(
         user=testadmin,
@@ -499,6 +512,9 @@ def test_admin_preview_on_site_see_the_preview(webtest_admin, testadmin):
     assert b"Supper New Title" not in resp.content
 
 
+@pytest.mark.skipif(
+    testing_settings_min, reason="skipping because of testing_settings_min"
+)
 def test_admin_preview_on_site_add_from_changelist(webtest_admin, testadmin):
     cs = ContentSetting.objects.all()[0]
 
@@ -522,6 +538,9 @@ def test_admin_preview_on_site_add_from_changelist(webtest_admin, testadmin):
     assert cs_preview.value == "New Password"
 
 
+@pytest.mark.skipif(
+    testing_settings_min, reason="skipping because of testing_settings_min"
+)
 def test_admin_preview_on_site_add_from_change_page(webtest_admin, testadmin):
     cs = ContentSetting.objects.all()[0]
 
@@ -554,6 +573,9 @@ def test_admin_preview_on_site_add_from_change_page(webtest_admin, testadmin):
     assert cs_preview_history.status == UserPreviewHistory.STATUS_CREATED
 
 
+@pytest.mark.skipif(
+    testing_settings_min, reason="skipping because of testing_settings_min"
+)
 def test_admin_preview_on_site_add_from_change_page_update(webtest_admin, testadmin):
     cs = ContentSetting.objects.all()[0]
 
@@ -580,6 +602,9 @@ def test_admin_preview_on_site_add_from_change_page_update(webtest_admin, testad
     assert cs_preview_history.status == UserPreviewHistory.STATUS_CREATED
 
 
+@pytest.mark.skipif(
+    testing_settings_min, reason="skipping because of testing_settings_min"
+)
 def test_admin_preview_on_site_applied(webtest_admin, testadmin):
     """
     Successfully applied preview, preview should be deleted, and the raw value of the setting should be updated
@@ -724,6 +749,9 @@ def test_admin_preview_appliy_fail_permission(webtest_staff, teststaff):
     ]
 
 
+@pytest.mark.skipif(
+    testing_settings_min, reason="skipping because of testing_settings_min"
+)
 def test_admin_preview_on_site_reset(webtest_admin, testadmin):
     UserPreview.objects.create(
         user=testadmin,
@@ -741,6 +769,9 @@ def test_admin_preview_on_site_reset(webtest_admin, testadmin):
     assert ContentSetting.objects.get(name="TITLE").value == "Book Store"
 
 
+@pytest.mark.skipif(
+    testing_settings_min, reason="skipping because of testing_settings_min"
+)
 def test_admin_preview_on_site_remove(webtest_admin, testadmin):
     UserPreview.objects.create(
         user=testadmin,
@@ -764,6 +795,9 @@ def test_admin_preview_on_site_remove(webtest_admin, testadmin):
     assert UserPreview.objects.all()[0].name == "DESCRIPTION"
 
 
+@pytest.mark.skipif(
+    not testing_settings_full, reason="skipping because of not testing_settings_full"
+)
 def test_add_user_defined_variable(webtest_admin, testadmin):
     resp = webtest_admin.get("/admin/content_settings/contentsetting/add/")
 
@@ -792,6 +826,9 @@ def test_add_user_defined_variable(webtest_admin, testadmin):
     assert form["tags"].value == "prof_email"
 
 
+@pytest.mark.skipif(
+    not testing_settings_full, reason="skipping because of not testing_settings_full"
+)
 def test_edit_user_defined_variable(webtest_admin, testadmin):
     cs = ContentSetting.objects.create(
         name="NEW_VARIABLE",
@@ -819,8 +856,10 @@ def test_admin_head(webtest_admin):
     URLS = [
         f"/admin/content_settings/contentsetting/{cs.id}/change/",
         f"/admin/content_settings/contentsetting/",
-        f"/admin/content_settings/contentsetting/add/",
     ]
+    if testing_settings_full:
+        URLS.append(f"/admin/content_settings/contentsetting/add/")
+
     for url in URLS:
         resp = webtest_admin.get(url)
 
@@ -839,6 +878,9 @@ def test_admin_head(webtest_admin):
         )
 
 
+@pytest.mark.skipif(
+    testing_settings_min, reason="skipping because of testing_settings_min"
+)
 def test_admin_changelist_changechain_valid(webtest_admin, testadmin):
     """
     (changelist interface)
@@ -860,6 +902,9 @@ def test_admin_changelist_changechain_valid(webtest_admin, testadmin):
     assert resp.status_int == 302
 
 
+@pytest.mark.skipif(
+    testing_settings_min, reason="skipping because of testing_settings_min"
+)
 def test_admin_changelist_changechain_to_zero(webtest_admin, testadmin):
     """
     (changelist interface)
@@ -881,6 +926,9 @@ def test_admin_changelist_changechain_to_zero(webtest_admin, testadmin):
     assert b"Error validating XSHOT_CALCULATION:" in resp.content
 
 
+@pytest.mark.skipif(
+    testing_settings_min, reason="skipping because of testing_settings_min"
+)
 def test_admin_single_changechain_valid(webtest_admin, testadmin):
     """
     (single change interface)
@@ -904,6 +952,9 @@ def test_admin_single_changechain_valid(webtest_admin, testadmin):
     assert cs.value == "1"
 
 
+@pytest.mark.skipif(
+    testing_settings_min, reason="skipping because of testing_settings_min"
+)
 def test_admin_single_changechain_to_zero(webtest_admin, testadmin):
     """
     (single change interface)
@@ -930,6 +981,9 @@ def test_admin_single_changechain_to_zero(webtest_admin, testadmin):
     assert cs.value == "10"
 
 
+@pytest.mark.skipif(
+    testing_settings_min, reason="skipping because of testing_settings_min"
+)
 def test_admin_preview_appliy_fail_chained(webtest_admin, testadmin):
     """
     Trying to apply preview for XARCHER_DEVIDER if it has a chain reaction to XSHOT_CALCULATION so the value wasn't applied

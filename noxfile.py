@@ -20,4 +20,5 @@ def tests(session, django, pyyaml):
     session.install("pytest-django~=4.7.0")
     session.install("django-webtest~=1.9.11")
     session.install("-e", ".")
-    session.run("pytest")
+    for testing_settings in ["min", "full", "normal"]:
+        session.run("pytest", env={"TESTING_SETTINGS": testing_settings})

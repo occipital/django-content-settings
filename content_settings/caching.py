@@ -208,6 +208,7 @@ def reset_all_values():
         DATA.ALL_VALUES = {}
         DATA.ALL_RAW_VALUES = {}
         DATA.ALL_VALUES_CHECKSUM = None
+        DATA.ALL_VALUES_USER_CHECKSUM = ""
         DATA.ALL_USER_DEFINES = {}
         DATA.POPULATED = False
 

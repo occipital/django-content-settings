@@ -8,7 +8,15 @@ from content_settings.types.template import DjangoTemplateNoArgs
 from content_settings.caching import check_update, recalc_checksums
 from content_settings.conf import set_initial_values_for_db
 
-pytestmark = [pytest.mark.django_db(transaction=True)]
+from tests import testing_settings_full
+
+pytestmark = [
+    pytest.mark.django_db(transaction=True),
+    pytest.mark.skipif(
+        not testing_settings_full,
+        reason="skipping because of not testing_settings_full",
+    ),
+]
 
 
 def create_content_settings(**kwargs):
