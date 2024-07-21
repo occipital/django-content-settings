@@ -9,6 +9,8 @@ def get_setting(name, default=None):
 
 PREVIEW_ON_SITE_HREF = get_setting("PREVIEW_ON_SITE_HREF", "/")
 
+PREVIEW_ON_SITE_SHOW = get_setting("PREVIEW_ON_SITE_SHOW", True)
+
 UPDATE_DB_VALUES_BY_MIGRATE = get_setting("UPDATE_DB_VALUES_BY_MIGRATE", True)
 
 TAGS = get_setting(

@@ -4,6 +4,7 @@ Available middlewares for the content settings.
 
 from .context_managers import content_settings_context
 from .models import UserPreview
+from .settings import PREVIEW_ON_SITE_SHOW
 
 
 def preivew_on_site(get_response):
@@ -14,7 +15,9 @@ def preivew_on_site(get_response):
     """
 
     def middleware(request):
-        if not request.user.has_perm("content_settings.can_preview_on_site"):
+        if not PREVIEW_ON_SITE_SHOW or not request.user.has_perm(
+            "content_settings.can_preview_on_site"
+        ):
             return get_response(request)
 
         preview_settings = dict(

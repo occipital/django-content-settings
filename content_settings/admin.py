@@ -45,6 +45,7 @@ from .settings import (
     PREVIEW_ON_SITE_HREF,
     ADMIN_CHECKSUM_CHECK_BEFORE_SAVE,
     UI_DOC_URL,
+    PREVIEW_ON_SITE_SHOW,
 )
 from .caching import get_type_by_name
 from .utils import class_names
@@ -245,9 +246,13 @@ class ContentSettingAdmin(admin.ModelAdmin):
         return SettingsChangeList
 
     def context_preview_settings(self, request):
+        if not PREVIEW_ON_SITE_SHOW:
+            return {}
+
         return {
             "preview_settings": UserPreview.objects.filter(user=request.user),
             "PREVIEW_ON_SITE_HREF": PREVIEW_ON_SITE_HREF,
+            "PREVIEW_ON_SITE_SHOW": PREVIEW_ON_SITE_SHOW,
         }
 
     def context_tags(self, request):
@@ -367,7 +372,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
                     **(extra_context or {}),
                     **self.context_tags(request),
                     **self.context_preview_settings(request),
-                    "breadcrumbs_help_link": UI_DOC_URL,
+                    "UI_DOC_URL": UI_DOC_URL,
                 },
             )
 
@@ -387,7 +392,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
             self.context_tags(request),
         )
 
-    def change_view(self, request, object_id, *args, **kwargs):
+    def change_view(self, request, object_id, form_url="", extra_context=None):
         from .conf import get_type_by_name
 
         cs = ContentSetting.objects.filter(pk=object_id).first()
@@ -396,7 +401,12 @@ class ContentSettingAdmin(admin.ModelAdmin):
         if cs and not cs_type or not cs_type.can_view(request.user) or cs_type.constant:
             raise PermissionDenied
 
-        return super().change_view(request, object_id, *args, **kwargs)
+        extra_context = {
+            "PREVIEW_ON_SITE_SHOW": PREVIEW_ON_SITE_SHOW,
+            **(extra_context or {}),
+        }
+
+        return super().change_view(request, object_id, form_url, extra_context)
 
     def history_view(self, request, object_id, extra_context=None):
         from .conf import get_type_by_name

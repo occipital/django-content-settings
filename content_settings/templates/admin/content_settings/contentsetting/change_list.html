@@ -1,5 +1,5 @@
 {% extends 'admin/change_list.html' %}
-{% load content_settings_admin %}
+{% load content_settings_admin i18n %}
 
 {% block extrastyle %}
   {{ block.super }}
@@ -55,7 +55,9 @@ nav[aria-label=Breadcrumbs] .breadcrumbs.breadcrumbs_help {
     </div>
     {% if preview_settings %}
     <div id="preview_table">
-        <h2>Preview settings for {{ request.user }} are enabled:</h2>
+        {% blocktranslate with user=request.user %}
+        <h2>Preview settings for {{ user }} is enabled:</h2>
+        {% endblocktranslate %}
         <table>
             <tr>
                 <th>Setting</th>
@@ -66,14 +68,14 @@ nav[aria-label=Breadcrumbs] .breadcrumbs.breadcrumbs_help {
             <tr>
                 <td>{{ item.name }}</td>
                 <td><pre>{{ item.value }}</pre></td>
-                <td><a href="{% url 'admin:remove_preview_on_site' %}?name={{ item.name }}">Remove</a></td>
+                <td><a href="{% url 'admin:remove_preview_on_site' %}?name={{ item.name }}">{% translate 'Remove' %}</a></td>
             </tr>
             {% endfor %}
         </table>
         <p>
-            <a href="{{PREVIEW_ON_SITE_HREF}}">View On Site</a>
-            | <a href="{% url 'admin:apply_preview_on_site' %}">Apply</a>
-            | <a href="{% url 'admin:reset_preview_on_site' %}">Reset</a>
+            <a href="{{PREVIEW_ON_SITE_HREF}}">{% translate 'View On Site' %}</a>
+            | <a href="{% url 'admin:apply_preview_on_site' %}">{% translate 'Apply' %}</a>
+            | <a href="{% url 'admin:reset_preview_on_site' %}">{% translate 'Reset' %}</a>
         </p>
         
     </div>
@@ -88,8 +90,8 @@ nav[aria-label=Breadcrumbs] .breadcrumbs.breadcrumbs_help {
 {% block breadcrumbs %}
 {{block.super}}
 
-{% if breadcrumbs_help_link %}
-<div class="breadcrumbs breadcrumbs_help"><a href="{{ breadcrumbs_help_link }}">Help</a></div>
+{% if UI_DOC_URL %}
+<div class="breadcrumbs breadcrumbs_help"><a href="{{ UI_DOC_URL }}">{% translate 'Help' %}</a></div>
 {% endif %}
 {% endblock %}
 
@@ -260,6 +262,9 @@ nav[aria-label=Breadcrumbs] .breadcrumbs.breadcrumbs_help {
                 refreshPreview();
             }, 1000);
         })
+        {% if PREVIEW_ON_SITE_SHOW %}
+            $('#preview_on_site').show();
+        {% endif %}
     })(django.jQuery);
 
 {{CONTENT_SETTINGS.admin_raw_js|safe}}

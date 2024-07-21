@@ -71,6 +71,18 @@ the settings can be connected with each other through the template types or one 
 
 Link to the help page of the UI of Django Content settings. The link is shown in Django Admin panel. If the value is `None` - the link woudn't be shown.
 
+### `CONTENT_SETTINGS_PREVIEW_ON_SITE_SHOW`
+
+*default: True*
+
+Use preview on site functionality. In case of `False` value - preview on site middleware `content_settings.middlewares.preivew_on_site` will be ignored and preview on site checkboxes will be hiden.
+
+### `CONTENT_SETTINGS_PREVIEW_ON_SITE_HREF`
+
+*default: /*
+
+Preview on site panel has a link "View On Site". The setting contains href attribute for that link.
+
 ## Other
 
 ### `CONTENT_SETTINGS_VALUES_ONLY_FROM_DB`

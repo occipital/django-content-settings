@@ -6,6 +6,10 @@
 
 [Issuses left for releasing v1](https://github.com/occipital/django-content-settings/labels/v1)
 
+### master
+
+* setting `CONTENT_SETTINGS_PREVIEW_ON_SITE_SHOW = False` hides preview on site functionality
+
 ### 0.18 Better validation
 
 * attributes that accept function can also accept string as name of the function. `fetch_permission="staff"` or `fetch_permission="content_settings.permissions.staff"`
