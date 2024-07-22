@@ -6,6 +6,10 @@
 
 [Issuses left for releasing v1](https://github.com/occipital/django-content-settings/labels/v1)
 
+#### master
+
+* `SimpleFunc` a very basic template type
+
 #### 0.18.1
 
 * setting `CONTENT_SETTINGS_PREVIEW_ON_SITE_SHOW = False` hides preview on site functionality

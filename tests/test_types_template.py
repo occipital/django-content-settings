@@ -10,6 +10,7 @@ from content_settings.types.template import (
     SimpleExec,
     SimpleExecNoCall,
     SimpleExecOneKeyNoCall,
+    SimpleFunc,
 )
 from content_settings.types.validators import call_validator
 from content_settings.types import PREVIEW
@@ -17,6 +18,26 @@ from content_settings.types import PREVIEW
 from tests.books.models import Book
 
 pytestmark = [pytest.mark.django_db]
+
+
+def test_simple_func():
+    var = SimpleFunc(call_func=lambda name, prepared: prepared.format(name=name))
+
+    template = "Welcome {name}"
+
+    assert var.give_python(template)("Alex") == "Welcome Alex"
+
+
+def test_simple_func_preview():
+    var = SimpleFunc(
+        call_func=lambda name, prepared: prepared.format(name=name),
+        validators=(call_validator("Alex"),),
+    )
+
+    assert (
+        var.get_admin_preview_value("Welcome {name}", "WELCOME_FUNC")
+        == "<pre>>>> WELCOME_FUNC('Alex')</pre>\n<pre>&lt;&lt;&lt; 'Welcome Alex'</pre>"
+    )
 
 
 def test_django_template():

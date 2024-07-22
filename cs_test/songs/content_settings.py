@@ -24,7 +24,9 @@ from content_settings.types.template import (
     DjangoTemplateHTML,
     DjangoModelTemplateHTML,
     SimpleEval,
+    SimpleFunc,
 )
+from content_settings.types.validators import call_validator
 
 from content_settings import permissions
 from content_settings.defaults.context import defaults
@@ -88,4 +90,11 @@ HTML_WITH_ACTIONS = mix(AdminPreviewActionsMixin, SimpleHTML)(
         ("say hi", lambda resp, *a, **k: resp.html("<h1>HI</h1>")),
     ],
     help="Some html with actions",
+)
+
+WELCOME_FUNC = SimpleFunc(
+    "Welcome {name}",
+    call_func=lambda name, prepared: prepared.format(name=name),
+    validators=(call_validator("Aex"),),
+    version="2",
 )

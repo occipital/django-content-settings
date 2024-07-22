@@ -70,6 +70,10 @@ class StaticDataMixin:
         }
 
 
+class SimpleFunc(CallToPythonMixin, SimpleText):
+    admin_preview_as: PREVIEW = PREVIEW.PYTHON
+
+
 class SimpleCallTemplate(CallToPythonMixin, StaticDataMixin, SimpleText):
     """
     Base class for templates that can be called.
@@ -266,8 +270,6 @@ class DjangoModelTemplateHTML(DjangoModelTemplate):
 class SimpleEval(SimpleCallTemplate):
     """
     Template that evaluates the Python code (using `eval` function).
-
-    By default, `update_permission` is set to `superuser`.
     """
 
     admin_preview_as: PREVIEW = PREVIEW.PYTHON
@@ -310,8 +312,6 @@ class SimpleEvalNoArgs(GiveCallMixin, SimpleEval):
 class SimpleExec(SimpleCallTemplate):
     """
     Template that executes the Python code (using `exec` function).
-
-    By default, `update_permission` is set to `superuser`.
 
     Attributes:
 

@@ -107,9 +107,10 @@ class CallToPythonMixin:
     """
 
     call_func = None
+    call_func_argument_name = "prepared"
 
     def prepare_python_call(self, value):
-        return {"prepared": value}
+        return {self.call_func_argument_name: value}
 
     def get_preview_validators(self):
         return [
@@ -122,7 +123,7 @@ class CallToPythonMixin:
         return self.call_func
 
     def python_call(self, *args, **kwargs):
-        return self.call_func(*args, **kwargs)
+        return self.get_call_func()(*args, **kwargs)
 
     def to_python(self, value):
         value = super().to_python(value)
