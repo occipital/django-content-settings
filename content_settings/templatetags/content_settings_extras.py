@@ -10,6 +10,9 @@ register = template.Library()
 
 @register.simple_tag
 def content_settings_call(name, *args, **kwargs):
+    """
+    template tag that call callable settings in the template
+    """
     safe = kwargs.pop("_safe", False)
     var = getattr(content_settings, name)
     result = var(*args, **kwargs)

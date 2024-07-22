@@ -4,7 +4,7 @@
 
 ## Overview
 
-The `content_settings.permissions` *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/permissions.py))* module in Django provides functions that can be used as arguments for the  permission attributes of your types. Such as:
+The `content_settings.permissions` *([source](source.md#permissions))* module in Django provides functions that can be used as arguments for the  permission attributes of your types. Such as:
 
 * `fetch_permission` - permission for API access to the variables through the `views.FetchSettingsView`
 * `update_permission` - permission to change the variable in the admin panel

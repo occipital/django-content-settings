@@ -10,7 +10,7 @@ The `django-content-settings` module offers a variety of variable types, each en
 
 ### SimpleString
 
-The simplest type is `content_settings.types.base.SimpleString` *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py))*, which is a text string in the admin panel that converts to a string in Python.
+The simplest type is `content_settings.types.base.SimpleString` *([source](source.md#class-simplestringbasesettingsource))*, which is a text string in the admin panel that converts to a string in Python.
 
 ```python
 from content_settings.types.basic import SimpleString
@@ -47,7 +47,7 @@ Note: Validators are not used when converting text from the database to the vari
 - **on_change** (default: empty tuple): list of functions to call when the setting is changed
 - **on_change_commited** (default: empty tuple): list of functions to call when the setting is changed and commited
 
-### Other Basic Types (`content_settings.types.base`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py))*
+### Other Basic Types (`content_settings.types.base`) *([source](source.md#typesbasic))*
 
 - **SimpleText**: Similar to SimpleString, but the input field can contain multiple lines.
 - **SimpleHTML**: Same as SimpleText, but with html preview in admin. _In the template no need to use `|safe` filter for that type of variable._
@@ -58,7 +58,7 @@ Note: Validators are not used when converting text from the database to the vari
 - **SimpleDecimal**: A SimpleString that converts to a Decimal.
 - **SimpleBool**: A SimpleString that converts to a boolean. The set of avalaibale values for True and False you can change in tuples `yeses` (by default: `("yes", "true", "1", "+", "ok")`) and `noes` (by default: `("no", "not", "false", "0", "-", "")`) _case insensetive_
 
-## List Types (`content_settings.types.array`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/array.py))*
+## List Types (`content_settings.types.array`) *([source](source.md#typesarray))*
 
 These types convert text to an array.
 
@@ -135,7 +135,7 @@ It has a big variety of attributes:
 same as `SplitByFirstLine` but the default value will be chosen based on current django translation `django.utils.translation.get_language`
 
 
-## Date and Time Types (`content_settings.types.datetime`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/datetime.py))*
+## Date and Time Types (`content_settings.types.datetime`) *([source](source.md#typesdatetime))*
 
 - **DateTimeString**: Converts a string to a datetime object.
     - **input_formats**: List of accepted formats (default: Django's `DATETIME_INPUT_FORMATS`).
@@ -143,7 +143,7 @@ same as `SplitByFirstLine` but the default value will be chosen based on current
 - **TimeString**: Only converts to a time.
 - **SimpleTimedelta**: Converts a string like "1d 3h" to a timedelta object.
 
-## Markups (`content_settings.types.markups`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/markup.py))*
+## Markups (`content_settings.types.markups`) *([source](source.md#typesmarkup))*
 
 - **SimpleYAML**: YAML text format to object (requires [pyyaml](https://pypi.org/project/PyYAML/) to be installed).
 - **SimpleJSON**: JSON text format to object.
@@ -164,7 +164,7 @@ var = SimpleCSV(
     
     
 
-## Templates (`content_settings.types.template`) *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py))*
+## Templates (`content_settings.types.template`) *([source](source.md#typestemplate))*
 
 Module introduces advanced variable types designed for template rendering and Python code evaluation using `CallToPythonMixin` for using setting variables as functions.
 
@@ -250,7 +250,7 @@ Decimal("20")
 - **DjangoModelExec**
 - **SimpleExecNoArgs**
 
-### Calling Functions in Template *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/templatetags/content_settings_extras.py))*
+### Calling Functions in Template *([source](source.md#templatetagscontent_settings_extras))*
 
 if you want create a callable setting, such a `DjangoTemplate` or `SimpleEval`, you can render the result of colling in your template using `content_settings_call` tag from `content_settings_extras` library:
 
@@ -274,7 +274,7 @@ if you want create a callable setting, such a `DjangoTemplate` or `SimpleEval`, 
 </html>
 ```
 
-## Mixins *([source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py))*
+## Mixins *([source](source.md#typesmixins))*
 
 Through mixin classes, additional functionality (such as additional validators) can be incorporated into your variable types.
 
