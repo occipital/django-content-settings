@@ -6,7 +6,7 @@
 
 [Issuses left for releasing v1](https://github.com/occipital/django-content-settings/labels/v1)
 
-#### master
+#### 0.18.2 CallToPythonMixin.call_prepare_func
 
 * `SimpleFunc` a very basic template type.
 * new `CallToPythonMixin` attributes `call_func_argument_name` and `call_prepare_func`
