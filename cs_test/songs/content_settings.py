@@ -11,6 +11,7 @@ from content_settings.types.mixins import (
     mix,
     DictSuffixesPreviewMixin,
     AdminPreviewActionsMixin,
+    CallToPythonMixin,
 )
 from content_settings.types.array import (
     SimpleStringsList,
@@ -97,4 +98,10 @@ WELCOME_FUNC = SimpleFunc(
     call_func=lambda name, prepared: prepared.format(name=name),
     validators=(call_validator("Aex"),),
     version="2",
+)
+
+TOTAL_INT_FUNC = mix(CallToPythonMixin, SimpleInt)(
+    "10",
+    call_func=lambda value, prepared: prepared + value,
+    validators=(call_validator(20),),
 )

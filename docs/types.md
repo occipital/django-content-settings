@@ -166,7 +166,86 @@ var = SimpleCSV(
 
 ## Templates (`content_settings.types.template`) *([source](source.md#typestemplate))*
 
-Module introduces advanced variable types designed for template rendering and Python code evaluation using `CallToPythonMixin` for using setting variables as functions.
+Module introduces advanced variable types designed for template rendering and Python code evaluation using `CallToPythonMixin` for using setting variables as functions. I'll explain the mixing implanation on `SimpleFunc` type, but in the actual project you may want to use more advanced types such as `DjangoTemplate`, `DjangoModelTemplate`, `SimpleEval` and so on. It is ok to skip the explanation of the `CallToPythonMixin`.
+
+The mixin has two most important methods you may want to redefine:
+
+* `prepare_python_call` - the function gets py object as an attribute and returns a dict that will be used in kwargs of the attribute call
+* `python_call` - is the function that would be called when the user call function that returned by the attribute
+
+If you don't want to overwrite the method you can use attributes
+
+* `call_func` - the function would be called when the user uses an attribute (uses by `python_call`). It accepts all of the args and kwargs passed to the function when it is called + one more kwarg, by default "prepared", with the value returned by `prepare_python_call`. By default it is `lambda *args, prepared=None, **kwargs: prepared(*args, **kwargs)`
+* `call_prepare_func` - function that prepares value from django admin and store it in the context of python value, By default it is `lambda value: value`
+* `call_func_argument_name` - the name of the attribute for the prepared value. By default "prepared"
+
+With the combination of `call_prepared_func` and `call_func` you can get a performance boost when you using it in code.
+
+- **SimpleFunc**: The simplest use of `CallToPythonMixin` with text value. The definition of the type is super simple:
+
+```python
+class SimpleFunc(CallToPythonMixin, SimpleText):
+    admin_preview_as: PREVIEW = PREVIEW.PYTHON
+```
+
+The first example is when all of the logic is inside of the actual call:
+
+```python
+THE_FUNC = SimpleFunc(
+    "Welcome {name}",
+    call_func=lambda name, prepared: prepared.format(name=name),
+    validators=(call_validator("Aex"),),
+)
+```
+
+in the code it would be:
+
+```python
+print(content_settings.THE_FUNC("Alex"))
+# Welcome Alex
+```
+
+*Make sure you add a `call_validator` so the function has some kind of in Django admin*
+
+The second example illustrates using of some kind of preparation before using:
+
+```python
+THE_FUNC = SimpleFunc(
+    "Welcome {name}",
+    call_prepare_func=lambda value: value.format
+    validators=(call_validator(name="Aex"),),
+)
+``` 
+
+In the code it would be almost the same as in the first example:
+
+```python
+print(content_settings.THE_FUNC(name="Alex"))
+# Welcome Alex
+```
+
+*In the second example the preparation function would be called when the type is defined or value is updated*
+
+The third example is a bonus one, in case you want to use not only text value as in input
+
+```python
+THE_SUM_FUNC = mix(CallToPythonMixin, SimpleInt)(
+    "10",
+    call_func=lambda value, prepared: prepared + value,
+    validators=(call_validator(20),),
+)
+```
+
+*In that case value is an int, so it will be parsed and validated by `SimpleInt` class*
+
+In the code it is still the same
+
+```python
+print(content_settings.THE_SUM_FUNC(12))
+# 22
+```
+
+Those are very basic examples, you might not use those, but it can be helpful to understad how the other template types are working
 
 - **DjangoTemplate**: is used for rendering a Django template specified in the variable's value
     - **template_args_default**: (Optional) A dictionary that converts an array of arguments, with which the function is called, into a dictionary passed as context to the template. To set required arguments, import `required` from `content_settings.types.template` and use it as a value.

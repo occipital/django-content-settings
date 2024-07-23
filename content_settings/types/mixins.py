@@ -7,7 +7,8 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 from .validators import call_validator
-from . import PREVIEW, pre
+from . import PREVIEW, pre, TCallableStr
+from ..utils import call_base_str
 
 TNumber = Union[int, float, Decimal]
 
@@ -106,11 +107,27 @@ class CallToPythonMixin:
     Mixin for callable types, or types that should be called to get the value.
     """
 
-    call_func = None
-    call_func_argument_name = "prepared"
+    call_func_argument_name: str = "prepared"
+    call_func: TCallableStr = staticmethod(
+        lambda *args, prepared=None, **kwargs: prepared(*args, **kwargs)
+    )
+    call_prepare_func: TCallableStr = staticmethod(lambda value: value)
 
-    def prepare_python_call(self, value):
-        return {self.call_func_argument_name: value}
+    def get_call_prepare_func(self) -> TCallableStr:
+        return self.call_prepare_func
+
+    def prepare_python_call(self, value: Any) -> Dict[str, Any]:
+        return {
+            self.call_func_argument_name: call_base_str(
+                self.get_call_prepare_func(), value
+            )
+        }
+
+    def get_call_func(self) -> TCallableStr:
+        return self.call_func
+
+    def python_call(self, *args, **kwargs):
+        return call_base_str(self.get_call_func(), *args, **kwargs)
 
     def get_preview_validators(self):
         return [
@@ -119,20 +136,14 @@ class CallToPythonMixin:
             if isinstance(validator, call_validator)
         ]
 
-    def get_call_func(self):
-        return self.call_func
-
-    def python_call(self, *args, **kwargs):
-        return self.get_call_func()(*args, **kwargs)
-
     def to_python(self, value):
         value = super().to_python(value)
         prepared_kwargs = self.prepare_python_call(value)
 
-        def _(*args, **kwargs):
+        def ret(*args, **kwargs):
             return self.python_call(*args, **prepared_kwargs, **kwargs)
 
-        return _
+        return ret
 
     def give_python_to_admin(self, value, name, **kwargs):
         try:

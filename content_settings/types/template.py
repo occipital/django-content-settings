@@ -82,12 +82,6 @@ class SimpleCallTemplate(CallToPythonMixin, StaticDataMixin, SimpleText):
     admin_preview_as: PREVIEW = PREVIEW.TEXT
     template_args_default = None
 
-    def prepare_python_call(self, value):
-        raise NotImplementedError()
-
-    def python_call(self, *args, **kwargs):
-        raise NotImplementedError()
-
     def get_template_args_default(self):
         if not self.template_args_default:
             return {}

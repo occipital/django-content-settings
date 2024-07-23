@@ -8,7 +8,9 @@
 
 #### master
 
-* `SimpleFunc` a very basic template type
+* `SimpleFunc` a very basic template type.
+* new `CallToPythonMixin` attributes `call_func_argument_name` and `call_prepare_func`
+* More in [Types](types.md#templates-content_settingstypestemplate-source)
 
 #### 0.18.1
 

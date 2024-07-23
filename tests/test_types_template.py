@@ -14,6 +14,8 @@ from content_settings.types.template import (
 )
 from content_settings.types.validators import call_validator
 from content_settings.types import PREVIEW
+from content_settings.types.mixins import CallToPythonMixin, mix
+from content_settings.types.basic import SimpleInt
 
 from tests.books.models import Book
 
@@ -26,6 +28,35 @@ def test_simple_func():
     template = "Welcome {name}"
 
     assert var.give_python(template)("Alex") == "Welcome Alex"
+
+
+def test_simple_func_prepared():
+    var = SimpleFunc(call_prepare_func=lambda value: value.format)
+
+    template = "Welcome {name}"
+
+    assert var.give_python(template)(name="Alex") == "Welcome Alex"
+
+
+def test_int_func():
+    var = mix(CallToPythonMixin, SimpleInt)(
+        call_func=lambda value, prepared: prepared + value,
+    )
+    template = "10"
+    assert var.give_python(template)(12) == 22
+
+
+def test_int_func_with_validator():
+    var = mix(CallToPythonMixin, SimpleInt)(
+        call_func=lambda value, prepared: prepared + value,
+        validators=(call_validator(20),),
+    )
+    template = "10"
+    assert var.give_python(template)(12) == 22
+
+    with pytest.raises(ValidationError) as e:
+        var.validate_value("ten")
+    assert str(e.value) == "['Enter a whole number.']"
 
 
 def test_simple_func_preview():
