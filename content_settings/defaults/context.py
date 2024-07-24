@@ -65,15 +65,23 @@ def update_defaults(setting: BaseSetting, kwargs: Dict[str, Any]):
     """
     Update paramas of the setting type by applying all of the modifiers from the defaults context.
     """
+    type_kwargs = {
+        name: getattr(setting, name)
+        for name in dir(setting)
+        if setting.can_assign(name)
+    }
     updates = {}
     for modifier in defaults_modifiers(setting):
-        updates.update(modifier(updates, kwargs))
+        updates.update(modifier(type_kwargs, updates, kwargs))
+
+    if not updates:
+        return kwargs
 
     return {
         **kwargs,
         **{
             k: v
             for k, v in updates.items()
-            if setting.can_assign(k) and v is not NotSet
+            if setting.can_assign(k) and v is not NotSet and type_kwargs[k] != v
         },
     }

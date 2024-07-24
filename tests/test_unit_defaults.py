@@ -12,6 +12,7 @@ from content_settings.defaults.modifiers import (
     add_admin_head,
     update_widget_attrs,
     add_widget_class,
+    unite_tuple_add,
 )
 from content_settings.defaults.context import (
     defaults,
@@ -24,7 +25,7 @@ from content_settings.defaults.context import (
 from content_settings.types.array import SimpleStringsList
 from content_settings.types.markup import SimpleCSV
 from content_settings.types.mixins import mix, AdminPreviewMenuMixin
-from content_settings.types.basic import SimpleString
+from content_settings.types.basic import SimpleBool
 
 
 @pytest.mark.parametrize(
@@ -98,11 +99,15 @@ def test_filter(filter, cls, expected):
 )
 def test_first_modifier(modifier, kwargs, expected):
     assert {
-        k: v for k, v in modifier({}, kwargs).items() if v is not NotSet
+        k: v
+        for k, v in modifier(
+            {k: None for k in ("tags", "help", "a", "b")}, {}, kwargs
+        ).items()
+        if v is not NotSet
     } == expected
 
 
-TEST_SETTING = SimpleString()
+TEST_SETTING = SimpleBool()
 
 
 def process_modifiers(kwargs):
@@ -332,3 +337,24 @@ def test_add_widget_class_with_existing_class_by_adding_two():
                 "class"
             ].split()
         ) == {"bob", "john", "mike"}
+
+
+def test_yeses_add():
+    with defaults(unite_tuple_add(yeses=("tak",))):
+        assert process_modifiers({}) == {
+            "yeses": ("tak", "yes", "true", "1", "+", "ok")
+        }
+
+
+def test_yeses_add_with_init():
+    with defaults(unite_tuple_add(yeses=("tak",))):
+        assert process_modifiers({"yeses": ("ofcourse",)}) == {
+            "yeses": ("tak", "ofcourse", "yes", "true", "1", "+", "ok")
+        }
+
+
+def test_yeses_add_with_init_dont_use_type_kwargs():
+    with defaults(unite_tuple_add(yeses=("tak",), _use_type_kwargs=False)):
+        assert process_modifiers({"yeses": ("ofcourse",)}) == {
+            "yeses": ("tak", "ofcourse")
+        }

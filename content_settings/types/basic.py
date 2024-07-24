@@ -9,6 +9,7 @@ from pprint import pformat
 from typing import Optional, Set, Tuple, Union, Any, Callable
 from collections.abc import Iterable
 from json import dumps
+from inspect import ismethod
 
 from django import forms
 from django.contrib.auth.models import User
@@ -273,7 +274,13 @@ class SimpleString(BaseSetting):
         """
         Return True if the attribute can be assigned to the instance.
         """
-        return hasattr(self, name)
+        if name.startswith("_"):
+            return False
+        if not hasattr(self, name):
+            return False
+        if ismethod(getattr(self, name)):
+            return False
+        return True
 
     def get_help_format(self) -> Iterable[str]:
         """

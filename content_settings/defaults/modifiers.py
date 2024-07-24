@@ -4,7 +4,7 @@
     Modifiers are using in `DEFAULTS` second element of the tuple and as `defaults` arguments.
 """
 
-from typing import Dict, Any, Callable, Set, Iterable, Tuple
+from typing import Dict, Any, Callable, Set, Iterable, Tuple, Optional
 
 TModifier = Callable[[Dict[str, Any]], Dict[str, Any]]
 
@@ -30,7 +30,7 @@ def set_if_missing(**params: Any) -> TModifier:
     Args:
         **params: Arbitrary keyword arguments representing key-value pairs to set.
     """
-    return lambda updates, kwargs: {
+    return lambda type_kwargs, updates, kwargs: {
         k: v if k not in kwargs else NotSet for k, v in params.items()
     }
 
@@ -42,19 +42,30 @@ class unite(object):
     All child classes should implement `process` method.
 
     Args:
-        **kwargs: Arbitrary keyword arguments representing key-value pairs to unite.
+        * **kwargs: Arbitrary keyword arguments representing key-value pairs to unite.
+        _use_type_kwargs: (default True) A boolean indicating whether to use type kwargs.
+        _empty_not_set: (default False) A boolean indicating whether empty value should be removed from updates.
     """
 
+    use_type_kwargs: bool = True
+    empty_not_set: bool = False
+
     def __init__(self, **kwargs) -> None:
+        self.use_type_kwargs = kwargs.pop("_use_type_kwargs", self.use_type_kwargs)
+        self.empty_not_set = kwargs.pop("_empty_not_set", self.empty_not_set)
         self.params = kwargs
 
     def __call__(
-        self, updates: Dict[str, Any], kwargs: Dict[str, Any]
+        self,
+        type_kwargs: Dict[str, Any],
+        updates: Dict[str, Any],
+        kwargs: Dict[str, Any],
     ) -> Dict[str, Any]:
         """
         Unites the provided updates and kwargs dictionaries with the parameters.
 
         Args:
+            type_kwargs: The default kwargs of the settings type.
             updates: The dictionary with already collected kwargs from default context.
             kwargs: The kwargs passed in the definition of the settings type.
 
@@ -63,20 +74,32 @@ class unite(object):
         """
         result = {}
         for k, v in self.params.items():
+            if k not in type_kwargs:
+                continue
             try:
-                result[k] = self.process(
-                    v, updates.get(k, NotSet), kwargs.get(k, NotSet)
+                process_result = self.process(
+                    v,
+                    type_kwargs[k] if self.use_type_kwargs else NotSet,
+                    updates.get(k, NotSet),
+                    kwargs.get(k, NotSet),
                 )
             except SkipSet:
                 continue
+            else:
+                result[k] = (
+                    NotSet
+                    if self.empty_not_set and not process_result
+                    else process_result
+                )
         return result
 
-    def process(self, value: Any, up: Any, kw: Any) -> Any:
+    def process(self, value: Any, tw: Any, up: Any, kw: Any) -> Any:
         """
         Returns value for the update dictionary.
 
         Args:
             value: The value from the parameter of the modifier.
+            tw: The current value in the type kwargs.
             up: The current value in the update dictionary.
             kw: The current value in the settings kwargs.
 
@@ -86,68 +109,45 @@ class unite(object):
         raise NotImplementedError("Subclass must implement process method")
 
 
-class unite_empty_not_set(unite):
-    """
-    unite, that is used for removing elements from the object. For example - making a smaller set or removing text from a string.
-
-    It adds an additional parameter `_empty_not_set: bool = True` that answers the question - should we remove value from updates if it is empty.
-
-    Args:
-        _empty_not_set: A boolean indicating whether to remove empty values from updates.
-        **kwargs: Arbitrary keyword arguments representing key-value pairs to unite.
-    """
-
-    empty_not_set: bool = True
-
-    def __init__(self, _empty_not_set: bool = True, **kwargs) -> None:
-        self.empty_not_set = _empty_not_set
-        super().__init__(**kwargs)
-
-    def __call__(self, *args, **kwargs) -> Dict[str, Any]:
-        """
-        Unites the provided updates and kwargs dictionaries with the parameters, removing empty values if specified.
-
-        Args:
-            *args: Positional arguments.
-            **kwargs: Keyword arguments.
-
-        Returns:
-            A dictionary with united key-value pairs, with empty values removed if specified.
-        """
-        ret = super().__call__(*args, **kwargs)
-        if not self.empty_not_set:
-            return ret
-        return {k: v if v else NotSet for k, v in ret.items()}
-
-
 class unite_set_add(unite):
     """
     unite that modifies a set by adding new values in it.
     """
 
     def process(
-        self, value: Iterable[Any], up: Iterable[Any], kw: Iterable[Any]
+        self,
+        value: Iterable[Any],
+        tw: Optional[Iterable[Any]],
+        up: Optional[Iterable[Any]],
+        kw: Optional[Iterable[Any]],
     ) -> Set[Any]:
         return (
             set(value)
-            | (set(up) if up is not NotSet else set())
-            | (set(kw) if kw is not NotSet else set())
+            | (set(up) if up and up is not NotSet else set())
+            | (set(kw) if kw and kw is not NotSet else set())
+            | (set(tw) if tw and tw is not NotSet else set())
         )
 
 
-class unite_set_remove(unite_empty_not_set):
+class unite_set_remove(unite):
     """
     unite that modifies a set by removing given values.
 
     """
 
+    empty_not_set: bool = True
+
     def process(
-        self, value: Iterable[Any], up: Iterable[Any], kw: Iterable[Any]
+        self,
+        value: Iterable[Any],
+        tw: Optional[Iterable[Any]],
+        up: Optional[Iterable[Any]],
+        kw: Optional[Iterable[Any]],
     ) -> Set[Any]:
         if up is NotSet or not up:
             raise SkipSet()
 
-        return set(up) - set(value) | (set(kw) if kw is not NotSet else set())
+        return set(up) - set(value) | (set(kw) if kw and kw is not NotSet else set())
 
 
 class unite_tuple_add(unite):
@@ -156,12 +156,20 @@ class unite_tuple_add(unite):
     """
 
     def process(
-        self, value: Iterable[Any], up: Iterable[Any], kw: Iterable[Any]
+        self,
+        value: Iterable[Any],
+        tw: Optional[Iterable[Any]],
+        up: Optional[Iterable[Any]],
+        kw: Optional[Iterable[Any]],
     ) -> Tuple[Any]:
-        if up is not NotSet:
+        if up and up is not NotSet:
             old_value = up
-        elif kw is not NotSet:
+        elif kw and kw is not NotSet:
             old_value = kw
+            if tw and tw is not NotSet:
+                old_value = tuple(old_value) + tuple(tw)
+        elif tw and tw is not NotSet:
+            old_value = tw
         else:
             old_value = ()
         return tuple(value) + tuple(old_value)
@@ -173,12 +181,17 @@ class unite_dict_update(unite):
     """
 
     def process(
-        self, value: Dict[str, Any], up: Dict[str, Any], kw: Dict[str, Any]
+        self,
+        value: Dict[str, Any],
+        tw: Optional[Dict[str, Any]],
+        up: Optional[Dict[str, Any]],
+        kw: Optional[Dict[str, Any]],
     ) -> Dict[str, Any]:
         return {
-            **(up if up is not NotSet else {}),
+            **(up if up and up is not NotSet else {}),
             **value,
-            **(kw if kw is not NotSet else {}),
+            **(kw if kw and kw is not NotSet else {}),
+            **(tw if tw and tw is not NotSet else {}),
         }
 
 
@@ -223,11 +236,17 @@ class unite_str(unite):
         self._format = _format
         super().__init__(**kwargs)
 
-    def process(self, value: Any, up: Any, kw: Any) -> str:
-        if up is not NotSet:
+    def process(
+        self, value: Any, tw: Optional[Any], up: Optional[Any], kw: Optional[Any]
+    ) -> str:
+        if up and up is not NotSet:
             old_value = up
-        elif kw is not NotSet:
+        elif kw and kw is not NotSet:
             old_value = kw
+            if tw and tw is not NotSet:
+                old_value = self._format.format(new_value=kw, old_value=tw)
+        elif tw and tw is not NotSet:
+            old_value = tw
         else:
             old_value = ""
 
@@ -279,9 +298,13 @@ class add_widget_class(unite_dict_update):
         super().__init__(widget_attrs={"class": class_name})
 
     def process(
-        self, value: Dict[str, Any], up: Dict[str, Any], kw: Dict[str, Any]
+        self,
+        value: Dict[str, Any],
+        tw: Optional[Dict[str, Any]],
+        up: Optional[Dict[str, Any]],
+        kw: Optional[Dict[str, Any]],
     ) -> Dict[str, Any]:
-        ret = super().process(value, up, kw)
+        ret = super().process(value, tw, up, kw)
         if up is NotSet and kw is NotSet:
             return ret
 
@@ -289,12 +312,17 @@ class add_widget_class(unite_dict_update):
             set(value["class"].split())
             | (
                 set(up["class"].split())
-                if up is not NotSet and "class" in up
+                if up and up is not NotSet and "class" in up
                 else set()
             )
             | (
                 set(kw["class"].split())
-                if kw is not NotSet and "class" in kw
+                if kw and kw is not NotSet and "class" in kw
+                else set()
+            )
+            | (
+                set(tw["class"].split())
+                if tw and tw is not NotSet and "class" in tw
                 else set()
             )
         )

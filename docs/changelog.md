@@ -6,6 +6,11 @@
 
 [Issuses left for releasing v1](https://github.com/occipital/django-content-settings/labels/v1)
 
+#### master
+
+* fix bug with assign only attributes (not methods)
+* 📖 defaults takes type arguments into account - you can now extend `yeses` and `noes` into `CONTENT_SETTINGS_DEFAULTS`
+
 #### 0.18.2 CallToPythonMixin.call_prepare_func
 
 * `SimpleFunc` a very basic template type.
