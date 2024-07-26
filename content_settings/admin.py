@@ -179,9 +179,9 @@ class ContentSettingAdmin(admin.ModelAdmin):
     ]
     history_list_display = ["value"]
     form = ContentSettingFormWithChainValidation
-    actions = ["export_as_json"]
+    actions = ["export_as_json", "view_as_json"]
 
-    def export_as_json(self, request, queryset):
+    def export_as_json(self, request, queryset, download=True):
         data = {}
         data_settings = data["settings"] = {}
         for cs in queryset:
@@ -199,11 +199,20 @@ class ContentSettingAdmin(admin.ModelAdmin):
                     "version": cs.version,
                 }
         response = HttpResponse(content_type="application/json")
-        response["Content-Disposition"] = 'attachment; filename="content_settings.json"'
+        if download:
+            response["Content-Disposition"] = (
+                'attachment; filename="content_settings.json"'
+            )
+
         json.dump(data, response, indent=2)
         return response
 
     export_as_json.short_description = _("Export selected content settings")
+
+    def view_as_json(self, request, queryset):
+        return self.export_as_json(request, queryset, download=False)
+
+    view_as_json.short_description = _("View selected content settings as JSON")
 
     def save_model(self, request, obj, form, change):
         if user_able_to_update(request.user, obj.name, obj.user_defined_type):
@@ -804,6 +813,11 @@ class ContentSettingAdmin(admin.ModelAdmin):
         * JSON text field
 
         The view assumes that all of the data is migrated and values in database are aligned with the types.
+
+        The view has too many lines of code for several reasons:
+        * the code includes a lot of check for the json format itself
+        * the view inlcudes two actions - peview results and apply results
+        * the view inludes logic for user defined types
         """
         # ? has permission
         raw_json = '{"settings": {}}'
