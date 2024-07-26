@@ -1,0 +1,82 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls %}
+
+{% block content %}
+<div id="content-main">
+    <form action="{% url 'admin:import_json' %}" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="content_settings_full_checksum" value="{{CONTENT_SETTINGS.full_checksum}}">
+        {% csrf_token %}
+
+        <fieldset class="module aligned">
+            <div class="form-row">
+                <label for="json_file">{% trans "JSON File" %}:</label>
+                <input type="file" name="json_file" id="json_file">
+            </div>
+            <div class="form-row">
+                <label for="raw_json">{% trans "JSON Text" %}:</label>
+                <textarea name="raw_json" id="raw_json" style="width: 100%; height: 200px;">{{ raw_json|escape }}</textarea>
+            </div>
+        </fieldset>
+        {% if errors %}
+            <h2>{% trans "Errors" %}</h2>
+            <table>
+                <tr>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "Reason" %}</th>
+                </tr>
+                {% for error in errors %}
+                    <tr>
+                        <td>{{ error.name }}</td>
+                        <td>{{ error.reason }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+        {% if applied %}
+            <h2>{% trans "Applied Changes" %}</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>&nbsp;</th>
+                        <th>{% trans "Name" %}</th>
+                        <th>{% trans "Old Value" %}</th>
+                        <th>{% trans "New Value" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in applied %}
+                        <tr>
+                            <td><input type="checkbox" name="_applied" value="{{ item.name }}" checked></td>
+                            <td>{{ item.name }}</td>
+                            <td><pre>{{ item.old_value|escape }}</pre></td>
+                            <td><pre>{{ item.new_value|escape }}</pre></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        {% if skipped %}
+            <h2>{% trans "Skipped" %}</h2>
+            <table>
+                <tr>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "Reason" %}</th>
+                </tr>
+                {% for item in skipped %}
+                    <tr>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.reason }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+        <div class="submit-row">
+            <input type="submit" value="{% trans 'Preview' %}" class="default" name="_preview">
+            {% if applied and preview_on_site_allowed %}
+                <input id="preview_on_site" type="checkbox" name="preview_on_site" checked> <label for="preview_on_site">{% trans "Preview on Site" %}</label>
+                <input type="submit" value="{% trans 'Import' %}" class="default" name="_import">
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}

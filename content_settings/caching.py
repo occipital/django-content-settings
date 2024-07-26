@@ -160,10 +160,11 @@ def get_type_by_name(name):
     if name in ALL:
         return ALL[name]
 
-    if name in DATA.ALL_USER_DEFINES:
-        return DATA.ALL_USER_DEFINES[name]
+    return get_userdefined_type_by_name(name)
 
-    return None
+
+def get_userdefined_type_by_name(name):
+    return DATA.ALL_USER_DEFINES.get(name)
 
 
 def get_value(name, suffix=None):

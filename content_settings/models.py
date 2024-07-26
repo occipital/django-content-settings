@@ -218,6 +218,30 @@ class UserPreview(models.Model):
     from_value = models.TextField(verbose_name=_("From Value"))
     value = models.TextField(verbose_name=_("Value"))
 
+    @classmethod
+    def add_by_user(cls, user: User, name: str, value: str, from_value: str):
+        """
+        Adding the setting to the user's preview settings.
+        """
+
+        try:
+            preview_setting = cls.objects.get(user=user, name=name)
+        except cls.DoesNotExist:
+            preview_setting = cls.objects.create(
+                user=user,
+                name=name,
+                value=value,
+                from_value=from_value,
+            )
+        else:
+            preview_setting.value = value
+            preview_setting.save()
+
+        UserPreviewHistory.user_record(
+            user, preview_setting, UserPreviewHistory.STATUS_CREATED
+        )
+        return preview_setting
+
     class Meta:
         unique_together = (("user", "name"),)
 

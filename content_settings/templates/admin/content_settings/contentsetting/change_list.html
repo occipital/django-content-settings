@@ -48,6 +48,15 @@ nav[aria-label=Breadcrumbs] .breadcrumbs.breadcrumbs_help {
 </style>
 {% endblock %}
 
+{% block object-tools-items %}
+    {{ block.super }}
+    <li>
+        <a href="{% url 'admin:import_json' %}" class="addlink">
+            {% trans "Import JSON" %}
+        </a>
+    </li>
+{% endblock %}
+
 {% block result_list %}
 <div id="toolbar">
     <div id="tags_toolbar">
