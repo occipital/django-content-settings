@@ -10,7 +10,10 @@ from django.utils import timezone
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
+from django.urls import reverse
+
 from typing import Optional
+from datetime import timedelta
 
 User = get_user_model()
 
@@ -143,6 +146,28 @@ class HistoryContentSetting(models.Model):
         last_setting.user = user
         last_setting.by_user = user is not None
         last_setting.save()
+
+    # http://127.0.0.1:8000/admin/content_settings/historycontentsetting/?name=AFTER_TITLE&created_on__gte=2024-06-30T18:58:18.564360&created_on__lte=2024-06-30T19:00:18.564360&user_id=1&by_user=1
+    @property
+    def admin_url_batch_changes(self):
+        params = [
+            f"created_on__gte={(self.created_on - timedelta(minutes=1)).replace(tzinfo=None).isoformat()}",
+            f"created_on__lte={(self.created_on + timedelta(minutes=1)).replace(tzinfo=None).isoformat()}",
+        ]
+
+        if self.user:
+            params.append(f"user_id={self.user_id}")
+
+        if self.by_user is None:
+            params.append("by_user__isnull=1")
+        else:
+            params.append(f"by_user={int(self.by_user)}")
+
+        return (
+            reverse("admin:content_settings_historycontentsetting_changelist")
+            + "?"
+            + "&".join(params)
+        )
 
     @classmethod
     def gen_unique_records(cls, name):

@@ -588,38 +588,42 @@ class ContentSettingAdmin(admin.ModelAdmin):
             path(
                 "preview/",
                 self.admin_site.admin_view(self.preview_setting),
-                name="preview_setting",
+                name="content_settings_preview_setting",
             ),
-            path("add-tag/", self.admin_site.admin_view(self.add_tag), name="add_tag"),
+            path(
+                "add-tag/",
+                self.admin_site.admin_view(self.add_tag),
+                name="content_settings_add_tag",
+            ),
             path(
                 "remove-tag/",
                 self.admin_site.admin_view(self.remove_tag),
-                name="remove_tag",
+                name="content_settings_remove_tag",
             ),
             path(
                 "context-tags/",
                 self.admin_site.admin_view(self.context_tags_view),
-                name="context_tags",
+                name="content_settings_context_tags",
             ),
             path(
                 "apply-preview-on-site/",
                 self.admin_site.admin_view(self.apply_preview_on_site),
-                name="apply_preview_on_site",
+                name="content_settings_apply_preview_on_site",
             ),
             path(
                 "reset-preview-on-site/",
                 self.admin_site.admin_view(self.reset_preview_on_site),
-                name="reset_preview_on_site",
+                name="content_settings_reset_preview_on_site",
             ),
             path(
                 "remove-preview-on-site/",
                 self.admin_site.admin_view(self.remove_preview_on_site),
-                name="remove_preview_on_site",
+                name="content_settings_remove_preview_on_site",
             ),
             path(
                 "import-json/",
                 self.admin_site.admin_view(self.import_json_view),
-                name="import_json",
+                name="content_settings_import_json",
             ),
         ]
         return custom_urls + urls
@@ -854,6 +858,34 @@ class ContentSettingAdmin(admin.ModelAdmin):
                 raw_json = request.FILES["json_file"].read().decode("utf-8")
             elif "raw_json" in request.POST:
                 raw_json = request.POST["raw_json"]
+        else:
+            if "history_ids" in request.GET:
+                history_ids = request.GET["history_ids"].split(",")
+                history_records = HistoryContentSetting.objects.filter(
+                    id__in=[int(id) for id in history_ids]
+                )
+                raw_json = json.dumps(
+                    {
+                        "settings": {
+                            history_record.name: (
+                                {
+                                    "value": history_record.value,
+                                    "version": history_record.version,
+                                    "tags": history_record.tags,
+                                    "help": history_record.help,
+                                    "user_defined_type": history_record.user_defined_type,
+                                }
+                                if history_record.user_defined_type
+                                else {
+                                    "value": history_record.value,
+                                    "version": history_record.version,
+                                }
+                            )
+                            for history_record in history_records
+                        }
+                    },
+                    indent=2,
+                )
 
         core_context = {
             "title": _("Import Content Settings"),
@@ -1187,6 +1219,18 @@ class HistoryContentSettingAdmin(admin.ModelAdmin):
         "name",
     ]
     search_fields = ["name", "value", "tags", "help"]
+    actions = [
+        "export_as_json",
+    ]
+
+    def export_as_json(self, request, queryset):
+        ids = dict(queryset.order_by("-id").values_list("name", "id"))
+        return HttpResponseRedirect(
+            reverse("admin:content_settings_import_json")
+            + f'?history_ids={",".join(map(str, ids.values()))}'
+        )
+
+    export_as_json.short_description = _("Export selected history records as JSON")
 
     def has_delete_permission(self, request, obj=None):
         return False

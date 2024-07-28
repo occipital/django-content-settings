@@ -3,7 +3,7 @@
 
 {% block content %}
 <div id="content-main">
-    <form action="{% url 'admin:import_json' %}" method="post" enctype="multipart/form-data">
+    <form action="{% url 'admin:content_settings_import_json' %}" method="post" enctype="multipart/form-data">
         <input type="hidden" name="content_settings_full_checksum" value="{{CONTENT_SETTINGS.full_checksum}}">
         {% csrf_token %}
 
@@ -48,10 +48,8 @@
                         <tr>
                             <td><input type="checkbox" name="_applied" value="{{ item.name }}" checked></td>
                             <td>{{ item.name }}</td>
-                            <td>{% if item.old_value %}
-                                {% for key, value in item.old_value.items %}<b>{{ key }}</b>: <br> {{ value|escape }}<br>{% endfor %}
-                            {% endif %}</td>
-                            <td>{% for key, value in item.new_value.items %}<b>{{ key }}</b>: <br> {{ value|escape }}<br>{% endfor %}</td>
+                            <td><pre>{{ item.old_value|escape }}</pre></td>
+                            <td><pre>{{ item.new_value|escape }}</pre></td>
                         </tr>
                     {% endfor %}
                 </tbody>
