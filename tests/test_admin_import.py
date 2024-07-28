@@ -9,6 +9,7 @@ pytestmark = [pytest.mark.django_db(transaction=True)]
 
 
 def test_not_valid_json(webtest_admin):
+    """Test that submitting invalid JSON returns an error message."""
     resp = webtest_admin.post(
         "/admin/content_settings/contentsetting/import-json/",
         {"raw_json": "not valid json"},
@@ -19,6 +20,7 @@ def test_not_valid_json(webtest_admin):
 
 
 def test_wrong_format(webtest_admin):
+    """Test that submitting JSON with incorrect top-level structure returns an error."""
     resp = webtest_admin.post(
         "/admin/content_settings/contentsetting/import-json/",
         {
@@ -34,6 +36,7 @@ def test_wrong_format(webtest_admin):
 
 
 def test_wrong_format_settings_dict(webtest_admin):
+    """Test that submitting settings as a list instead of a dictionary returns an error."""
     resp = webtest_admin.post(
         "/admin/content_settings/contentsetting/import-json/",
         {"raw_json": json.dumps({"settings": ["XARCHER_DEVIDER"]})},
@@ -45,6 +48,7 @@ def test_wrong_format_settings_dict(webtest_admin):
 
 
 def test_value_is_the_same(webtest_admin):
+    """Test that submitting a setting with the same value as existing is skipped."""
     resp = webtest_admin.post(
         "/admin/content_settings/contentsetting/import-json/",
         {
@@ -63,6 +67,7 @@ def test_value_is_the_same(webtest_admin):
 
 
 def test_value_is_not_set(webtest_admin):
+    """Test that submitting a setting without a 'value' field returns an error."""
     resp = webtest_admin.post(
         "/admin/content_settings/contentsetting/import-json/",
         {"raw_json": json.dumps({"settings": {"XARCHER_DEVIDER": {"version": "old"}}})},
@@ -72,11 +77,12 @@ def test_value_is_not_set(webtest_admin):
     assert resp.context["skipped"] == []
     assert resp.context["applied"] == []
     assert resp.context["errors"] == [
-        {"name": "XARCHER_DEVIDER", "reason": "Value is not set or not a string"}
+        {"name": "XARCHER_DEVIDER", "reason": '"value" is not set or not a string'}
     ]
 
 
 def test_value_is_not_string(webtest_admin):
+    """Test that submitting a non-string value for a setting returns an error."""
     resp = webtest_admin.post(
         "/admin/content_settings/contentsetting/import-json/",
         {
@@ -90,11 +96,12 @@ def test_value_is_not_string(webtest_admin):
     assert resp.context["skipped"] == []
     assert resp.context["applied"] == []
     assert resp.context["errors"] == [
-        {"name": "XARCHER_DEVIDER", "reason": "Value is not set or not a string"}
+        {"name": "XARCHER_DEVIDER", "reason": '"value" is not set or not a string'}
     ]
 
 
 def test_version_is_not_set(webtest_admin):
+    """Test that submitting a setting without a 'version' field returns an error."""
     resp = webtest_admin.post(
         "/admin/content_settings/contentsetting/import-json/",
         {"raw_json": json.dumps({"settings": {"XARCHER_DEVIDER": {"value": "1"}}})},
@@ -104,11 +111,12 @@ def test_version_is_not_set(webtest_admin):
     assert resp.context["skipped"] == []
     assert resp.context["applied"] == []
     assert resp.context["errors"] == [
-        {"name": "XARCHER_DEVIDER", "reason": "Version is not set or not a string"}
+        {"name": "XARCHER_DEVIDER", "reason": '"version" is not set or not a string'}
     ]
 
 
 def test_version_is_not_string(webtest_admin):
+    """Test that submitting a non-string version for a setting returns an error."""
     resp = webtest_admin.post(
         "/admin/content_settings/contentsetting/import-json/",
         {
@@ -122,7 +130,7 @@ def test_version_is_not_string(webtest_admin):
     assert resp.context["skipped"] == []
     assert resp.context["applied"] == []
     assert resp.context["errors"] == [
-        {"name": "XARCHER_DEVIDER", "reason": "Version is not set or not a string"}
+        {"name": "XARCHER_DEVIDER", "reason": '"version" is not set or not a string'}
     ]
 
 
@@ -207,7 +215,12 @@ def test_value_applied(webtest_admin):
     assert resp.status_int == 200
     assert resp.context["skipped"] == []
     assert resp.context["applied"] == [
-        {"name": "XARCHER_DEVIDER", "old_value": "10", "new_value": "9"}
+        {
+            "name": "XARCHER_DEVIDER",
+            "old_value": "10",
+            "new_value": "9",
+            "full": {"value": "9"},
+        }
     ]
     assert resp.context["errors"] == []
 
@@ -380,12 +393,582 @@ def test_checksum_import(webtest_admin):
     assert ContentSetting.objects.get(name="XARCHER_DEVIDER").value == "9"
 
 
-# TODO Export:
-# TODO Import:
-# no permissions
-# file not valid
-# the value is not valid
-# admin checksum is changed
-# submit in preview
-# submit in value
-# preview on site should not be shown for minimal settings
+@pytest.mark.skipif(not testing_settings_full, reason="Only for full testing settings")
+def test_userdeined_applied(webtest_admin):
+    from content_settings.conf import content_settings
+
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/import-json/",
+        {
+            "raw_json": json.dumps(
+                {
+                    "settings": {
+                        "GIG": {
+                            "value": "1",
+                            "tags": "",
+                            "help": "",
+                            "version": "",
+                            "user_defined_type": "bool",
+                        }
+                    }
+                }
+            ),
+            "content_settings_full_checksum": content_settings.full_checksum,
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.context["applied"] == [
+        {
+            "name": "GIG",
+            "new_value": {
+                "value": "1",
+                "tags": "",
+                "help": "",
+                "version": "",
+                "user_defined_type": "bool",
+            },
+            "full": {
+                "value": "1",
+                "tags": "",
+                "help": "",
+                "version": "",
+                "user_defined_type": "bool",
+            },
+        }
+    ]
+
+
+@pytest.mark.skipif(not testing_settings_full, reason="Only for full testing settings")
+def test_userdeined_applied_update(webtest_admin):
+    from content_settings.conf import content_settings
+
+    ContentSetting.objects.create(
+        name="GIG", value="0", tags="", help="", version="", user_defined_type="bool"
+    )
+
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/import-json/",
+        {
+            "raw_json": json.dumps(
+                {
+                    "settings": {
+                        "GIG": {
+                            "value": "1",
+                            "tags": "",
+                            "help": "",
+                            "version": "",
+                            "user_defined_type": "bool",
+                        }
+                    }
+                }
+            ),
+            "content_settings_full_checksum": content_settings.full_checksum,
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.context["applied"] == [
+        {
+            "name": "GIG",
+            "old_value": {"value": "0"},
+            "new_value": {"value": "1"},
+            "full": {
+                "value": "1",
+                "tags": "",
+                "help": "",
+                "version": "",
+                "user_defined_type": "bool",
+            },
+        }
+    ]
+
+
+@pytest.mark.skipif(not testing_settings_full, reason="Only for full testing settings")
+def test_userdeined_skiped(webtest_admin):
+    from content_settings.conf import content_settings
+
+    ContentSetting.objects.create(
+        name="GIG", value="1", tags="", help="", version="", user_defined_type="bool"
+    )
+
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/import-json/",
+        {
+            "raw_json": json.dumps(
+                {
+                    "settings": {
+                        "GIG": {
+                            "value": "1",
+                            "tags": "",
+                            "help": "",
+                            "version": "",
+                            "user_defined_type": "bool",
+                        }
+                    }
+                }
+            ),
+            "content_settings_full_checksum": content_settings.full_checksum,
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.context["applied"] == []
+    assert resp.context["skipped"] == [{"name": "GIG", "reason": "Value is the same"}]
+
+
+@pytest.mark.skipif(not testing_settings_full, reason="Only for full testing settings")
+def test_userdeined_applied_update_tags(webtest_admin):
+    from content_settings.conf import content_settings
+
+    ContentSetting.objects.create(
+        name="GIG",
+        value="0",
+        tags="general",
+        help="",
+        version="",
+        user_defined_type="bool",
+    )
+
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/import-json/",
+        {
+            "raw_json": json.dumps(
+                {
+                    "settings": {
+                        "GIG": {
+                            "value": "1",
+                            "tags": "new",
+                            "help": "",
+                            "version": "",
+                            "user_defined_type": "bool",
+                        }
+                    }
+                }
+            ),
+            "content_settings_full_checksum": content_settings.full_checksum,
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.context["applied"] == [
+        {
+            "name": "GIG",
+            "old_value": {"value": "0", "tags": "general"},
+            "new_value": {"value": "1", "tags": "new"},
+            "full": {
+                "value": "1",
+                "tags": "new",
+                "help": "",
+                "version": "",
+                "user_defined_type": "bool",
+            },
+        }
+    ]
+
+
+@pytest.mark.skipif(not testing_settings_full, reason="Only for full testing settings")
+def test_userdeined_skiped_tags(webtest_admin):
+    from content_settings.conf import content_settings
+
+    ContentSetting.objects.create(
+        name="GIG",
+        value="1",
+        tags="general\nnew",
+        help="",
+        version="",
+        user_defined_type="bool",
+    )
+
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/import-json/",
+        {
+            "raw_json": json.dumps(
+                {
+                    "settings": {
+                        "GIG": {
+                            "value": "1",
+                            "tags": "new\ngeneral",
+                            "help": "",
+                            "version": "",
+                            "user_defined_type": "bool",
+                        }
+                    }
+                }
+            ),
+            "content_settings_full_checksum": content_settings.full_checksum,
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.context["applied"] == []
+    assert resp.context["skipped"] == [{"name": "GIG", "reason": "Value is the same"}]
+
+
+@pytest.mark.skipif(not testing_settings_full, reason="Only for full testing settings")
+def test_userdeined_error_validated(webtest_admin):
+    from content_settings.conf import content_settings
+
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/import-json/",
+        {
+            "raw_json": json.dumps(
+                {
+                    "settings": {
+                        "GIG": {
+                            "value": "uno",
+                            "tags": "",
+                            "help": "",
+                            "version": "",
+                            "user_defined_type": "bool",
+                        }
+                    }
+                }
+            ),
+            "content_settings_full_checksum": content_settings.full_checksum,
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.context["applied"] == []
+    assert resp.context["errors"] == [
+        {
+            "name": "GIG",
+            "reason": "[\"Value cannot be 'yes', 'true', '1', '+', 'ok', 'no', 'not', 'false', '0', '-', empty only\"]",
+        }
+    ]
+
+
+@pytest.mark.skipif(not testing_settings_full, reason="Only for full testing settings")
+def test_userdeined_error_wrong_type(webtest_admin):
+    from content_settings.conf import content_settings
+
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/import-json/",
+        {
+            "raw_json": json.dumps(
+                {
+                    "settings": {
+                        "GIG": {
+                            "value": "uno",
+                            "tags": "",
+                            "help": "",
+                            "version": "",
+                            "user_defined_type": "float",
+                        }
+                    }
+                }
+            ),
+            "content_settings_full_checksum": content_settings.full_checksum,
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.context["applied"] == []
+    assert resp.context["errors"] == [
+        {"name": "GIG", "reason": "Invalid user_defined_type"}
+    ]
+
+
+@pytest.mark.skipif(not testing_settings_full, reason="Only for full testing settings")
+def test_userdeined_error_invalid_format(webtest_admin):
+    from content_settings.conf import content_settings
+
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/import-json/",
+        {
+            "raw_json": json.dumps(
+                {
+                    "settings": {
+                        "GIG": {
+                            "tags": "",
+                            "help": "",
+                            "version": "",
+                            "user_defined_type": "bool",
+                        }
+                    }
+                }
+            ),
+            "content_settings_full_checksum": content_settings.full_checksum,
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.context["applied"] == []
+    assert resp.context["errors"] == [
+        {"name": "GIG", "reason": '"value" is not set or not a string'}
+    ]
+
+
+@pytest.mark.skipif(not testing_settings_full, reason="Only for full testing settings")
+def test_userdeined_error_invalid_format_int(webtest_admin):
+    from content_settings.conf import content_settings
+
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/import-json/",
+        {
+            "raw_json": json.dumps(
+                {
+                    "settings": {
+                        "GIG": {
+                            "value": 1,
+                            "tags": "",
+                            "help": "",
+                            "version": "",
+                            "user_defined_type": "bool",
+                        }
+                    }
+                }
+            ),
+            "content_settings_full_checksum": content_settings.full_checksum,
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.context["applied"] == []
+    assert resp.context["errors"] == [
+        {"name": "GIG", "reason": '"value" is not set or not a string'}
+    ]
+
+
+@pytest.mark.skipif(not testing_settings_full, reason="Only for full testing settings")
+def test_userdeined_error_invalid_version(webtest_admin):
+    from content_settings.conf import content_settings
+
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/import-json/",
+        {
+            "raw_json": json.dumps(
+                {
+                    "settings": {
+                        "GIG": {
+                            "value": "1",
+                            "tags": "",
+                            "help": "",
+                            "version": "1",
+                            "user_defined_type": "bool",
+                        }
+                    }
+                }
+            ),
+            "content_settings_full_checksum": content_settings.full_checksum,
+        },
+    )
+
+    assert resp.status_int == 200
+    assert resp.context["applied"] == []
+    assert resp.context["errors"] == [{"name": "GIG", "reason": "Invalid version"}]
+
+
+@pytest.mark.skipif(testing_settings_min, reason="Only for non min testing settings")
+def test_prevent_chain_import_with_userdefined(webtest_admin):
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/import-json/",
+        {
+            "raw_json": json.dumps(
+                {
+                    "settings": {
+                        "XARCHER_DEVIDER": {"value": "0", "version": ""},
+                        "GIG": {
+                            "value": "1",
+                            "tags": "",
+                            "help": "",
+                            "version": "",
+                            "user_defined_type": "bool",
+                        },
+                    }
+                }
+            ),
+            "_applied": ["XARCHER_DEVIDER"],
+            "_import": "Import",
+        },
+    )
+
+    assert resp.status_int == 200
+    assert b"Error validating XSHOT_CALCULATION" in resp.content
+
+
+@pytest.mark.skipif(testing_settings_min, reason="Only for non min testing settings")
+def test_prevent_chain_import_with_userdefined_updated(webtest_admin):
+    ContentSetting.objects.create(
+        name="GIG", value="0", tags="", help="", version="", user_defined_type="bool"
+    )
+
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/import-json/",
+        {
+            "raw_json": json.dumps(
+                {
+                    "settings": {
+                        "XARCHER_DEVIDER": {"value": "0", "version": ""},
+                        "GIG": {
+                            "value": "1",
+                            "tags": "",
+                            "help": "",
+                            "version": "",
+                            "user_defined_type": "bool",
+                        },
+                    }
+                }
+            ),
+            "_applied": ["XARCHER_DEVIDER"],
+            "_import": "Import",
+        },
+    )
+
+    assert resp.status_int == 200
+    assert b"Error validating XSHOT_CALCULATION" in resp.content
+
+
+@pytest.mark.skipif(not testing_settings_full, reason="Only for full testing settings")
+def test_userdeined_added(webtest_admin):
+    from content_settings.conf import content_settings
+
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/import-json/",
+        {
+            "raw_json": json.dumps(
+                {
+                    "settings": {
+                        "GIG": {
+                            "value": "1",
+                            "tags": "new",
+                            "help": "",
+                            "version": "",
+                            "user_defined_type": "bool",
+                        }
+                    }
+                }
+            ),
+            "_applied": ["GIG"],
+            "_import": "Import",
+        },
+    )
+
+    assert resp.status_int == 302
+    assert resp.location.endswith("/admin/content_settings/contentsetting/")
+
+    cs = ContentSetting.objects.get(name="GIG")
+    assert cs.value == "1"
+    assert cs.tags == "new"
+    assert cs.help == ""
+    assert cs.version == ""
+    assert cs.user_defined_type == "bool"
+
+
+@pytest.mark.skipif(not testing_settings_full, reason="Only for full testing settings")
+def test_userdeined_added_updated(webtest_admin):
+
+    cs = ContentSetting.objects.create(
+        name="GIG", value="0", tags="", help="", version="", user_defined_type="bool"
+    )
+
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/import-json/",
+        {
+            "raw_json": json.dumps(
+                {
+                    "settings": {
+                        "GIG": {
+                            "value": "1",
+                            "tags": "new",
+                            "help": "",
+                            "version": "",
+                            "user_defined_type": "bool",
+                        }
+                    }
+                }
+            ),
+            "_applied": ["GIG"],
+            "_import": "Import",
+        },
+    )
+
+    assert resp.status_int == 302
+    assert resp.location.endswith("/admin/content_settings/contentsetting/")
+
+    cs.refresh_from_db()
+    assert cs.value == "1"
+    assert cs.tags == "new"
+    assert cs.help == ""
+    assert cs.version == ""
+    assert cs.user_defined_type == "bool"
+
+
+@pytest.mark.skipif(not testing_settings_full, reason="Only for full testing settings")
+def test_userdeined_added_to_preview(webtest_admin, testadmin):
+
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/import-json/",
+        {
+            "raw_json": json.dumps(
+                {
+                    "settings": {
+                        "GIG": {
+                            "value": "1",
+                            "tags": "new",
+                            "help": "",
+                            "version": "",
+                            "user_defined_type": "bool",
+                        }
+                    }
+                }
+            ),
+            "_applied": ["GIG"],
+            "_import": "Import",
+            "preview_on_site": "1",
+        },
+    )
+
+    assert resp.status_int == 302
+    assert resp.location.endswith("/admin/content_settings/contentsetting/")
+
+    up = UserPreview.objects.get(name="GIG", user=testadmin)
+    assert up.value == "1"
+    assert up.tags == "new"
+    assert up.help == ""
+    assert up.user_defined_type == "bool"
+
+
+@pytest.mark.skipif(not testing_settings_full, reason="Only for full testing settings")
+def test_userdeined_added_update_to_preview(webtest_admin, testadmin):
+
+    up = UserPreview.objects.create(
+        name="GIG",
+        user=testadmin,
+        value="0",
+        tags="",
+        help="",
+        user_defined_type="bool",
+    )
+
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/import-json/",
+        {
+            "raw_json": json.dumps(
+                {
+                    "settings": {
+                        "GIG": {
+                            "value": "1",
+                            "tags": "new",
+                            "help": "",
+                            "version": "",
+                            "user_defined_type": "bool",
+                        }
+                    }
+                }
+            ),
+            "_applied": ["GIG"],
+            "_import": "Import",
+            "preview_on_site": "1",
+        },
+    )
+
+    assert resp.status_int == 302
+    assert resp.location.endswith("/admin/content_settings/contentsetting/")
+
+    up.refresh_from_db()
+    assert up.value == "1"
+    assert up.tags == "new"
+    assert up.help == ""
+    assert up.user_defined_type == "bool"

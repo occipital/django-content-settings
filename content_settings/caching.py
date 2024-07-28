@@ -114,18 +114,25 @@ def get_checksum_from_user_local():
     return DATA.ALL_VALUES_USER_CHECKSUM
 
 
-def set_new_type(name, cs):
+def set_new_type(name, user_defined_type, tags_set, help=""):
     from .conf import USER_DEFINED_TYPES_INSTANCE
 
-    cs_type = DATA.ALL_USER_DEFINES.get(name)
+    prev_cs_type = cs_type = DATA.ALL_USER_DEFINES.get(name)
 
-    if not cs_type or cs_type.tags != cs.tags_set or cs_type.help != cs.help:
-        cs_type = USER_DEFINED_TYPES_INSTANCE[cs.user_defined_type](
-            help=cs.help,
-            tags=cs.tags_set,
+    if not cs_type or cs_type.tags != tags_set or cs_type.help != help:
+        cs_type = USER_DEFINED_TYPES_INSTANCE[user_defined_type](
+            help=help,
+            tags=tags_set,
         )
 
     DATA.ALL_USER_DEFINES[name] = cs_type
+    return prev_cs_type
+
+
+def replace_user_type(name, cs_type):
+    prev_cs_type = DATA.ALL_USER_DEFINES.get(name)
+    DATA.ALL_USER_DEFINES[name] = cs_type
+    return prev_cs_type
 
 
 def set_new_value(name, new_value, version=None):
@@ -251,7 +258,9 @@ def reset_user_values(db=None, trigger_checksum=None):
         names.add(name)
         set_new_type(
             name,
-            cs,
+            cs.user_defined_type,
+            cs.tags_set,
+            cs.help,
         )
         set_new_value(
             name,

@@ -629,6 +629,73 @@ def test_admin_preview_on_site_applied(webtest_admin, testadmin):
     assert extract_messages(resp) == ["Preview settings applied"]
 
 
+@pytest.mark.skipif(not testing_settings_full, reason="Only for full testing settings")
+def test_admin_preview_on_site_applied_user_defined_type(webtest_admin, testadmin):
+    """
+    Successfully applied preview, preview should be deleted, and the raw value of the setting should be updated
+    """
+    UserPreview.objects.create(
+        user=testadmin,
+        name="CUSTOM_TITLE",
+        value="Supper New Title",
+        user_defined_type="line",
+        tags="important",
+        help="The Help",
+    )
+
+    resp = webtest_admin.get(
+        "/admin/content_settings/contentsetting/apply-preview-on-site/"
+    )
+    assert resp.status_int == 302
+
+    assert UserPreview.objects.all().count() == 0
+    assert ContentSetting.objects.get(name="CUSTOM_TITLE").value == "Supper New Title"
+
+    resp = webtest_admin.get("/admin/content_settings/contentsetting/")
+    assert resp.status_int == 200
+    assert extract_messages(resp) == ["Preview settings applied"]
+
+
+@pytest.mark.skipif(not testing_settings_full, reason="Only for full testing settings")
+def test_admin_preview_on_site_applied_user_defined_type_update(
+    webtest_admin, testadmin
+):
+    """
+    Successfully applied preview, preview should be deleted, and the raw value of the setting should be updated
+    """
+    ContentSetting.objects.create(
+        name="CUSTOM_TITLE",
+        value="Old Title",
+        user_defined_type="line",
+        tags="important",
+        help="The Help",
+    )
+    UserPreview.objects.create(
+        user=testadmin,
+        name="CUSTOM_TITLE",
+        value="Supper New Title",
+        from_value="Old Title",
+        user_defined_type="line",
+        from_user_defined_type="line",
+        tags="important",
+        from_tags="important",
+        help="The Help",
+        from_help="The Help",
+    )
+
+    resp = webtest_admin.get(
+        "/admin/content_settings/contentsetting/apply-preview-on-site/"
+    )
+    assert resp.status_int == 302
+
+    assert UserPreview.objects.all().count() == 0
+    assert ContentSetting.objects.get(name="CUSTOM_TITLE").value == "Supper New Title"
+
+    resp = webtest_admin.get("/admin/content_settings/contentsetting/")
+    assert resp.status_int == 200
+    assert extract_messages(resp) == ["Preview settings applied"]
+
+
 def test_admin_preview_appliy_fail_no_preview(webtest_admin, testadmin):
     """
     Trying to apply preview when there is no preview settings

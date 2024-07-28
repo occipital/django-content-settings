@@ -48,8 +48,10 @@
                         <tr>
                             <td><input type="checkbox" name="_applied" value="{{ item.name }}" checked></td>
                             <td>{{ item.name }}</td>
-                            <td><pre>{{ item.old_value|escape }}</pre></td>
-                            <td><pre>{{ item.new_value|escape }}</pre></td>
+                            <td>{% if item.old_value %}
+                                {% for key, value in item.old_value.items %}<b>{{ key }}</b>: <br> {{ value|escape }}<br>{% endfor %}
+                            {% endif %}</td>
+                            <td>{% for key, value in item.new_value.items %}<b>{{ key }}</b>: <br> {{ value|escape }}<br>{% endfor %}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

@@ -2,6 +2,8 @@
 Available middlewares for the content settings.
 """
 
+from django.urls import reverse
+
 from .context_managers import content_settings_context
 from .models import UserPreview
 from .settings import PREVIEW_ON_SITE_SHOW
@@ -20,9 +22,13 @@ def preivew_on_site(get_response):
         ):
             return get_response(request)
 
-        preview_settings = dict(
-            UserPreview.objects.filter(user=request.user).values_list("name", "value")
-        )
+        # Ignore if it's the content settings change list
+        if request.path.startswith(
+            reverse("admin:content_settings_contentsetting_changelist")
+        ):
+            return get_response(request)
+
+        preview_settings = UserPreview.get_context_dict(request.user)
         if not preview_settings:
             return get_response(request)
 

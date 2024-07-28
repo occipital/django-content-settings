@@ -21,6 +21,7 @@ def pytest_configure(config):
                 ),
                 ("text", "content_settings.types.basic.SimpleText", "Text"),
                 ("html", "content_settings.types.basic.SimpleHTML", "HTML"),
+                ("bool", "content_settings.types.basic.SimpleBool", "Boolean"),
             ],
             CONTENT_SETTINGS_DEFAULTS=[
                 (

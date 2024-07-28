@@ -6,6 +6,8 @@ from django.contrib.auth import get_user_model
 from content_settings.models import ContentSetting
 from content_settings.context_managers import content_settings_context
 
+from tests import testing_settings_full
+
 pytestmark = [pytest.mark.django_db(transaction=True)]
 
 
@@ -119,6 +121,26 @@ def test_get_simple_text_updated_twice():
         resp = client.get("/books/fetch/all/")
         assert resp.status_code == 200
         assert resp.json()["TITLE"] == "SUPER New Book Store"
+
+
+@pytest.mark.skipif(not testing_settings_full, reason="Testing only with full settings")
+def test_context_user_defined():
+    client = get_anonymous_client()
+    resp = client.get("/books/fetch/general/")
+    assert resp.status_code == 200
+    assert "USER_TITLE" not in resp.json()
+
+    with content_settings_context(
+        USER_TITLE=("My New Title", "line", set(["general"]))
+    ):
+        resp = client.get("/books/fetch/general/")
+        assert resp.status_code == 200
+        assert resp.json()["USER_TITLE"] == "My New Title"
+
+    client = get_anonymous_client()
+    resp = client.get("/books/fetch/general/")
+    assert resp.status_code == 200
+    assert "USER_TITLE" not in resp.json()
 
 
 def test_fetch_suffix():

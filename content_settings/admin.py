@@ -25,8 +25,6 @@ from django.shortcuts import resolve_url
 from django.shortcuts import get_object_or_404
 from django.utils.html import escape
 from django.core.exceptions import ValidationError
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
 
 from .models import (
     ContentSetting,
@@ -38,6 +36,7 @@ from .models import (
 from .context_managers import content_settings_context
 from .conf import (
     USER_DEFINED_TYPES_INSTANCE,
+    USER_DEFINED_TYPES_INITIAL,
     content_settings,
     validate_all_with_context,
 )
@@ -224,12 +223,21 @@ class ContentSettingAdmin(admin.ModelAdmin):
                 return
 
             if "_preview_on_site" in request.POST:
-                UserPreview.add_by_user(
-                    user=request.user,
-                    name=obj.name,
-                    value=obj.value,
-                    from_value=prev_obj.value,
-                )
+                if obj.user_defined_type:
+                    UserPreview.add_by_user(
+                        user=request.user,
+                        name=obj.name,
+                        value=obj.value,
+                        user_defined_type=obj.user_defined_type,
+                        tags=obj.tags_set,
+                        help=obj.help,
+                    )
+                else:
+                    UserPreview.add_by_user(
+                        user=request.user,
+                        name=obj.name,
+                        value=obj.value,
+                    )
             else:
                 super().save_model(request, obj, form, change)
                 HistoryContentSetting.update_last_record_for_name(
@@ -357,10 +365,18 @@ class ContentSettingAdmin(admin.ModelAdmin):
             return False
         return True
 
-    def changeform_view(self, request, *args, **kwargs):
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         if request.method == "POST" and not self.full_checksum_valid(request):
             return HttpResponseRedirect(request.path)
-        return super().changeform_view(request, *args, **kwargs)
+        return super().changeform_view(
+            request,
+            object_id=object_id,
+            form_url=form_url,
+            extra_context={
+                **(extra_context or {}),
+                **self.context_preview_settings(request),
+            },
+        )
 
     def get_changelist_formset(self, request, **kwargs):
         # validation of changing this particular value didn't change other values in the chain
@@ -613,7 +629,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
             UserPreview, user=request.user, name=request.GET["name"]
         )
         UserPreviewHistory.user_record(
-            request.user, preview_setting, UserPreviewHistory.STATUS_REMOVED
+            preview_setting, UserPreviewHistory.STATUS_REMOVED
         )
         preview_setting.delete()
         self.message_user(request, _("Preview setting removed"), messages.SUCCESS)
@@ -646,8 +662,14 @@ class ContentSettingAdmin(admin.ModelAdmin):
                 )
             )
 
+        previews = list(UserPreview.objects.filter(user=request.user))
         preview_context = {
-            p.name: p.value for p in UserPreview.objects.filter(user=request.user)
+            p.name: (
+                p.value
+                if not p.user_defined_type
+                else (p.value, p.user_defined_type, p.tags, p.help)
+            )
+            for p in previews
         }
 
         if not preview_context:
@@ -658,13 +680,15 @@ class ContentSettingAdmin(admin.ModelAdmin):
 
         apply = True
         for name, value in preview_context.items():
-            try:
-                setting = ContentSetting.objects.get(name=name)
-            except ContentSetting.DoesNotExist:
-                UserPreviewHistory.user_record_by_name(
-                    request.user, name, value, UserPreviewHistory.STATUS_IGNORED
+            preview = UserPreview.objects.get(user=request.user, name=name)
+            is_userdefined = isinstance(value, tuple)
+
+            setting = ContentSetting.objects.filter(name=name).first()
+            if not setting and not is_userdefined:
+                UserPreviewHistory.user_record(
+                    preview, UserPreviewHistory.STATUS_IGNORED
                 )
-                UserPreview.objects.filter(user=request.user, name=name).delete()
+                preview.delete()
                 self.message_user(
                     request,
                     _(
@@ -674,51 +698,66 @@ class ContentSettingAdmin(admin.ModelAdmin):
                     messages.WARNING,
                 )
                 apply = False
-            else:
-                cs_type = get_type_by_name(name)
-                if not cs_type.can_update(request.user):
+                continue
+
+            cs_type = (
+                USER_DEFINED_TYPES_INITIAL.get(value[1])
+                if is_userdefined
+                else get_type_by_name(name)
+            )
+            if not cs_type:
+                UserPreviewHistory.user_record(
+                    preview, UserPreviewHistory.STATUS_IGNORED
+                )
+                preview.delete()
+                self.message_user(
+                    request,
+                    _("Setting Type %s doesn't exist") % name,
+                    messages.ERROR,
+                )
+                apply = False
+                continue
+
+            if not cs_type.can_update(request.user):
+                self.message_user(
+                    request,
+                    _("You don't have permissions to update the setting %s") % name,
+                    messages.ERROR,
+                )
+                apply = False
+                continue
+
+            try:
+                cs_type.validate_value(value[0] if is_userdefined else value)
+            except ValidationError as e:
+                self.message_user(request, name + ": " + str(e), messages.ERROR)
+                apply = False
+                continue
+
+            if not is_userdefined and preview.from_value != setting.value:
+                if setting.value == preview.value:
+                    UserPreviewHistory.user_record(
+                        preview, UserPreviewHistory.STATUS_IGNORED
+                    )
+                    preview.delete()
                     self.message_user(
                         request,
-                        _("You don't have permissions to update the setting %s") % name,
-                        messages.ERROR,
+                        _("The value %s was changed already applied") % name,
+                        messages.WARNING,
                     )
-                    apply = False
-                    continue
-
-                try:
-                    cs_type.validate_value(value)
-                except ValidationError as e:
-                    self.message_user(request, name + ": " + str(e), messages.ERROR)
-                    apply = False
-                    continue
-
-                preview = UserPreview.objects.get(user=request.user, name=name)
-                if preview.from_value != setting.value:
-                    if setting.value == preview.value:
-                        UserPreviewHistory.user_record_by_name(
-                            request.user, name, value, UserPreviewHistory.STATUS_IGNORED
+                else:
+                    self.message_user(
+                        request,
+                        _(
+                            "The value %s was changed before applying the preview (check and apply again)"
                         )
-                        UserPreview.objects.filter(
-                            user=request.user, name=name
-                        ).delete()
-                        self.message_user(
-                            request,
-                            _("The value %s was changed already applied") % name,
-                            messages.WARNING,
-                        )
-                    else:
-                        self.message_user(
-                            request,
-                            _(
-                                "The value %s was changed before applying the preview (check and apply again)"
-                            )
-                            % name,
-                            messages.WARNING,
-                        )
-                        preview.from_value = setting.value
-                        preview.save()
-                    apply = False
-                    continue
+                        % name,
+                        messages.WARNING,
+                    )
+                    preview.from_value = setting.value
+                    preview.save()
+                apply = False
+                continue
 
         if not apply:
             return redirect_back()
@@ -728,20 +767,9 @@ class ContentSettingAdmin(admin.ModelAdmin):
             self.message_user(request, str(e), messages.ERROR)
             return redirect_back()
 
-        for name, value in preview_context.items():
-            setting = ContentSetting.objects.get(name=name)
-            setting.value = value
-            setting.save()
-            HistoryContentSetting.update_last_record_for_name(
-                setting.name, request.user
-            )
-            UserPreviewHistory.user_record_by_name(
-                request.user, name, value, UserPreviewHistory.STATUS_APPLIED
-            )
-
-        UserPreview.objects.filter(
-            user=request.user, name__in=preview_context.keys()
-        ).delete()
+        for preview in previews:
+            preview.apply()
+            preview.delete()
         self.message_user(request, _("Preview settings applied"), messages.SUCCESS)
 
         return redirect_back()
@@ -749,7 +777,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
     def reset_preview_on_site(self, request):
         for preview_setting in UserPreview.objects.filter(user=request.user):
             UserPreviewHistory.user_record(
-                request.user, preview_setting, UserPreviewHistory.STATUS_REMOVED
+                preview_setting, UserPreviewHistory.STATUS_REMOVED
             )
             preview_setting.delete()
 
@@ -859,8 +887,82 @@ class ContentSettingAdmin(admin.ModelAdmin):
         for name, value in data["settings"].items():
             cs_type = get_type_by_name(name)
             if "user_defined_type" in value:
-                # User defined types have extended format
-                pass
+                len_errors = len(errors)
+                for key in ["value", "version", "tags", "help"]:
+                    if key not in value or not isinstance(value[key], str):
+                        errors.append(
+                            {
+                                "name": name,
+                                "reason": _('"%s" is not set or not a string' % key),
+                            }
+                        )
+                        break
+                if len(errors) != len_errors:
+                    continue
+
+                cs_type = USER_DEFINED_TYPES_INITIAL.get(value["user_defined_type"])
+                if cs_type is None:
+                    errors.append(
+                        {"name": name, "reason": _("Invalid user_defined_type")}
+                    )
+                    continue
+
+                if cs_type.version != value["version"]:
+                    errors.append({"name": name, "reason": _("Invalid version")})
+                    continue
+
+                if not cs_type.can_update(request.user):
+                    errors.append(
+                        {
+                            "name": name,
+                            "reason": _(
+                                "You don't have permissions to update the setting"
+                            ),
+                        }
+                    )
+                    continue
+
+                try:
+                    cs_type.validate_value(value["value"])
+                except Exception as e:
+                    errors.append({"name": name, "reason": str(e)})
+                    continue
+
+                try:
+                    db_setting = ContentSetting.objects.get(name=name)
+                except ContentSetting.DoesNotExist:
+                    applied.append({"name": name, "new_value": value, "full": value})
+                else:
+                    if not db_setting.user_defined_type:
+                        errors.append(
+                            {"name": name, "reason": _("Setting is not user defined")}
+                        )
+                        continue
+
+                    applied_new_value = {}
+                    applied_old_value = {}
+                    for key, in_value in value.items():
+                        if (
+                            key == "tags"
+                            and set(getattr(db_setting, key).splitlines())
+                            != set(in_value.splitlines())
+                            or key != "tags"
+                            and getattr(db_setting, key) != in_value
+                        ):
+                            applied_new_value[key] = in_value
+                            applied_old_value[key] = getattr(db_setting, key)
+                    if applied_new_value:
+                        applied.append(
+                            {
+                                "name": name,
+                                "old_value": applied_old_value,
+                                "new_value": applied_new_value,
+                                "full": value,
+                            }
+                        )
+                    else:
+                        skipped.append({"name": name, "reason": _("Value is the same")})
+
             else:
                 # Format for Simple types Has only two keys value and version
                 try:
@@ -879,19 +981,17 @@ class ContentSettingAdmin(admin.ModelAdmin):
                     )
                     continue
 
-                if "value" not in value or not isinstance(value["value"], str):
-                    errors.append(
-                        {"name": name, "reason": _("Value is not set or not a string")}
-                    )
-                    continue
-
-                if "version" not in value or not isinstance(value["version"], str):
-                    errors.append(
-                        {
-                            "name": name,
-                            "reason": _("Version is not set or not a string"),
-                        }
-                    )
+                len_errors = len(errors)
+                for key in ["value", "version"]:
+                    if key not in value or not isinstance(value[key], str):
+                        errors.append(
+                            {
+                                "name": name,
+                                "reason": _('"%s" is not set or not a string' % key),
+                            }
+                        )
+                        break
+                if len(errors) != len_errors:
                     continue
 
                 if db_setting.value == value["value"]:
@@ -921,13 +1021,14 @@ class ContentSettingAdmin(admin.ModelAdmin):
                     errors.append({"name": name, "reason": str(e)})
                     continue
 
-            applied.append(
-                {
-                    "name": name,
-                    "old_value": db_setting.value,
-                    "new_value": value["value"],
-                }
-            )
+                applied.append(
+                    {
+                        "name": name,
+                        "old_value": db_setting.value,
+                        "new_value": value["value"],
+                        "full": {"value": value["value"]},
+                    }
+                )
 
         preview_on_site_allowed = (
             request.user.has_perm("content_settings.can_preview_on_site")
@@ -947,9 +1048,25 @@ class ContentSettingAdmin(admin.ModelAdmin):
                 )
 
             applied_names = request.POST.getlist("_applied")
-            prepared_names = {
-                v["name"]: v["new_value"] for v in applied if v["name"] in applied_names
-            }
+            prepared_names = {}
+            for v in applied:
+                if v["name"] not in applied_names:
+                    continue
+
+                data_setting = data["settings"][v["name"]]
+                if "user_defined_type" in data_setting:
+                    prepared_names[v["name"]] = (
+                        data_setting["value"],
+                        data_setting["user_defined_type"],
+                        (
+                            set(data_setting["tags"].splitlines())
+                            if data_setting["tags"]
+                            else set()
+                        ),
+                        data_setting["help"],
+                    )
+                else:
+                    prepared_names[v["name"]] = v["new_value"]
 
             if request.POST.get("preview_on_site") and not preview_on_site_allowed:
                 return response_error(
@@ -972,8 +1089,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
                     UserPreview.add_by_user(
                         user=request.user,
                         name=value["name"],
-                        value=value["new_value"],
-                        from_value=value["old_value"],
+                        **{k: v for k, v in value["full"].items() if k != "version"},
                     )
 
                 self.message_user(
@@ -983,8 +1099,11 @@ class ContentSettingAdmin(admin.ModelAdmin):
                 )
             else:
                 for value in applied:
-                    cs = ContentSetting.objects.get(name=value["name"])
-                    cs.value = value["new_value"]
+                    cs = ContentSetting.objects.filter(name=value["name"]).first()
+                    if not cs:
+                        cs = ContentSetting(name=value["name"])
+                    for key, in_value in value["full"].items():
+                        setattr(cs, key, in_value)
                     cs.save()
 
                     HistoryContentSetting.update_last_record_for_name(

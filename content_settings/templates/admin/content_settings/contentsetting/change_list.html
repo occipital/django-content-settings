@@ -76,7 +76,11 @@ nav[aria-label=Breadcrumbs] .breadcrumbs.breadcrumbs_help {
             {% for item in preview_settings %}
             <tr>
                 <td>{{ item.name }}</td>
-                <td><pre>{{ item.value }}</pre></td>
+                <td><pre>{{ item.value }}</pre><br>
+                    {% if item.user_defined_type %}
+                    <i>Type: {{ item.user_defined_type }}</i>
+                    {% endif %}
+                </td>
                 <td><a href="{% url 'admin:remove_preview_on_site' %}?name={{ item.name }}">{% translate 'Remove' %}</a></td>
             </tr>
             {% endfor %}
