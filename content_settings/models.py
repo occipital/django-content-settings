@@ -132,6 +132,9 @@ class HistoryContentSetting(models.Model):
         ordering = ("-id",)
         indexes = [
             models.Index(fields=["name", "-id"], name="static_cont_name_d40020_idx"),
+            models.Index(
+                fields=["created_on", "user_id", "by_user"], name="static_batch_idx"
+            ),
         ]
 
     @classmethod
@@ -147,7 +150,6 @@ class HistoryContentSetting(models.Model):
         last_setting.by_user = user is not None
         last_setting.save()
 
-    # http://127.0.0.1:8000/admin/content_settings/historycontentsetting/?name=AFTER_TITLE&created_on__gte=2024-06-30T18:58:18.564360&created_on__lte=2024-06-30T19:00:18.564360&user_id=1&by_user=1
     @property
     def admin_url_batch_changes(self):
         params = [
