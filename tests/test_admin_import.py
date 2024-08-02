@@ -242,6 +242,23 @@ def test_value_imported(webtest_admin):
     assert ContentSetting.objects.get(name="XARCHER_DEVIDER").value == "9"
 
 
+def test_value_imported_not_applied(webtest_admin):
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/import-json/",
+        {
+            "raw_json": json.dumps(
+                {"settings": {"XARCHER_DEVIDER": {"value": "9", "version": ""}}}
+            ),
+            "_applied": [],
+            "_import": "Import",
+        },
+    )
+
+    assert resp.status_int == 302
+    assert resp.location.endswith("/admin/content_settings/contentsetting/")
+    assert ContentSetting.objects.get(name="XARCHER_DEVIDER").value == "10"
+
+
 @pytest.mark.skipif(
     testing_settings_min, reason="Only for non minimal testing settings"
 )
@@ -262,6 +279,30 @@ def test_value_imported_preview(webtest_admin, testadmin):
     assert resp.location.endswith("/admin/content_settings/contentsetting/")
     assert ContentSetting.objects.get(name="XARCHER_DEVIDER").value == "10"
     assert UserPreview.objects.filter(user=testadmin, name="XARCHER_DEVIDER").exists()
+
+
+@pytest.mark.skipif(
+    testing_settings_min, reason="Only for non minimal testing settings"
+)
+def test_value_imported_preview_not_applied(webtest_admin, testadmin):
+    resp = webtest_admin.post(
+        "/admin/content_settings/contentsetting/import-json/",
+        {
+            "raw_json": json.dumps(
+                {"settings": {"XARCHER_DEVIDER": {"value": "9", "version": ""}}}
+            ),
+            "_applied": [],
+            "_import": "Import",
+            "preview_on_site": "1",
+        },
+    )
+
+    assert resp.status_int == 302
+    assert resp.location.endswith("/admin/content_settings/contentsetting/")
+    assert ContentSetting.objects.get(name="XARCHER_DEVIDER").value == "10"
+    assert not UserPreview.objects.filter(
+        user=testadmin, name="XARCHER_DEVIDER"
+    ).exists()
 
 
 @pytest.mark.skipif(

@@ -1,7 +1,6 @@
 from typing import Any
 import urllib.parse
 from collections import defaultdict
-import inspect
 import json
 
 from django.contrib import admin
@@ -184,6 +183,10 @@ class ContentSettingAdmin(admin.ModelAdmin):
         data = {}
         data_settings = data["settings"] = {}
         for cs in queryset:
+            cs_type = get_type_by_name(cs.name)
+            if cs_type is None or not cs_type.can_view(request.user):
+                continue
+
             if cs.user_defined_type:
                 data_settings[cs.name] = {
                     "value": cs.value,
@@ -843,6 +846,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
         The sources of the format can be different:
         * JSON file
         * JSON text field
+        * ids of HistoryContentSetting records
 
         The view assumes that all of the data is migrated and values in database are aligned with the types.
 
@@ -1118,6 +1122,8 @@ class ContentSettingAdmin(admin.ModelAdmin):
 
             if request.POST.get("preview_on_site"):
                 for value in applied:
+                    if value["name"] not in applied_names:
+                        continue
                     UserPreview.add_by_user(
                         user=request.user,
                         name=value["name"],
@@ -1131,6 +1137,8 @@ class ContentSettingAdmin(admin.ModelAdmin):
                 )
             else:
                 for value in applied:
+                    if value["name"] not in applied_names:
+                        continue
                     cs = ContentSetting.objects.filter(name=value["name"]).first()
                     if not cs:
                         cs = ContentSetting(name=value["name"])
