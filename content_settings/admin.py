@@ -1213,9 +1213,10 @@ class ContentSettingAdmin(admin.ModelAdmin):
 
 class HistoryContentSettingAdmin(admin.ModelAdmin):
     list_display = [
+        "created_on",
+        "user_defined_type",
         "name",
         "value",
-        "user_defined_type",
         "version",
         "tags",
         "help",
