@@ -131,3 +131,9 @@ Available built in types:
 
 * `"content_settings.tags.changed"` - changed tag to filter only changed settings (the name of the tag can changed in setting `CONTENT_SETTINGS_TAG_CHANGED`)
 * `"content_settings.tags.app_name"` - every setting will have a tag with app name where one was defined
+
+### `CONTENT_SETTINGS_UPDATE_DB_VALUES_BY_MIGRATE`
+
+*default: True*
+
+Sync settings configurations (new version, new setting) after migrations is done. You can turn this function off and use command `content_settings_migrate` (see [commands](commands.md#content_settings_migrate))

@@ -154,14 +154,21 @@ The django page of the history has only one action in the list "Export selected 
 
 ## Notes for Developer
 
-> **How to change the list of available marks**
+> **How to change the list of available marks?**
 
 Use `CONTENT_SETTINGS_USER_TAGS` for that. More about it [here](settings.md#content_settings_user_tags).
 
-> **How to allow users to add new settings through the Django Admin panel**
+> **How to allow users to add new settings through the Django Admin panel?**
 
 You can read about it in the article [User Defined Variables](uservar.md).
 
-> **Settings from the preview on the site group are not shown on the site**
+> **Settings from the preview on the site group are not shown on the site?**
 
 You probably forgot to add `"content_settings.middlewares.preview_on_site"` to `MIDDLEWARE` after `"django.contrib.auth.middleware.AuthenticationMiddleware"`.
+
+> **Do I havethe same functionality in code?**
+
+Yes.
+
+* You can use commands [content_settings_export](commands.md#content_settings_export) and [content_settings_import](commands.md#content_settings_import) to do export/import from command line or bash/shell script
+* You can use [content_settings.export](source.md#export) module to use it in your python code somehow.
