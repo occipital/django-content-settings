@@ -49,6 +49,7 @@ from .settings import (
 )
 from .caching import get_type_by_name
 from .utils import class_names
+from .export import export_to_format, preview_data, import_to
 
 
 def user_able_to_update(user, name, user_defined_type=None):
@@ -180,33 +181,15 @@ class ContentSettingAdmin(admin.ModelAdmin):
     actions = ["export_as_json", "view_as_json"]
 
     def export_as_json(self, request, queryset, download=True):
-        data = {}
-        data_settings = data["settings"] = {}
-        for cs in queryset:
-            cs_type = get_type_by_name(cs.name)
-            if cs_type is None or not cs_type.can_view(request.user):
-                continue
-
-            if cs.user_defined_type:
-                data_settings[cs.name] = {
-                    "value": cs.value,
-                    "tags": cs.tags,
-                    "help": cs.help,
-                    "version": cs.version,
-                    "user_defined_type": cs.user_defined_type,
-                }
-            else:
-                data_settings[cs.name] = {
-                    "value": cs.value,
-                    "version": cs.version,
-                }
+        json_data = export_to_format(
+            row for row in queryset if get_type_by_name(row.name).can_view(request.user)
+        )
         response = HttpResponse(content_type="application/json")
         if download:
             response["Content-Disposition"] = (
                 'attachment; filename="content_settings.json"'
             )
-
-        json.dump(data, response, indent=2)
+        response.write(json_data)
         return response
 
     export_as_json.short_description = _("Export selected content settings")
@@ -855,7 +838,6 @@ class ContentSettingAdmin(admin.ModelAdmin):
         * the view inlcudes two actions - peview results and apply results
         * the view inludes logic for user defined types
         """
-        # ? has permission
         raw_json = '{"settings": {}}'
         if request.method == "POST":
             if "json_file" in request.FILES:
@@ -868,28 +850,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
                 history_records = HistoryContentSetting.objects.filter(
                     id__in=[int(id) for id in history_ids]
                 )
-                raw_json = json.dumps(
-                    {
-                        "settings": {
-                            history_record.name: (
-                                {
-                                    "value": history_record.value,
-                                    "version": history_record.version,
-                                    "tags": history_record.tags,
-                                    "help": history_record.help,
-                                    "user_defined_type": history_record.user_defined_type,
-                                }
-                                if history_record.user_defined_type
-                                else {
-                                    "value": history_record.value,
-                                    "version": history_record.version,
-                                }
-                            )
-                            for history_record in history_records
-                        }
-                    },
-                    indent=2,
-                )
+                raw_json = export_to_format(history_records)
 
         core_context = {
             "title": _("Import Content Settings"),
@@ -917,154 +878,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
                 _("Wrong JSON format. Settings should be a dictionary")
             )
 
-        errors = []
-        applied = []
-        skipped = []
-        for name, value in data["settings"].items():
-            cs_type = get_type_by_name(name)
-            if "user_defined_type" in value:
-                len_errors = len(errors)
-                for key in ["value", "version", "tags", "help"]:
-                    if key not in value or not isinstance(value[key], str):
-                        errors.append(
-                            {
-                                "name": name,
-                                "reason": _('"%s" is not set or not a string' % key),
-                            }
-                        )
-                        break
-                if len(errors) != len_errors:
-                    continue
-
-                cs_type = USER_DEFINED_TYPES_INITIAL.get(value["user_defined_type"])
-                if cs_type is None:
-                    errors.append(
-                        {"name": name, "reason": _("Invalid user_defined_type")}
-                    )
-                    continue
-
-                if cs_type.version != value["version"]:
-                    errors.append({"name": name, "reason": _("Invalid version")})
-                    continue
-
-                if not cs_type.can_update(request.user):
-                    errors.append(
-                        {
-                            "name": name,
-                            "reason": _(
-                                "You don't have permissions to update the setting"
-                            ),
-                        }
-                    )
-                    continue
-
-                try:
-                    cs_type.validate_value(value["value"])
-                except Exception as e:
-                    errors.append({"name": name, "reason": str(e)})
-                    continue
-
-                try:
-                    db_setting = ContentSetting.objects.get(name=name)
-                except ContentSetting.DoesNotExist:
-                    applied.append({"name": name, "new_value": value, "full": value})
-                else:
-                    if not db_setting.user_defined_type:
-                        errors.append(
-                            {"name": name, "reason": _("Setting is not user defined")}
-                        )
-                        continue
-
-                    applied_new_value = {}
-                    applied_old_value = {}
-                    for key, in_value in value.items():
-                        if (
-                            key == "tags"
-                            and set(getattr(db_setting, key).splitlines())
-                            != set(in_value.splitlines())
-                            or key != "tags"
-                            and getattr(db_setting, key) != in_value
-                        ):
-                            applied_new_value[key] = in_value
-                            applied_old_value[key] = getattr(db_setting, key)
-                    if applied_new_value:
-                        applied.append(
-                            {
-                                "name": name,
-                                "old_value": applied_old_value,
-                                "new_value": applied_new_value,
-                                "full": value,
-                            }
-                        )
-                    else:
-                        skipped.append({"name": name, "reason": _("Value is the same")})
-
-            else:
-                # Format for Simple types Has only two keys value and version
-                try:
-                    db_setting = ContentSetting.objects.get(name=name)
-                except ContentSetting.DoesNotExist:
-                    errors.append({"name": name, "reason": _("Setting does not exist")})
-                    continue
-
-                cs_type = get_type_by_name(name)
-                if cs_type is None:
-                    errors.append(
-                        {
-                            "name": name,
-                            "reason": _("Setting does not exist (type not found)"),
-                        }
-                    )
-                    continue
-
-                len_errors = len(errors)
-                for key in ["value", "version"]:
-                    if key not in value or not isinstance(value[key], str):
-                        errors.append(
-                            {
-                                "name": name,
-                                "reason": _('"%s" is not set or not a string' % key),
-                            }
-                        )
-                        break
-                if len(errors) != len_errors:
-                    continue
-
-                if db_setting.value == value["value"]:
-                    skipped.append({"name": name, "reason": _("Value is the same")})
-                    continue
-
-                if db_setting.version != value["version"]:
-                    errors.append(
-                        {"name": name, "reason": _("Version is not the same")}
-                    )
-                    continue
-
-                if not cs_type.can_update(request.user):
-                    errors.append(
-                        {
-                            "name": name,
-                            "reason": _(
-                                "You don't have permissions to update the setting"
-                            ),
-                        }
-                    )
-                    continue
-
-                try:
-                    cs_type.validate_value(value["value"])
-                except Exception as e:
-                    errors.append({"name": name, "reason": str(e)})
-                    continue
-
-                applied.append(
-                    {
-                        "name": name,
-                        "old_value": db_setting.value,
-                        "new_value": value["value"],
-                        "full": {"value": value["value"]},
-                    }
-                )
+        errors, applied, skipped = preview_data(data, request.user)
 
         preview_on_site_allowed = (
             request.user.has_perm("content_settings.can_preview_on_site")
@@ -1083,7 +897,24 @@ class ContentSettingAdmin(admin.ModelAdmin):
                     )
                 )
 
+            if request.POST.get("preview_on_site") and not preview_on_site_allowed:
+                return response_error(
+                    _(
+                        "You don't have permissions to apply preview on site. (Technocally it is only possible if the changes are applied just recently)"
+                    )
+                )
+
             applied_names = request.POST.getlist("_applied")
+            try:
+                import_to(
+                    data,
+                    [row for row in applied if row["name"] in applied_names],
+                    request.POST.get("preview_on_site"),
+                    request.user,
+                )
+            except Exception as e:
+                return response_error(str(e))
+
             prepared_names = {}
             for v in applied:
                 if v["name"] not in applied_names:
@@ -1121,34 +952,12 @@ class ContentSettingAdmin(admin.ModelAdmin):
                 return response_error(str(e))
 
             if request.POST.get("preview_on_site"):
-                for value in applied:
-                    if value["name"] not in applied_names:
-                        continue
-                    UserPreview.add_by_user(
-                        user=request.user,
-                        name=value["name"],
-                        **{k: v for k, v in value["full"].items() if k != "version"},
-                    )
-
                 self.message_user(
                     request,
                     _("Settings successfully imported to preview"),
                     messages.SUCCESS,
                 )
             else:
-                for value in applied:
-                    if value["name"] not in applied_names:
-                        continue
-                    cs = ContentSetting.objects.filter(name=value["name"]).first()
-                    if not cs:
-                        cs = ContentSetting(name=value["name"])
-                    for key, in_value in value["full"].items():
-                        setattr(cs, key, in_value)
-                    cs.save()
-
-                    HistoryContentSetting.update_last_record_for_name(
-                        value["name"], request.user
-                    )
                 self.message_user(
                     request, _("Settings successfully imported"), messages.SUCCESS
                 )
