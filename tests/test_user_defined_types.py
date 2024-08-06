@@ -3,7 +3,7 @@ import re
 
 from django.test import Client
 
-from content_settings.models import ContentSetting
+from content_settings.models import ContentSetting, UserPreview
 from content_settings.types.template import DjangoTemplateNoArgs
 from content_settings.caching import check_update, recalc_checksums
 from content_settings.conf import set_initial_values_for_db
@@ -216,6 +216,24 @@ def test_admin_add(webtest_admin):
     resp = client.get("/books/fetch/all/")
     assert resp.status_code == 200
     assert resp.json()["CUSTOM_TITLE"] == "My Way"
+
+
+def test_admin_add_preview(webtest_admin, testadmin):
+    resp = webtest_admin.get("/admin/content_settings/contentsetting/add/")
+    assert resp.status_int == 200
+    resp.forms["contentsetting_form"]["name"] = "CUSTOM_TITLE"
+    resp.forms["contentsetting_form"]["value"] = "My Way"
+    resp.forms["contentsetting_form"]["user_defined_type"] = "line"
+    resp.forms["contentsetting_form"]["_preview_on_site"] = "on"
+    resp = resp.forms["contentsetting_form"].submit()
+    assert resp.status_int == 302
+
+    assert ContentSetting.objects.filter(name="CUSTOM_TITLE").count() == 0
+    assert UserPreview.objects.filter(user=testadmin, name="CUSTOM_TITLE").count() == 1
+
+    resp = webtest_admin.get("/books/fetch/all/")
+    assert resp.status_code == 200
+    assert resp.json["CUSTOM_TITLE"] == "My Way"
 
 
 def test_admin_update_history(webtest_admin):

@@ -25,6 +25,7 @@
             <th scope="col">{% translate 'User Type' %}</th>
             <th scope="col">{% translate 'Tags' %}</th>
             <th scope="col">{% translate 'Help' %}</th>
+            <th scope="col">{% translate 'Batch Changes' %}</th>
         </tr>
         </thead>
         <tbody>
@@ -40,6 +41,7 @@
             <td>{{action.user_defined_type_display}}</td>
             <td>{% if action.tags %}<pre>{{action.tags}}</pre>{% endif %}</td>
             <td>{% if action.help %}<pre>{{action.help}}</pre>{% endif %}</td>
+            <td><a href="{{ action.admin_url_batch_changes }}">{% translate 'Batch Changes' %}</a></td>
         </tr>
         {% endfor %}
         </tbody>

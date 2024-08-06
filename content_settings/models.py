@@ -10,7 +10,10 @@ from django.utils import timezone
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
+from django.urls import reverse
+
 from typing import Optional
+from datetime import timedelta
 
 User = get_user_model()
 
@@ -129,6 +132,9 @@ class HistoryContentSetting(models.Model):
         ordering = ("-id",)
         indexes = [
             models.Index(fields=["name", "-id"], name="static_cont_name_d40020_idx"),
+            models.Index(
+                fields=["created_on", "user_id", "by_user"], name="static_batch_idx"
+            ),
         ]
 
     @classmethod
@@ -143,6 +149,27 @@ class HistoryContentSetting(models.Model):
         last_setting.user = user
         last_setting.by_user = user is not None
         last_setting.save()
+
+    @property
+    def admin_url_batch_changes(self):
+        params = [
+            f"created_on__gte={(self.created_on - timedelta(minutes=1)).replace(tzinfo=None).isoformat()}",
+            f"created_on__lte={(self.created_on + timedelta(minutes=1)).replace(tzinfo=None).isoformat()}",
+        ]
+
+        if self.user:
+            params.append(f"user_id={self.user_id}")
+
+        if self.by_user is None:
+            params.append("by_user__isnull=1")
+        else:
+            params.append(f"by_user={int(self.by_user)}")
+
+        return (
+            reverse("admin:content_settings_historycontentsetting_changelist")
+            + "?"
+            + "&".join(params)
+        )
 
     @classmethod
     def gen_unique_records(cls, name):
@@ -215,8 +242,96 @@ class UserPreview(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("User")
     )
     name = models.CharField(max_length=200, verbose_name=_("Name"))
-    from_value = models.TextField(verbose_name=_("From Value"))
+    from_value = models.TextField(verbose_name=_("From Value"), null=True)
     value = models.TextField(verbose_name=_("Value"))
+    from_user_defined_type = models.CharField(
+        max_length=50, null=True, verbose_name=_("From User Defined Type")
+    )
+    user_defined_type = models.CharField(
+        max_length=50, null=True, verbose_name=_("User Defined Type")
+    )
+    from_tags = models.TextField(verbose_name=_("From Tags"), null=True)
+    tags = models.TextField(verbose_name=_("Tags"), null=True)
+    from_help = models.TextField(verbose_name=_("From Help"), null=True)
+    help = models.TextField(verbose_name=_("Help"), null=True)
+
+    @classmethod
+    def get_context_dict(cls, user: User):
+        return {
+            v.name: (
+                (v.value, v.user_defined_type, v.tags, v.help)
+                if v.user_defined_type
+                else v.value
+            )
+            for v in cls.objects.filter(user=user)
+        }
+
+    @classmethod
+    def add_by_user(cls, user: User, name: str, **kwargs):
+        """
+        Adding the setting to the user's preview settings.
+        """
+        from_value = ContentSetting.objects.filter(name=name).first()
+        try:
+            preview_setting = cls.objects.get(user=user, name=name)
+        except cls.DoesNotExist:
+            preview_setting = cls.objects.create(
+                user=user,
+                name=name,
+                **kwargs,
+                **(
+                    {"from_" + key: getattr(from_value, key) for key in kwargs.keys()}
+                    if from_value
+                    else {}
+                ),
+            )
+        else:
+            for key, value in kwargs.items():
+                setattr(preview_setting, key, value)
+            if from_value:
+                for key in kwargs.keys():
+                    setattr(preview_setting, "from_" + key, getattr(from_value, key))
+            preview_setting.save()
+
+        UserPreviewHistory.user_record(
+            preview_setting, UserPreviewHistory.STATUS_CREATED
+        )
+        return preview_setting
+
+    def apply(self):
+        """
+        Applying the preview setting into an actual setting.
+
+        Works for:
+        * userdefined settings
+        * non-userdefined settings
+        * userdefined preview for non-exist setting
+        """
+        setting = ContentSetting.objects.filter(name=self.name).first()
+        is_userdefined = bool(self.user_defined_type)
+        assert (
+            setting is not None or is_userdefined
+        ), "Setting should be set for non-userdefined settings"
+        assert (is_userdefined and (not setting or setting.user_defined_type)) or (
+            not is_userdefined and setting and not setting.user_defined_type
+        ), "Setting should non-userdefined for userdefined preview"
+
+        if is_userdefined:
+            if not setting:
+                setting = ContentSetting(
+                    name=self.name,
+                    user_defined_type=self.user_defined_type,
+                    tags=self.tags,
+                    help=self.help,
+                )
+            else:
+                setting.tags = self.tags
+                setting.help = self.help
+                setting.user_defined_type = self.user_defined_type
+        setting.value = self.value
+        setting.save()
+        HistoryContentSetting.update_last_record_for_name(setting.name, self.user)
+        UserPreviewHistory.user_record(self, UserPreviewHistory.STATUS_APPLIED)
 
     class Meta:
         unique_together = (("user", "name"),)
@@ -241,6 +356,10 @@ class UserPreviewHistory(models.Model):
 
     name = models.CharField(max_length=200)
     value = models.TextField(null=True)
+    user_defined_type = models.CharField(max_length=50, null=True)
+    tags = models.TextField(null=True)
+    help = models.TextField(null=True)
+
     status = models.IntegerField(
         default=STATUS_CREATED,
         choices=(
@@ -252,22 +371,30 @@ class UserPreviewHistory(models.Model):
     )
 
     @classmethod
-    def user_record(
-        cls, user: User, preview_setting: UserPreview, status: int = STATUS_CREATED
-    ):
+    def user_record(cls, preview_setting: UserPreview, status: int = STATUS_CREATED):
         """
         Making a record in the history of the user's preview settings.
         """
-        return cls.objects.create(
-            user=user,
+        return cls.user_record_by_name(
+            user=preview_setting.user,
             name=preview_setting.name,
             value=preview_setting.value,
+            user_defined_type=preview_setting.user_defined_type,
+            tags=preview_setting.tags,
+            help=preview_setting.help,
             status=status,
         )
 
     @classmethod
     def user_record_by_name(
-        cls, user: User, name: str, value: str, status: int = STATUS_CREATED
+        cls,
+        user: User,
+        name: str,
+        value: str,
+        user_defined_type: Optional[str] = None,
+        tags: Optional[str] = None,
+        help: Optional[str] = None,
+        status: int = STATUS_CREATED,
     ):
         """
         Making a record in the history of the user's preview settings by the name of the setting and the value.
@@ -277,6 +404,9 @@ class UserPreviewHistory(models.Model):
             name=name,
             value=value,
             status=status,
+            user_defined_type=user_defined_type,
+            tags=tags,
+            help=help,
         )
 
     def __str__(self):

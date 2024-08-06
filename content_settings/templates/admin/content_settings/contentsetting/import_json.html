@@ -1,0 +1,115 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls %}
+
+
+{% block extrastyle %}
+  {{ block.super }}
+<style>
+.import_json_errors {
+    color: var(--body-fg);
+    background-color: var(--message-error-bg);
+    padding: 10px;
+}
+.import_json_applied {
+    color: var(--body-fg);
+    background-color: var(--message-success-bg);
+    padding: 10px;
+}
+.import_json_skipped {
+    color: var(--body-fg);
+    background-color: var(--message-warning-bg);
+    padding: 10px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <form action="{% url 'admin:content_settings_import_json' %}" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="content_settings_full_checksum" value="{{CONTENT_SETTINGS.full_checksum}}">
+        {% csrf_token %}
+
+        <fieldset class="module aligned">
+            <div class="form-row">
+                <label for="json_file">{% trans "JSON File" %}:</label>
+                <input type="file" name="json_file" id="json_file">
+            </div>
+            <div class="form-row">
+                <label for="raw_json">{% trans "JSON Text" %}:</label>
+                <textarea name="raw_json" id="raw_json" style="width: 100%; height: 200px;">{{ raw_json|escape }}</textarea>
+            </div>
+        </fieldset>
+        {% if errors %}
+            <h2 class="import_json_errors">{% trans "Errors" %}</h2>
+            <table style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>{% trans "Name" %}</th>
+                        <th>{% trans "Reason" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for error in errors %}
+                        <tr>
+                        <td>{{ error.name }}</td>
+                        <td>{{ error.reason }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        {% if applied %}
+            <h2 class="import_json_applied">{% trans "Applied Changes" %}</h2>
+            <table style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>&nbsp;</th>
+                        <th>{% trans "Name" %}</th>
+                        <th>{% trans "Old Value" %}</th>
+                        <th>{% trans "New Value" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in applied %}
+                        <tr>
+                            <td><input type="checkbox" name="_applied" value="{{ item.name }}" checked></td>
+                            <td>{{ item.name }}</td>
+                            <td><pre>{{ item.old_value|escape }}</pre></td>
+                            <td><pre>{{ item.new_value|escape }}</pre></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        {% if skipped %}
+            <h2 class="import_json_skipped">{% trans "Skipped" %}</h2>
+            <table style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>{% trans "Name" %}</th>
+                        <th>{% trans "Reason" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in skipped %}
+                        <tr>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.reason }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        <div class="submit-row" style="margin-top: 20px;">
+            <input type="submit" value="{% trans 'Preview' %}" class="default" name="_preview">
+            {% if applied %}
+                {% if preview_on_site_allowed %}
+                    &nbsp;&nbsp;&nbsp;
+                    <input id="preview_on_site" type="checkbox" name="preview_on_site" checked> <label for="preview_on_site">{% trans "Preview on Site" %}</label>
+                {% endif %}
+                <input type="submit" value="{% trans 'Import' %}" class="default" name="_import">
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}

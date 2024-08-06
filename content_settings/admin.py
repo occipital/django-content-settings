@@ -1,7 +1,7 @@
 from typing import Any
 import urllib.parse
 from collections import defaultdict
-import inspect
+import json
 
 from django.contrib import admin
 from django.forms import ModelForm
@@ -10,10 +10,9 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.contrib.admin.views.main import ChangeList
 from django.urls import path
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.contrib.admin.utils import unquote
 from django.core.exceptions import PermissionDenied
-from django.urls.exceptions import NoReverseMatch
 from django.utils.text import capfirst
 from django.template.response import TemplateResponse
 from django.contrib.messages import add_message, ERROR
@@ -36,6 +35,7 @@ from .models import (
 from .context_managers import content_settings_context
 from .conf import (
     USER_DEFINED_TYPES_INSTANCE,
+    USER_DEFINED_TYPES_INITIAL,
     content_settings,
     validate_all_with_context,
 )
@@ -49,6 +49,7 @@ from .settings import (
 )
 from .caching import get_type_by_name
 from .utils import class_names
+from .export import export_to_format, preview_data, import_to
 
 
 def user_able_to_update(user, name, user_defined_type=None):
@@ -177,6 +178,26 @@ class ContentSettingAdmin(admin.ModelAdmin):
     ]
     history_list_display = ["value"]
     form = ContentSettingFormWithChainValidation
+    actions = ["export_as_json", "view_as_json"]
+
+    def export_as_json(self, request, queryset, download=True):
+        json_data = export_to_format(
+            row for row in queryset if get_type_by_name(row.name).can_view(request.user)
+        )
+        response = HttpResponse(content_type="application/json")
+        if download:
+            response["Content-Disposition"] = (
+                'attachment; filename="content_settings.json"'
+            )
+        response.write(json_data)
+        return response
+
+    export_as_json.short_description = _("Export selected content settings")
+
+    def view_as_json(self, request, queryset):
+        return self.export_as_json(request, queryset, download=False)
+
+    view_as_json.short_description = _("View selected content settings as JSON")
 
     def save_model(self, request, obj, form, change):
         if user_able_to_update(request.user, obj.name, obj.user_defined_type):
@@ -188,23 +209,21 @@ class ContentSettingAdmin(admin.ModelAdmin):
                 return
 
             if "_preview_on_site" in request.POST:
-                try:
-                    preview_setting = UserPreview.objects.get(
-                        user=request.user, name=obj.name
-                    )
-                except UserPreview.DoesNotExist:
-                    preview_setting = UserPreview.objects.create(
+                if obj.user_defined_type:
+                    UserPreview.add_by_user(
                         user=request.user,
                         name=obj.name,
                         value=obj.value,
-                        from_value=prev_obj.value,
+                        user_defined_type=obj.user_defined_type,
+                        tags=obj.tags_set,
+                        help=obj.help,
                     )
                 else:
-                    preview_setting.value = obj.value
-                    preview_setting.save()
-                UserPreviewHistory.user_record(
-                    request.user, preview_setting, UserPreviewHistory.STATUS_CREATED
-                )
+                    UserPreview.add_by_user(
+                        user=request.user,
+                        name=obj.name,
+                        value=obj.value,
+                    )
             else:
                 super().save_model(request, obj, form, change)
                 HistoryContentSetting.update_last_record_for_name(
@@ -246,13 +265,15 @@ class ContentSettingAdmin(admin.ModelAdmin):
         return SettingsChangeList
 
     def context_preview_settings(self, request):
-        if not PREVIEW_ON_SITE_SHOW:
+        if not PREVIEW_ON_SITE_SHOW or not request.user.has_perm(
+            "content_settings.can_preview_on_site"
+        ):
             return {}
 
         return {
             "preview_settings": UserPreview.objects.filter(user=request.user),
             "PREVIEW_ON_SITE_HREF": PREVIEW_ON_SITE_HREF,
-            "PREVIEW_ON_SITE_SHOW": PREVIEW_ON_SITE_SHOW,
+            "PREVIEW_ON_SITE_SHOW": True,
         }
 
     def context_tags(self, request):
@@ -330,10 +351,18 @@ class ContentSettingAdmin(admin.ModelAdmin):
             return False
         return True
 
-    def changeform_view(self, request, *args, **kwargs):
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         if request.method == "POST" and not self.full_checksum_valid(request):
             return HttpResponseRedirect(request.path)
-        return super().changeform_view(request, *args, **kwargs)
+        return super().changeform_view(
+            request,
+            object_id=object_id,
+            form_url=form_url,
+            extra_context={
+                **(extra_context or {}),
+                **self.context_preview_settings(request),
+            },
+        )
 
     def get_changelist_formset(self, request, **kwargs):
         # validation of changing this particular value didn't change other values in the chain
@@ -402,7 +431,8 @@ class ContentSettingAdmin(admin.ModelAdmin):
             raise PermissionDenied
 
         extra_context = {
-            "PREVIEW_ON_SITE_SHOW": PREVIEW_ON_SITE_SHOW,
+            "PREVIEW_ON_SITE_SHOW": PREVIEW_ON_SITE_SHOW
+            and request.user.has_perm("content_settings.can_preview_on_site"),
             **(extra_context or {}),
         }
 
@@ -544,33 +574,42 @@ class ContentSettingAdmin(admin.ModelAdmin):
             path(
                 "preview/",
                 self.admin_site.admin_view(self.preview_setting),
-                name="preview_setting",
+                name="content_settings_preview_setting",
             ),
-            path("add-tag/", self.admin_site.admin_view(self.add_tag), name="add_tag"),
+            path(
+                "add-tag/",
+                self.admin_site.admin_view(self.add_tag),
+                name="content_settings_add_tag",
+            ),
             path(
                 "remove-tag/",
                 self.admin_site.admin_view(self.remove_tag),
-                name="remove_tag",
+                name="content_settings_remove_tag",
             ),
             path(
                 "context-tags/",
                 self.admin_site.admin_view(self.context_tags_view),
-                name="context_tags",
+                name="content_settings_context_tags",
             ),
             path(
                 "apply-preview-on-site/",
                 self.admin_site.admin_view(self.apply_preview_on_site),
-                name="apply_preview_on_site",
+                name="content_settings_apply_preview_on_site",
             ),
             path(
                 "reset-preview-on-site/",
                 self.admin_site.admin_view(self.reset_preview_on_site),
-                name="reset_preview_on_site",
+                name="content_settings_reset_preview_on_site",
             ),
             path(
                 "remove-preview-on-site/",
                 self.admin_site.admin_view(self.remove_preview_on_site),
-                name="remove_preview_on_site",
+                name="content_settings_remove_preview_on_site",
+            ),
+            path(
+                "import-json/",
+                self.admin_site.admin_view(self.import_json_view),
+                name="content_settings_import_json",
             ),
         ]
         return custom_urls + urls
@@ -580,7 +619,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
             UserPreview, user=request.user, name=request.GET["name"]
         )
         UserPreviewHistory.user_record(
-            request.user, preview_setting, UserPreviewHistory.STATUS_REMOVED
+            preview_setting, UserPreviewHistory.STATUS_REMOVED
         )
         preview_setting.delete()
         self.message_user(request, _("Preview setting removed"), messages.SUCCESS)
@@ -613,8 +652,14 @@ class ContentSettingAdmin(admin.ModelAdmin):
                 )
             )
 
+        previews = list(UserPreview.objects.filter(user=request.user))
         preview_context = {
-            p.name: p.value for p in UserPreview.objects.filter(user=request.user)
+            p.name: (
+                p.value
+                if not p.user_defined_type
+                else (p.value, p.user_defined_type, p.tags, p.help)
+            )
+            for p in previews
         }
 
         if not preview_context:
@@ -625,13 +670,15 @@ class ContentSettingAdmin(admin.ModelAdmin):
 
         apply = True
         for name, value in preview_context.items():
-            try:
-                setting = ContentSetting.objects.get(name=name)
-            except ContentSetting.DoesNotExist:
-                UserPreviewHistory.user_record_by_name(
-                    request.user, name, value, UserPreviewHistory.STATUS_IGNORED
+            preview = UserPreview.objects.get(user=request.user, name=name)
+            is_userdefined = isinstance(value, tuple)
+
+            setting = ContentSetting.objects.filter(name=name).first()
+            if not setting and not is_userdefined:
+                UserPreviewHistory.user_record(
+                    preview, UserPreviewHistory.STATUS_IGNORED
                 )
-                UserPreview.objects.filter(user=request.user, name=name).delete()
+                preview.delete()
                 self.message_user(
                     request,
                     _(
@@ -641,51 +688,66 @@ class ContentSettingAdmin(admin.ModelAdmin):
                     messages.WARNING,
                 )
                 apply = False
-            else:
-                cs_type = get_type_by_name(name)
-                if not cs_type.can_update(request.user):
+                continue
+
+            cs_type = (
+                USER_DEFINED_TYPES_INITIAL.get(value[1])
+                if is_userdefined
+                else get_type_by_name(name)
+            )
+            if not cs_type:
+                UserPreviewHistory.user_record(
+                    preview, UserPreviewHistory.STATUS_IGNORED
+                )
+                preview.delete()
+                self.message_user(
+                    request,
+                    _("Setting Type %s doesn't exist") % name,
+                    messages.ERROR,
+                )
+                apply = False
+                continue
+
+            if not cs_type.can_update(request.user):
+                self.message_user(
+                    request,
+                    _("You don't have permissions to update the setting %s") % name,
+                    messages.ERROR,
+                )
+                apply = False
+                continue
+
+            try:
+                cs_type.validate_value(value[0] if is_userdefined else value)
+            except ValidationError as e:
+                self.message_user(request, name + ": " + str(e), messages.ERROR)
+                apply = False
+                continue
+
+            if not is_userdefined and preview.from_value != setting.value:
+                if setting.value == preview.value:
+                    UserPreviewHistory.user_record(
+                        preview, UserPreviewHistory.STATUS_IGNORED
+                    )
+                    preview.delete()
                     self.message_user(
                         request,
-                        _("You don't have permissions to update the setting %s") % name,
-                        messages.ERROR,
+                        _("The value %s was changed already applied") % name,
+                        messages.WARNING,
                     )
-                    apply = False
-                    continue
-
-                try:
-                    cs_type.validate_value(value)
-                except ValidationError as e:
-                    self.message_user(request, name + ": " + str(e), messages.ERROR)
-                    apply = False
-                    continue
-
-                preview = UserPreview.objects.get(user=request.user, name=name)
-                if preview.from_value != setting.value:
-                    if setting.value == preview.value:
-                        UserPreviewHistory.user_record_by_name(
-                            request.user, name, value, UserPreviewHistory.STATUS_IGNORED
+                else:
+                    self.message_user(
+                        request,
+                        _(
+                            "The value %s was changed before applying the preview (check and apply again)"
                         )
-                        UserPreview.objects.filter(
-                            user=request.user, name=name
-                        ).delete()
-                        self.message_user(
-                            request,
-                            _("The value %s was changed already applied") % name,
-                            messages.WARNING,
-                        )
-                    else:
-                        self.message_user(
-                            request,
-                            _(
-                                "The value %s was changed before applying the preview (check and apply again)"
-                            )
-                            % name,
-                            messages.WARNING,
-                        )
-                        preview.from_value = setting.value
-                        preview.save()
-                    apply = False
-                    continue
+                        % name,
+                        messages.WARNING,
+                    )
+                    preview.from_value = setting.value
+                    preview.save()
+                apply = False
+                continue
 
         if not apply:
             return redirect_back()
@@ -695,20 +757,9 @@ class ContentSettingAdmin(admin.ModelAdmin):
             self.message_user(request, str(e), messages.ERROR)
             return redirect_back()
 
-        for name, value in preview_context.items():
-            setting = ContentSetting.objects.get(name=name)
-            setting.value = value
-            setting.save()
-            HistoryContentSetting.update_last_record_for_name(
-                setting.name, request.user
-            )
-            UserPreviewHistory.user_record_by_name(
-                request.user, name, value, UserPreviewHistory.STATUS_APPLIED
-            )
-
-        UserPreview.objects.filter(
-            user=request.user, name__in=preview_context.keys()
-        ).delete()
+        for preview in previews:
+            preview.apply()
+            preview.delete()
         self.message_user(request, _("Preview settings applied"), messages.SUCCESS)
 
         return redirect_back()
@@ -716,7 +767,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
     def reset_preview_on_site(self, request):
         for preview_setting in UserPreview.objects.filter(user=request.user):
             UserPreviewHistory.user_record(
-                request.user, preview_setting, UserPreviewHistory.STATUS_REMOVED
+                preview_setting, UserPreviewHistory.STATUS_REMOVED
             )
             preview_setting.delete()
 
@@ -771,6 +822,162 @@ class ContentSettingAdmin(admin.ModelAdmin):
                 }
             )
 
+    def import_json_view(self, request):
+        """
+        Importing Content Settings from different sources using JSON format.
+
+        The sources of the format can be different:
+        * JSON file
+        * JSON text field
+        * ids of HistoryContentSetting records
+
+        The view assumes that all of the data is migrated and values in database are aligned with the types.
+
+        The view has too many lines of code for several reasons:
+        * the code includes a lot of check for the json format itself
+        * the view inlcudes two actions - peview results and apply results
+        * the view inludes logic for user defined types
+        """
+        raw_json = '{"settings": {}}'
+        if request.method == "POST":
+            if "json_file" in request.FILES:
+                raw_json = request.FILES["json_file"].read().decode("utf-8")
+            elif "raw_json" in request.POST:
+                raw_json = request.POST["raw_json"]
+        else:
+            if "history_ids" in request.GET:
+                history_ids = request.GET["history_ids"].split(",")
+                history_records = HistoryContentSetting.objects.filter(
+                    id__in=[int(id) for id in history_ids]
+                )
+                raw_json = export_to_format(history_records)
+
+        core_context = {
+            "title": _("Import Content Settings"),
+            "opts": self.model._meta,
+        }
+
+        def response_error(message):
+            self.message_user(request, message, messages.ERROR)
+            return TemplateResponse(
+                request,
+                "admin/content_settings/contentsetting/import_json.html",
+                {**core_context, "raw_json": raw_json},
+            )
+
+        try:
+            data = json.loads(raw_json)
+        except Exception as e:
+            return response_error(_("Error JSON parsing: %s") % str(e))
+
+        if "settings" not in data:
+            return response_error(_("Wrong JSON format. Settings should be set"))
+
+        if not isinstance(data["settings"], dict):
+            return response_error(
+                _("Wrong JSON format. Settings should be a dictionary")
+            )
+
+        errors, applied, skipped = preview_data(data, request.user)
+
+        preview_on_site_allowed = (
+            request.user.has_perm("content_settings.can_preview_on_site")
+            and PREVIEW_ON_SITE_SHOW
+        )
+        if request.POST.get("_import"):
+            if (
+                "content_settings_full_checksum" in request.POST
+                and ADMIN_CHECKSUM_CHECK_BEFORE_SAVE
+                and request.POST["content_settings_full_checksum"]
+                != content_settings.full_checksum
+            ):
+                return response_error(
+                    _(
+                        "The content settings have been changed by another user. Please reload the page and try again. (or disable ADMIN_CHECKSUM_CHECK_BEFORE_SAVE in settings)"
+                    )
+                )
+
+            if request.POST.get("preview_on_site") and not preview_on_site_allowed:
+                return response_error(
+                    _(
+                        "You don't have permissions to apply preview on site. (Technocally it is only possible if the changes are applied just recently)"
+                    )
+                )
+
+            applied_names = request.POST.getlist("_applied")
+            try:
+                import_to(
+                    data,
+                    [row for row in applied if row["name"] in applied_names],
+                    request.POST.get("preview_on_site"),
+                    request.user,
+                )
+            except Exception as e:
+                return response_error(str(e))
+
+            prepared_names = {}
+            for v in applied:
+                if v["name"] not in applied_names:
+                    continue
+
+                data_setting = data["settings"][v["name"]]
+                if "user_defined_type" in data_setting:
+                    prepared_names[v["name"]] = (
+                        data_setting["value"],
+                        data_setting["user_defined_type"],
+                        (
+                            set(data_setting["tags"].splitlines())
+                            if data_setting["tags"]
+                            else set()
+                        ),
+                        data_setting["help"],
+                    )
+                else:
+                    prepared_names[v["name"]] = v["new_value"]
+
+            if request.POST.get("preview_on_site") and not preview_on_site_allowed:
+                return response_error(
+                    _(
+                        "You don't have permissions to apply preview on site. (Technocally it is only possible if the changes are applied just recently)"
+                    )
+                )
+
+            for name in applied_names:
+                if name not in prepared_names:
+                    return response_error(_("Setting %s can not be applied") % name)
+
+            try:
+                validate_all_with_context(prepared_names)
+            except ValidationError as e:
+                return response_error(str(e))
+
+            if request.POST.get("preview_on_site"):
+                self.message_user(
+                    request,
+                    _("Settings successfully imported to preview"),
+                    messages.SUCCESS,
+                )
+            else:
+                self.message_user(
+                    request, _("Settings successfully imported"), messages.SUCCESS
+                )
+
+            return HttpResponseRedirect(
+                resolve_url("admin:content_settings_contentsetting_changelist")
+            )
+
+        context = {
+            **core_context,
+            "skipped": skipped,
+            "applied": applied,
+            "errors": errors,
+            "raw_json": json.dumps(data, indent=2),
+            "preview_on_site_allowed": preview_on_site_allowed,
+        }
+        return TemplateResponse(
+            request, "admin/content_settings/contentsetting/import_json.html", context
+        )
+
     def preview_setting(self, request):
         if request.POST.get("user_defined_type"):
             try:
@@ -815,9 +1022,10 @@ class ContentSettingAdmin(admin.ModelAdmin):
 
 class HistoryContentSettingAdmin(admin.ModelAdmin):
     list_display = [
+        "created_on",
+        "user_defined_type",
         "name",
         "value",
-        "user_defined_type",
         "version",
         "tags",
         "help",
@@ -829,6 +1037,18 @@ class HistoryContentSettingAdmin(admin.ModelAdmin):
         "name",
     ]
     search_fields = ["name", "value", "tags", "help"]
+    actions = [
+        "export_as_json",
+    ]
+
+    def export_as_json(self, request, queryset):
+        ids = dict(queryset.order_by("-id").values_list("name", "id"))
+        return HttpResponseRedirect(
+            reverse("admin:content_settings_import_json")
+            + f'?history_ids={",".join(map(str, ids.values()))}'
+        )
+
+    export_as_json.short_description = _("Export selected history records as JSON")
 
     def has_delete_permission(self, request, obj=None):
         return False

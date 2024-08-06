@@ -21,6 +21,7 @@ def pytest_configure(config):
                 ),
                 ("text", "content_settings.types.basic.SimpleText", "Text"),
                 ("html", "content_settings.types.basic.SimpleHTML", "HTML"),
+                ("bool", "content_settings.types.basic.SimpleBool", "Boolean"),
             ],
             CONTENT_SETTINGS_DEFAULTS=[
                 (
@@ -136,7 +137,7 @@ def teststaff():
     from django.contrib.auth.models import Permission
 
     user = get_user_model().objects.get_or_create(
-        username="testadmin", is_staff=True, is_superuser=False
+        username="teststaff", is_staff=True, is_superuser=False
     )[0]
 
     for codename in ("change_contentsetting", "view_contentsetting"):

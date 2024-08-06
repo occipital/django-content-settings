@@ -48,6 +48,15 @@ nav[aria-label=Breadcrumbs] .breadcrumbs.breadcrumbs_help {
 </style>
 {% endblock %}
 
+{% block object-tools-items %}
+    {{ block.super }}
+    <li>
+        <a href="{% url 'admin:content_settings_import_json' %}" class="addlink">
+            {% trans "Import JSON" %}
+        </a>
+    </li>
+{% endblock %}
+
 {% block result_list %}
 <div id="toolbar">
     <div id="tags_toolbar">
@@ -67,15 +76,19 @@ nav[aria-label=Breadcrumbs] .breadcrumbs.breadcrumbs_help {
             {% for item in preview_settings %}
             <tr>
                 <td>{{ item.name }}</td>
-                <td><pre>{{ item.value }}</pre></td>
-                <td><a href="{% url 'admin:remove_preview_on_site' %}?name={{ item.name }}">{% translate 'Remove' %}</a></td>
+                <td><pre>{{ item.value }}</pre><br>
+                    {% if item.user_defined_type %}
+                    <i>Type: {{ item.user_defined_type }}</i>
+                    {% endif %}
+                </td>
+                <td><a href="{% url 'admin:content_settings_remove_preview_on_site' %}?name={{ item.name }}">{% translate 'Remove' %}</a></td>
             </tr>
             {% endfor %}
         </table>
         <p>
             <a href="{{PREVIEW_ON_SITE_HREF}}">{% translate 'View On Site' %}</a>
-            | <a href="{% url 'admin:apply_preview_on_site' %}">{% translate 'Apply' %}</a>
-            | <a href="{% url 'admin:reset_preview_on_site' %}">{% translate 'Reset' %}</a>
+            | <a href="{% url 'admin:content_settings_apply_preview_on_site' %}">{% translate 'Apply' %}</a>
+            | <a href="{% url 'admin:content_settings_reset_preview_on_site' %}">{% translate 'Reset' %}</a>
         </p>
         
     </div>
@@ -111,10 +124,10 @@ nav[aria-label=Breadcrumbs] .breadcrumbs.breadcrumbs_help {
     }
 
     (function($) {
-        const PREVIEW_URL = "{% url 'admin:preview_setting' %}";
-        const ADD_TAG_URL = "{% url 'admin:add_tag' %}";
-        const REMOVE_TAG_URL = "{% url 'admin:remove_tag' %}";
-        const TAGS_URL = "{% url 'admin:context_tags' %}";
+        const PREVIEW_URL = "{% url 'admin:content_settings_preview_setting' %}";
+        const ADD_TAG_URL = "{% url 'admin:content_settings_add_tag' %}";
+        const REMOVE_TAG_URL = "{% url 'admin:content_settings_remove_tag' %}";
+        const TAGS_URL = "{% url 'admin:content_settings_context_tags' %}";
 
         $('.replace_with_ul').click(function(){
             $(this).hide();

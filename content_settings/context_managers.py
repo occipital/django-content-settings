@@ -21,11 +21,19 @@ class content_settings_context(ContextDecorator):
         super().__init__()
         self.values_to_update = values
         self.prev_values = {}
+        self.prev_types = {}
 
     def __enter__(self):
-        from content_settings.caching import set_new_value
+        from content_settings.caching import set_new_value, set_new_type
 
         for name, new_value in self.values_to_update.items():
+            if isinstance(new_value, tuple):
+                new_value, *type_define = new_value
+                try:
+                    self.prev_types[name] = set_new_type(name, *type_define)
+                except:
+                    if self.raise_errors:
+                        raise
             try:
                 self.prev_values[name] = set_new_value(name, new_value)
             except:
@@ -33,7 +41,16 @@ class content_settings_context(ContextDecorator):
                     raise
 
     def __exit__(self, *exc):
-        from content_settings.caching import set_new_value
+        from content_settings.caching import (
+            set_new_value,
+            replace_user_type,
+            delete_user_value,
+        )
 
         for name, new_value in self.prev_values.items():
+            if name in self.prev_types:
+                if self.prev_types[name] is None:
+                    delete_user_value(name)
+                    continue
+                replace_user_type(name, self.prev_types[name])
             set_new_value(name, new_value)

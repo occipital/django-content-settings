@@ -9,6 +9,7 @@ nav:
   - API & Views: api.md
   - Available Django Settings: settings.md
   - User Interface for Django Admin: ui.md
+  - Commands: commands.md
   - How Caching is Organized: caching.md
   - User Defined Variables: uservar.md
   - Cookbook: cookbook.md
@@ -17,5 +18,6 @@ nav:
   - Glossary: glossary.md
   - How to contribute: contribute.md
   - Source Doc: source.md
+  - Epilogue: epilogue.md
 theme: readthedocs
 repo_url: https://github.com/occipital/django-content-settings/
