@@ -6,8 +6,10 @@
 
 [Issuses left for releasing v1](https://github.com/occipital/django-content-settings/labels/v1)
 
-#### master
+#### 0.19 Import/Export through the UI and commands
 
+* Import/Export UI in Django Admin. [Read more in UI](ui.md#import-export)
+* Import/Export commands. [Read more in Commands](commands.md)
 * fix bug with assign only attributes (not methods)
 * 📖 defaults takes type arguments into account - you can now extend `yeses` and `noes` into `CONTENT_SETTINGS_DEFAULTS`
 

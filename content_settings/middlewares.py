@@ -22,10 +22,7 @@ def preivew_on_site(get_response):
         ):
             return get_response(request)
 
-        # Ignore if it's the content settings change list
-        if request.path.startswith(
-            reverse("admin:content_settings_contentsetting_changelist")
-        ):
+        if request.path.startswith(reverse("admin:index") + "content_settings/"):
             return get_response(request)
 
         preview_settings = UserPreview.get_context_dict(request.user)
