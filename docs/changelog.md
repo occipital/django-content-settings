@@ -10,6 +10,13 @@
 
 * Import/Export UI in Django Admin. [Read more in UI](ui.md#import-export)
 * Import/Export commands. [Read more in Commands](commands.md)
+* Mechanism of reverting update from hisotry and seeing the update batch
+* `context_managers.content_settings_context` now works with user defifined types
+* previewed content settings doesn't work for urls from Django Admin content settings. To prevent validation issues
+* migration that extends the history with user defined type attributes, such as tags and help
+* you can do a preview for user defined types, you can do a preview of creation of new user defined type
+* names of the URLS has "content_settings" prefix
+* 
 * fix bug with assign only attributes (not methods)
 * 📖 defaults takes type arguments into account - you can now extend `yeses` and `noes` into `CONTENT_SETTINGS_DEFAULTS`
 

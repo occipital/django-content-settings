@@ -55,7 +55,7 @@ ADMIN_CHECKSUM_CHECK_BEFORE_SAVE = get_setting(
 CHAIN_VALIDATE = get_setting("CHAIN_VALIDATE", True)
 
 UI_DOC_URL = get_setting(
-    "UI_DOC_URL", "https://django-content-settings.readthedocs.io/en/0.18/ui/"
+    "UI_DOC_URL", "https://django-content-settings.readthedocs.io/en/0.19/ui/"
 )
 
 assert isinstance(USER_DEFINED_TYPES, list), "USER_DEFINED_TYPES must be a list"
