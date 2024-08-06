@@ -166,7 +166,7 @@ You can read about it in the article [User Defined Variables](uservar.md).
 
 You probably forgot to add `"content_settings.middlewares.preview_on_site"` to `MIDDLEWARE` after `"django.contrib.auth.middleware.AuthenticationMiddleware"`.
 
-> **Do I havethe same functionality in code?**
+> **Do I have the same import-export functionality in code?**
 
 Yes.
 
