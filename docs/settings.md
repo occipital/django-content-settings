@@ -16,6 +16,12 @@ Detailed information about caching can be found in a [dedicated section](caching
 
 Specifies the prefix used when storing checksums.
 
+### `CONTENT_SETTINGS_CHECKSUM_USER_KEY_PREFIX`
+
+*default: `"CS_USER_CHECKSUM_"`*
+
+Specifies the prefix used when storing checksums for user defined settings.
+
 ### `CONTENT_SETTINGS_CACHE_BACKEND`
 
 *default: `"default"`*

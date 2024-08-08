@@ -1,3 +1,5 @@
+# update docs/settings.md
+
 from django.conf import settings
 
 from . import __version__
