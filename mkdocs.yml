@@ -12,6 +12,7 @@ nav:
   - Commands: commands.md
   - How Caching is Organized: caching.md
   - User Defined Variables: uservar.md
+  - "[wip] Possible Extensions": extends.md
   - Cookbook: cookbook.md
   - Frequently Asked Questions: faq.md
   - Changelog: changelog.md

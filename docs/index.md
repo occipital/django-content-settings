@@ -95,6 +95,7 @@ Simple as that, we have a lot of *setting types* you can use `SimpleText`, `Simp
 - [**How Caching is Organized**](caching.md) - we want to make sure your content settings work as fast as possible. The guide explains how it is organized and what you can configure.
 - [**Available Django Settings**](settings.md) - reference all available Django settings for content settings.
 - [**User Defined Settings**](uservar.md) - *experimental functionality* - how to give Django Admin users functionality for creation settings right from Django Admin UI.
+- [**Possible Extensions**](extends.md) - *wip* - all of the ways how you can extend the basic content settings functionality.
 - [**Cookbook**](cookbook.md) - several simple receipts you can use in your project.
 - [**Frequently Asked Questions**](faq.md) - before asking questions, you might want to visit this section.
 - [**Glossary**](glossary.md) - the concept of content settings introduces several new terms, which we collected in this article
