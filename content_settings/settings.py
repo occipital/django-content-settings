@@ -46,8 +46,6 @@ VALUES_ONLY_FROM_DB = get_setting("VALUES_ONLY_FROM_DB", False) and not settings
 
 DEFAULTS = get_setting("DEFAULTS", [])
 
-USER_DEFINED_TYPES = get_setting("USER_DEFINED_TYPES", [])
-
 ADMIN_CHECKSUM_CHECK_BEFORE_SAVE = get_setting(
     "ADMIN_CHECKSUM_CHECK_BEFORE_SAVE", False
 )
@@ -58,15 +56,23 @@ UI_DOC_URL = get_setting(
     "UI_DOC_URL", "https://django-content-settings.readthedocs.io/en/0.19/ui/"
 )
 
-assert isinstance(USER_DEFINED_TYPES, list), "USER_DEFINED_TYPES must be a list"
+USER_DEFINED_TYPES = get_setting("USER_DEFINED_TYPES", [])
+
+assert isinstance(
+    USER_DEFINED_TYPES, list
+), "CONTENT_SETTINGS_USER_DEFINED_TYPES must be a list"
 assert len(USER_DEFINED_TYPES) == len(
     set([val[0] for val in USER_DEFINED_TYPES])
-), "USER_DEFINED_TYPES must have unique slugs"
+), "CONTENT_SETTINGS_USER_DEFINED_TYPES must have unique slugs"
 for i, val in enumerate(USER_DEFINED_TYPES):
-    assert len(val) == 3, f"USER_DEFINED_TYPES[{i}] must be a tuple of 3 elements"
+    assert (
+        len(val) == 3
+    ), f"CONTENT_SETTINGS_USER_DEFINED_TYPES[{i}] must be a tuple of 3 elements"
     assert all(
         [isinstance(v, str) for v in val]
-    ), f"USER_DEFINED_TYPES[{i}] must be a tuple of 3 strings"
+    ), f"CONTENT_SETTINGS_USER_DEFINED_TYPES[{i}] must be a tuple of 3 strings"
 
     slug, imp_line, name = val
-    assert len(slug) < 50, f"USER_DEFINED_TYPES[{i}][0] must be less than 50 chars"
+    assert (
+        len(slug) < 50
+    ), f"CONTENT_SETTINGS_USER_DEFINED_TYPES[{i}][0] must be less than 50 chars"

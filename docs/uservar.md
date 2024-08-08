@@ -4,15 +4,13 @@
 
 ## Introduction
 
-This article explores the concept of User Defined Types in the `django-content-settings` module. This functionality allows for the creation of variables directly within the Django admin panel, as opposed to solely in the code.
+The main concept of content settings is to allow you to defined a constant in code that can be edited in the Django Admin panel. But there might be the case when you need to create new content settings not in code, but in admin panel and this is where user defined types are used.
 
-## Why User Defined Types?
+## How it is useful?
 
-Creating variables in the admin panel might seem redundant if variables are primarily used in code. However, there are several reasons why this feature can be beneficial:
+1. **Use in Template Variables**: If you have several template settings that contains the same text, in order not copy and paste the same text in each value - you can simply create own content settings variable and use it is every template value.
 
-1. **Access to a List of Variables**: You can access a list of all created variables using `conf.startswith` or `conf.withtag` functions, making it easy to work with variables based on certain criteria.
-2. **Use in Template Variables**: Variables can be utilized in the values of template variables, allowing users to incorporate any variable into template settings.
-3. **Flexibility for Developers**: Developers can first create new APIs and then establish their code bindings, providing a more flexible development process.
+2. **Flexibility for Developers**: you can have a view that fetches variables by tag (see [API](api.md#all-settings-that-matches-specific-conditions)), and by creating a new variable you can add new data in the API response. Later you can define the setting in code, which replace user defined setting with simple setting. On top of that we have prefix "withtag__", which allows you you use to get all of the settings with specific tag.
 
 ## Setting Up User Defined Types
 
@@ -30,14 +28,9 @@ CONTENT_SETTINGS_USER_DEFINED_TYPES=[
 ]
 ```
 
-### Explanation
+Read more about this setting [here](settings.md#content_settings_user_defined_types).
 
-- **Setting Structure**: The setting is an array where each element is a tuple consisting of three parts:
-  1. A unique slug stored in the database.
-  2. The path to the type.
-  3. The name of the type in the admin panel.
-
-Once this setting is configured, you can start creating your own variables in the admin panel, which will have all the capabilities of standard variables created in the code.
+Having the django setting set admin should see "Add Content Settings" button at the top of list of all available content settings (see [UI](ui.md#list-of-available-settings))
 
 ## Overwriting User Defined Variables
 

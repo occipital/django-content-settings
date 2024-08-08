@@ -67,9 +67,29 @@ the settings can be connected with each other through the template types or one 
 
 ### `CONTENT_SETTINGS_UI_DOC_URL`
 
-*default: https://django-content-settings.readthedocs.io/en/0.18/ui/*
+*default: https://django-content-settings.readthedocs.io/en/0.19/ui/*
 
 Link to the help page of the UI of Django Content settings. The link is shown in Django Admin panel. If the value is `None` - the link woudn't be shown.
+
+### `CONTENT_SETTINGS_USER_DEFINED_TYPES`
+
+*default: []*
+
+Empty list means that the user is not allowed to create own user defined settings. Read more about user defined types [here](uservar.md).
+
+It is a list of tuples with 3 strings. Example:
+
+```python
+CONTENT_SETTINGS_USER_DEFINED_TYPES=[
+    ("text", "content_settings.types.basic.SimpleText", "Simple Text"),
+    ("html", "content_settings.types.basic.SimpleHTML", "HTML"),
+]
+```
+
+* slug (for example `"text"`) - value for internal use, should be unique.
+* import line of the type class (for example `"content_settings.types.basic.SimpleText"`) - which class would be used for creating setting.
+* name (for example `"Simple Text"`) - value that would be shown to the user in the drop-down list of the form.
+
 
 ### `CONTENT_SETTINGS_PREVIEW_ON_SITE_SHOW`
 
