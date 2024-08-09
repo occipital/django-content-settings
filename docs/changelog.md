@@ -17,7 +17,7 @@
 * you can do a preview for user defined types, you can do a preview of creation of new user defined type
 * names of the URLS has "content_settings" prefix
 * fix bug with assign only attributes (not methods)
-* 📖 defaults takes type arguments into account - you can now extend `yeses` and `noes` into `CONTENT_SETTINGS_DEFAULTS`
+* defaults takes type arguments into account - you can now extend `yeses` and `noes` into `CONTENT_SETTINGS_DEFAULTS`
 
 #### 0.18.2 CallToPythonMixin.call_prepare_func
 
@@ -90,7 +90,7 @@
 * 📖 GiveOneKeyMixin
 * 📖 SimpleExecOneKey
 * 📖 SimpleExecOneKeyNoCall
-* 📖 STATIC_INCLUDES.UNITED_SETTINGS
+* STATIC_INCLUDES.UNITED_SETTINGS
 
 ## 0.12
 

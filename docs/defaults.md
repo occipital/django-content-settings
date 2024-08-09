@@ -160,6 +160,43 @@ CONTENT_SETTINGS_DEFAULTS = [
 ]
 ```
 
+### Extend Yeses and Noes
+
+`defaults` context can take into considiration the default value of the type as well. Here is an example when you need to exted `yeses` for `basic.SimpleBool`
+
+```python
+from content_settings.types.basic import SimpleBool
+from content_settings.defaults.context import defaults
+from content_settings.defaults.modifiers import unite_tuple_add
+
+with defaults(unite_tuple_add(yeses=("tak",))):
+    SITE_OPENED = SimpleBool("1")
+```
+
+that allows you to use value "tak" as `True` for `SITE_OPENED`.
+
+Using `CONTENT_SETTINGS_DEFAULTS` you can update default `yeses` for all `SimpleBool` in your project
+
+```python
+from content_settings.filters import full_name_exact
+from content_settings.defaults.modifiers import unite_tuple_add
+
+CONTENT_SETTINGS_DEFAULTS = [
+    (full_name_exact("content_settings.types.basic.SimpleBool"), unite_tuple_add(yeses=("tak",))),
+]
+```
+
+Knowing that `yeses` attribute is only SimpleBool setting - you can make defaults for all variables
+
+```python
+from content_settings.filters import any_name
+from content_settings.defaults.modifiers import unite_tuple_add
+
+CONTENT_SETTINGS_DEFAULTS = [
+    (any_name, unite_tuple_add(yeses=("tak",))),
+]
+```
+
 ### Defaults collections
 
 in the module [`content_settings.defaults.collections`](source.md#defaultscollections) we have functions that can be used as an element of `CONTENT_SETTINGS_DEFAULTS`
