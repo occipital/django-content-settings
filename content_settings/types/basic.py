@@ -28,7 +28,7 @@ from content_settings.types import (
 )
 from content_settings.types.mixins import HTMLMixin
 from content_settings.defaults.context import update_defaults
-from content_settings.utils import call_base_str, func_base_str
+from content_settings.utils import call_base_str
 
 
 class SimpleString(BaseSetting):
