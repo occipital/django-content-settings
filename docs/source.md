@@ -17,6 +17,7 @@
 - [tags](#tags)
 - [utils](#utils)
 - [views](#views)
+- [widgets](#widgets)
 - [templatetags.content_settings_extras](#templatetagscontent_settings_extras)
 - [types.array](#typesarray)
 - [types.basic](#typesbasic)
@@ -438,15 +439,21 @@ Returns an iterator of tuple with module and class name that are subclasses of t
 
 getting an object from the module by the path. `full.path.to.Object` -> `Object`
 
-### def function_has_argument(func: Callable, arg: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/utils.py#L48)</sup>
+### def function_has_argument(func: Callable, arg: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/utils.py#L51)</sup>
 
 Check if the function has the given argument in its definition.
 
-### def func_base_str(func: TCallableStr, call_base: Any = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/utils.py#L55)</sup>
+### def is_bline(func: TCallableStr)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/utils.py#L58)</sup>
+
+Check if it is a string defined as b"string", or is other words bites string.
+
+The function is part of the future idea https://github.com/occipital/django-content-settings/issues/110
+
+### def func_base_str(func: TCallableStr, call_base: Any = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/utils.py#L67)</sup>
 
 if a given function is not callable it is converted into callable function
 
-### def call_base_str(func: TCallableStr)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/utils.py#L74)</sup>
+### def call_base_str(func: TCallableStr)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/utils.py#L89)</sup>
 
 The goal of the function is to extend interface of callable attributes, so instead of passing a function you can pass a name of the function or full import path to the function.
 
@@ -509,6 +516,35 @@ or combinations of them
 ```
 FetchSettingsView.as_view(names=(gen_startswith("IS_"), "TITLE")),
 ```
+
+
+## widgets
+
+
+
+Widgets that can be used in `widget` attribute of the content settings.
+
+It includes all of the widgets from django.forms.widgets + several custom widgets.
+
+### class LongInputMix()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/widgets.py#L10)</sup>
+
+Mixin that makes input maximum long
+
+### class LongTextInput(LongInputMix, TextInput)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/widgets.py#L23)</sup>
+
+Long text input
+
+### class LongTextarea(LongInputMix, Textarea)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/widgets.py#L31)</sup>
+
+Long textarea
+
+### class LongURLInput(LongInputMix, URLInput)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/widgets.py#L39)</sup>
+
+Long URL Input
+
+### class LongEmailInput(LongInputMix, EmailInput)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/widgets.py#L45)</sup>
+
+Long Email Input
 
 
 ## templatetags.content_settings_extras
@@ -701,7 +737,7 @@ Use on_change attribute
 Return the list of functions to call when the setting is changed and commited.
 Uses for syncing data or triggering emails.
 
-Use on_change_commited attribute
+Use on_change_commited attribute–
 
 #### def field(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L255)</sup>
 
@@ -827,27 +863,27 @@ Suffix can be used.
 
 Multiline text setting type.
 
-### class SimpleTextPreview(SimpleText)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L501)</sup>
+### class SimpleTextPreview(SimpleText)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L500)</sup>
 
 Multiline text setting type with preview. By default SimpleText and SimpleString don't have preview, but for showing preview in EachMixin, we need to have preview for each type.
 
-### class SimpleHTML(HTMLMixin, SimpleText)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L509)</sup>
+### class SimpleHTML(HTMLMixin, SimpleText)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L508)</sup>
 
 Multiline HTML setting type.
 
-### class URLString(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L517)</sup>
+### class URLString(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L516)</sup>
 
 URL setting type.
 
-### class EmailString(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L528)</sup>
+### class EmailString(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L526)</sup>
 
 Email setting type.
 
-### class SimpleInt(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L542)</sup>
+### class SimpleInt(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L539)</sup>
 
 Integer setting type.
 
-### class SimpleBool(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L555)</sup>
+### class SimpleBool(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L553)</sup>
 
 Boolean setting type.
 
@@ -855,7 +891,7 @@ Attributes:
 - yeses (Tuple[str]): Accepted values for True.
 - noes (Tuple[str]): Accepted values for False.
 
-### class SimpleDecimal(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L594)</sup>
+### class SimpleDecimal(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L593)</sup>
 
 Decimal setting type.
 
