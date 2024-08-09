@@ -40,9 +40,12 @@ def import_object(path: str) -> Any:
     """
     getting an object from the module by the path. `full.path.to.Object` -> `Object`
     """
-    parts = path.split(".")
-    module = import_module(".".join(parts[:-1]))
-    return getattr(module, parts[-1])
+    try:
+        return import_module(path)
+    except ImportError:
+        parts = path.split(".")
+        module = import_module(".".join(parts[:-1]))
+        return getattr(module, parts[-1])
 
 
 def function_has_argument(func: Callable, arg: str) -> bool:

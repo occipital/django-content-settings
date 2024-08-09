@@ -67,7 +67,7 @@ class SimpleString(BaseSetting):
 
     constant: bool = False
     cls_field: TCallableStr = "CharField"
-    widget: TCallableStr = "TextInput"
+    widget: TCallableStr = "LongTextInput"
     widget_attrs: Optional[dict] = None
     fetch_permission: TCallableStr = "none"
     update_permission: TCallableStr = "staff"
@@ -247,7 +247,7 @@ class SimpleString(BaseSetting):
         Return the list of functions to call when the setting is changed and commited.
         Uses for syncing data or triggering emails.
 
-        Use on_change_commited attribute
+        Use on_change_commited attribute–
         """
         return self.on_change_commited
 
@@ -353,7 +353,7 @@ class SimpleString(BaseSetting):
             return self.widget
         return call_base_str(
             self.widget,
-            call_base="django.forms.widgets",
+            call_base="content_settings.widgets",
             attrs=self.widget_attrs,
         )
 
@@ -494,8 +494,7 @@ class SimpleText(SimpleString):
     Multiline text setting type.
     """
 
-    widget: forms.Widget = forms.Textarea
-    widget_attrs: dict = {"rows": 10, "cols": 80}
+    widget: TCallableStr = "LongTextarea"
 
 
 class SimpleTextPreview(SimpleText):
@@ -519,10 +518,9 @@ class URLString(SimpleString):
     URL setting type.
     """
 
-    cls_field: forms.Field = forms.URLField
-    widget: forms.Widget = forms.URLInput
+    cls_field: TCallableStr = "URLField"
+    widget: TCallableStr = "LongURLInput"
     help_format: str = "URL"
-    widget_attrs: dict = {"style": "max-width: 600px; width: 100%"}
 
 
 class EmailString(SimpleString):
@@ -530,10 +528,9 @@ class EmailString(SimpleString):
     Email setting type.
     """
 
-    cls_field: forms.Field = forms.EmailField
-    widget: forms.Widget = forms.EmailInput
+    cls_field: TCallableStr = "EmailField"
+    widget: TCallableStr = "LongEmailInput"
     help_format: str = "Email"
-    widget_attrs: dict = {"style": "max-width: 600px; width: 100%"}
 
     def json_view_value(self, value: Any, **kwargs) -> Any:
         return f'"{value}"'
@@ -545,7 +542,8 @@ class SimpleInt(SimpleString):
     """
 
     admin_preview_as: PREVIEW = PREVIEW.PYTHON
-    cls_field: forms.Field = forms.IntegerField
+    cls_field: TCallableStr = "IntegerField"
+    widget: TCallableStr = "NumberInput"
     help_format: str = "Any number"
 
     def json_view_value(self, value: Any, **kwargs) -> Any:
@@ -562,6 +560,7 @@ class SimpleBool(SimpleString):
     """
 
     admin_preview_as: PREVIEW = PREVIEW.PYTHON
+    widget: TCallableStr = "TextInput"
     yeses: Tuple[str] = ("yes", "true", "1", "+", "ok")
     noes: Tuple[str] = ("no", "not", "false", "0", "-", "")
 
@@ -600,7 +599,8 @@ class SimpleDecimal(SimpleString):
     """
 
     admin_preview_as: PREVIEW = PREVIEW.PYTHON
-    cls_field: forms.Field = forms.DecimalField
+    cls_field: TCallableStr = "DecimalField"
+    widget: TCallableStr = "TextInput"
     help_format: str = "Decimal number with floating point"
     decimal_json_as_string: bool = True
 
@@ -614,4 +614,4 @@ class SimplePassword(SimpleString):
     """
 
     admin_preview_as: PREVIEW = PREVIEW.NONE
-    widget_attrs: dict = {"type": "password"}
+    widget: TCallableStr = "PasswordInput"
