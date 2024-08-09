@@ -6,7 +6,9 @@
 
 [Issuses left for releasing v1](https://github.com/occipital/django-content-settings/labels/v1)
 
-#### 0.19 Import/Export through the UI and commands
+### 0.20 Long widgets
+
+### 0.19 Import/Export through the UI and commands
 
 * Import/Export UI in Django Admin. [Read more in UI](ui.md#import-export)
 * Import/Export commands. [Read more in Commands](commands.md)
