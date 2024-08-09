@@ -23,3 +23,30 @@ Using Django Setting [`CONTENT_SETTINGS_DEFAULTS`](settings.md#content_settings_
 ## Custom access rules
 
 Every setting has access rules you can define not only by assign specific functions to specific attributes (see [permissions](permissions.md)), but you can define your own function that defines access rule.
+
+## Custom prefix for settings
+
+Currently we have several builtin prefixes `withtag__`, `startswith__`, `lazy__` and so on, but you can register own prefix using `conf.register_prefix` decorator.
+
+For example:
+
+```python
+from content_settings.conf import register_prefix
+from content_settings.caching import get_value
+
+
+@register_prefix("endswith")
+def endswith_prefix(name: str, suffix: str):
+    return {
+        k: get_value(k, suffix) for k in dir(content_settings) if k.endswith(name)
+    }
+
+```
+
+register a new prefix, so now, in code you can use it
+
+```python
+
+for name, value in content_settngs.endswith__BETA:
+    ...
+```

@@ -170,7 +170,7 @@
 
 ## 0.7 permissions and content tags
 
-* 📖 __content generated tags__ - tags that can be generated not based on the given tags, but based on the given value.
+* __content generated tags__ - tags that can be generated not based on the given tags, but based on the given value.
 * `CONTENT_SETTINGS_TAGS` - a list of functions that can generate tags for variable based on value
 * `view_permission` and `view_history_permission`
 * `SimplePassword`
@@ -179,7 +179,7 @@
 ### 0.6.4
 
 * `caching.get_raw_value` - new function
-* 📖 `context_manager.process_set` - correct work with str, list and other iterable (those will be converted to set)
+* `context_manager.process_set` - correct work with str, list and other iterable (those will be converted to set)
 * prevent resetting value if only help of tags were updated. The value will be reset to default only in case of version update
 
 ### 0.6.3 fix caching for huey and celery
@@ -221,7 +221,7 @@ var = SimpleCSV(
 Minor:
 
 * `validate_value` now splitted on two `validate_raw_value` for validation text and `validate` for validation python object
-* 📖 `withtag__NAME` - new built-in prefix, that returns all of the names that have tag "name"
+* `withtag__NAME` - new built-in prefix, that returns all of the names that have tag "name"
 * `help_format` - by default empty text
 * `get_admin_preview_as`
 * `validate_value` and other validators does not return value
@@ -230,13 +230,13 @@ Minor:
 ## 0.5 User Defined Variables & Constants
 
 * User Defined Variables - variables can now be created not only in code but also in admin
-* 📖 `overwrite_user_defined` - new attribute that allows overwrite user defined variable
-* 📖 `constant` - new attribute that makes the code variable unchangable in admin panel and only default value is using
-* 📖 `conf.register_prefix` - decorator that allows you to registered a new prefix
-* 📖 `startswith__NAME` - new built-in prefix, that returns all of the names that starts with NAME
+* `overwrite_user_defined` - new attribute that allows overwrite user defined variable
+* `constant` - new attribute that makes the code variable unchangable in admin panel and only default value is using
+* `conf.register_prefix` - decorator that allows you to registered a new prefix
+* `startswith__NAME` - new built-in prefix, that returns all of the names that starts with NAME
 * `dir(content_settings)` - shows all of the registered variables
 * db now stores tags and help for all variables
-* 📖 `CHECKSUM_USER_KEY_PREFIX` and `USER_DEFINED_TYPES` two new settings
+* `CHECKSUM_USER_KEY_PREFIX` and `USER_DEFINED_TYPES` two new settings
 * fix "Preview Loading..." for variables without preview
 * `caching.get_type_by_name` - new function
 * test covarage: 93%
