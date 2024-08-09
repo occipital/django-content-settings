@@ -52,12 +52,24 @@ def function_has_argument(func: Callable, arg: str) -> bool:
     return arg in inspect.signature(func).parameters
 
 
+def is_bline(func: TCallableStr) -> bool:
+    """
+    Check if it is a string defined as b"string", or is other words bites string.
+
+    The function is part of the future idea https://github.com/occipital/django-content-settings/issues/110
+    """
+    return isinstance(func, bytes)
+
+
 def func_base_str(func: TCallableStr, call_base: Any = None) -> Callable:
     """
     if a given function is not callable it is converted into callable function
     """
     if callable(func):
         return func
+
+    if is_bline(func):
+        func = func.decode("utf-8")
 
     if "." in func:
         return import_object(func)

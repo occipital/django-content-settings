@@ -60,7 +60,7 @@ with defaults(add_tags({"general"})):
 
     TITLE = SimpleStringWithAdminHead(
         "Book Store",
-        fetch_permission="any",
+        fetch_permission=b"any",
         overwrite_user_defined=True,
         help="The title of the book store",
     )
