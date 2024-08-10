@@ -58,6 +58,10 @@ UI_DOC_URL = get_setting(
     "UI_DOC_URL", "https://django-content-settings.readthedocs.io/en/0.19/ui/"
 )
 
+CHECK_UPDATE_CELERY = get_setting("CHECK_UPDATE_CELERY", True)
+
+CHECK_UPDATE_HUEY = get_setting("CHECK_UPDATE_HUEY", True)
+
 USER_DEFINED_TYPES = get_setting("USER_DEFINED_TYPES", [])
 
 assert isinstance(

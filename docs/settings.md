@@ -109,6 +109,20 @@ Use preview on site functionality. In case of `False` value - preview on site mi
 
 Preview on site panel has a link "View On Site". The setting contains href attribute for that link.
 
+## Integration
+
+### `CONTENT_SETTINGS_CHECK_UPDATE_CELERY`
+
+*default: True*
+
+if it is possible to import celery, the system checks updates for every `task_prerun`
+
+### `CONTENT_SETTINGS_CHECK_UPDATE_HUEY`
+
+*default: True*
+
+if it is possible to import huey, the system checks updates for every `pre_execute`
+
 ## Other
 
 ### `CONTENT_SETTINGS_VALUES_ONLY_FROM_DB`

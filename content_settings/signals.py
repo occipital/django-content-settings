@@ -8,7 +8,12 @@ from django.db.backends.signals import connection_created
 from django.apps import apps
 from django.db import transaction
 
-from .settings import USER_DEFINED_TYPES, UPDATE_DB_VALUES_BY_MIGRATE
+from .settings import (
+    USER_DEFINED_TYPES,
+    UPDATE_DB_VALUES_BY_MIGRATE,
+    CHECK_UPDATE_CELERY,
+    CHECK_UPDATE_HUEY,
+)
 
 from django.dispatch import receiver
 
@@ -143,23 +148,25 @@ def db_connection_done(*args, **kwargs):
 
 # INTEGRATIONS
 
-try:
-    from celery.signals import task_prerun
-except ImportError:
-    pass
-else:
+if CHECK_UPDATE_CELERY:
+    try:
+        from celery.signals import task_prerun
+    except ImportError:
+        pass
+    else:
 
-    @task_prerun.connect
-    def check_update_for_celery(*args, **kwargs):
-        check_update()
+        @task_prerun.connect
+        def check_update_for_celery(*args, **kwargs):
+            check_update()
 
 
-try:
-    from huey.contrib.djhuey import pre_execute
-except ImportError:
-    pass
-else:
+if CHECK_UPDATE_HUEY:
+    try:
+        from huey.contrib.djhuey import pre_execute
+    except ImportError:
+        pass
+    else:
 
-    @pre_execute()
-    def check_update_for_huey(*args, **kwargs):
-        check_update()
+        @pre_execute()
+        def check_update_for_huey(*args, **kwargs):
+            check_update()

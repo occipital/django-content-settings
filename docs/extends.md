@@ -1,6 +1,6 @@
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
 
-# Extends
+# Possible Extensions
 
 *the article is still in WIP*
 
@@ -26,7 +26,7 @@ Every setting has access rules you can define not only by assign specific functi
 
 ## Custom prefix for settings
 
-Currently we have several builtin prefixes `withtag__`, `startswith__`, `lazy__` and so on, but you can register own prefix using `conf.register_prefix` decorator.
+Currently we have several builtin prefixes `withtag__`, `lazy__` and [so on](access.md#prefix), but you can register own prefix using `conf.register_prefix` decorator.
 
 For example:
 
@@ -50,3 +50,33 @@ register a new prefix, so now, in code you can use it
 for name, value in content_settngs.endswith__BETA:
     ...
 ```
+
+## Integration with task management system
+
+There are a couple of built in integrations with task manager, such as celery and huey, the integration is very simple, so you can add your own your self.
+
+The example for celery (you can find it in [signals.py](https://github.com/occipital/django-content-settings/blob/master/content_settings/signals.py) in the end of the file):
+
+```python
+
+try:
+    from celery.signals import task_prerun
+except ImportError:
+    pass
+else:
+
+    @task_prerun.connect
+    def check_update_for_celery(*args, **kwargs):
+        check_update()
+
+```
+
+The idea of integration is to make sure before starting every task the system shcould make sure all of the settings are updated.
+
+## Middleware for preview
+
+If you want to use preview of your settings you need to add middleware `content_settings.middleware.preivew_on_site` in your project settings.
+
+The middleware is very simple, it checks if the user has a preview objects and process the response under the new settings context. [Here](https://github.com/occipital/django-content-settings/blob/master/content_settings/middlewares.py) is the source of the middleware.
+
+You might want to create and use your own middleware, and one of the reason for that might be use within [django-impersonate](https://pypi.org/project/django-impersonate/)

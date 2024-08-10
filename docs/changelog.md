@@ -6,6 +6,10 @@
 
 [Issuses left for releasing v1](https://github.com/occipital/django-content-settings/labels/v1)
 
+#### master
+
+* new [settings](settings.md) - `CONTENT_SETTINGS_CHECK_UPDATE_CELERY` and `CONTENT_SETTINGS_CHECK_UPDATE_HUEY`
+
 ### 0.20 Long widgets
 
 ### 0.19 Import/Export through the UI and commands
