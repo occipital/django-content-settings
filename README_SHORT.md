@@ -51,8 +51,22 @@ In template:
 <h2>{{CONTENT_SETTINGS.TITLE}}</h2>
 ```
 
-Simple as that, we have a lot of types for settings you can use `SimpleText`, `SimpleHTML`, `SimpleInt`, `SimpleBool`, `SimpleDecimal`, `DateTimeString`, `SimpleTimedelta`, `SimpleYAML`, `SimpleJSON`, `SimpleCSV`, `DjangoTemplate`, `DjangoModelTemplate`, `SimpleEval`, `SimpleExec` and so on... [Read more](https://django-content-settings.readthedocs.io/en/master/types/) about the types available for you.
+# Whats next?
 
-It is also very fast thanks to our caching system. [Read more about it](https://django-content-settings.readthedocs.io/en/master/caching/).
-
-Some fancy things you can find in our [cookbook](https://django-content-settings.readthedocs.io/en/master/cookbook/).
+- [**Getting Started**](https://django-content-settings.readthedocs.io/en/master/first/) - this is a step-by-step guide to configure content settings in your project and add your first setting.
+- [**Setting Types and Attributes**](https://django-content-settings.readthedocs.io/en/master/types/) - the guide of all available types and attributes, including some examples.
+- [**Using Settings**](https://django-content-settings.readthedocs.io/en/master/access/) - multiple ways to access content settings in your project.
+- [**Permissions**](https://django-content-settings.readthedocs.io/en/master/permissions/) - different settings can have different permissions for different settings' functionality.
+- [**Defaults Context**](https://django-content-settings.readthedocs.io/en/master/defaults/) - allows you to group settings with common parameters, reducing redundancy and making your code cleaner and more maintainable.
+- [**API & Views**](https://django-content-settings.readthedocs.io/en/master/api/) - how to organize access to content settings through the API
+- [**User Interface for Django Admin**](https://django-content-settings.readthedocs.io/en/master/ui/) - the guide is for end users, not only developers. It explains how to use the Django Admin panel for content settings.
+- [**How Caching is Organized**](https://django-content-settings.readthedocs.io/en/master/caching/) - we want to make sure your content settings work as fast as possible. The guide explains how it is organized and what you can configure.
+- [**Available Django Settings**](https://django-content-settings.readthedocs.io/en/master/settings/) - reference all available Django settings for content settings.
+- [**User Defined Settings**](https://django-content-settings.readthedocs.io/en/master/uservar/) - *experimental functionality* - how to give Django Admin users functionality for creation settings right from Django Admin UI.
+- [**Possible Extensions**](https://django-content-settings.readthedocs.io/en/master/extends/) - *wip* - all of the ways how you can extend the basic content settings functionality.
+- [**Cookbook**](https://django-content-settings.readthedocs.io/en/master/cookbook/) - several simple receipts you can use in your project.
+- [**Frequently Asked Questions**](https://django-content-settings.readthedocs.io/en/master/faq/) - before asking questions, you might want to visit this section.
+- [**Glossary**](https://django-content-settings.readthedocs.io/en/master/glossary/) - the concept of content settings introduces several new terms, which we collected in this article
+- [**How to contribute**](https://django-content-settings.readthedocs.io/en/master/contribute/) - if you are willing to help - welcome to the team.
+- [**Changelog**](https://django-content-settings.readthedocs.io/en/master/changelog/) - what was introduces in every version.
+- [**Source Doc**](https://django-content-settings.readthedocs.io/en/master/source/) - we collect all the doc strings in one article for future reference.
