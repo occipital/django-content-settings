@@ -14,10 +14,10 @@ With `django-content-settings` allows you to store variables with specific funct
 
 1. **Type-Agnostic Variable Creation**: Users can create variables of any type, making the module highly adaptable to various needs.
 2. **Editability from Django Admin Panel**: Seamless integration with the Django admin panel allows for effortless editing of variables.
-3. **Flaxable permission model**: Every setting can have own permission rule for view, edit, fetch in API and view changes history.
-4. **Validation**: Every setting can have own validation not only for itself but for the other settings. So you can control so the setting update doesn't break the system.
-5. **Preview**: Preview setting before apply and addition option to preview setting change right on site.
-6. **Caching System**: Ensures high performance, negating the impact of variable complexity on code execution speed.
+3. **Flexible permission model**: Every setting can have its own permission rule for viewing, editing, fetching in API, and viewing changes history.
+4. **Preview**: Preview the setting before applying and the option to preview the setting changes right on site.
+5. **Caching System**: Ensures high performance, negating the impact of variable complexity on code execution speed.
+6. **Export & Import**: Massively dump configuration into a file and massively load configuration from the file using UI or/and commands.
 
 ### Additional Admin Panel Functionalities
 
@@ -25,6 +25,7 @@ With `django-content-settings` allows you to store variables with specific funct
 - **Preview System**: Preview changes for different variable types before finalizing them.
 - **Bulk Editing**: Facilitate the simultaneous editing of multiple variable types.
 - **Permission System**: Control edit permissions for enhanced security and management.
+- **Tags Navigation**: Every setting has a set of tags, which allows you to organize flexible navigation even with 1000 settings in the system.
 
 ### API Integration
 

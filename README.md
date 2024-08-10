@@ -1,7 +1,5 @@
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
 
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-
 # Django Content Settings - the most advanced admin editable setting
 
 ![Django Content Settings](https://github.com/occipital/django-content-settings/blob/master/docs/img/title.png)
@@ -16,9 +14,10 @@ The `django-content-settings` module is a versatile addition to the Django ecosy
 
 1. **Type-Agnostic Variable Creation**: Users can create variables of any type, making the module highly adaptable to various needs.
 2. **Editability from Django Admin Panel**: Seamless integration with the Django admin panel allows for effortless editing of variables.
-3. **Flaxable permission model**: Every setting can have own permission rule for view, edit, fetch in API and view changes history.
-4. **Preview**: Preview setting before apply and addition option to preview setting change right on site.
+3. **Flexible permission model**: Every setting can have its own permission rule for viewing, editing, fetching in API, and viewing changes history.
+4. **Preview**: Preview the setting before applying and the option to preview the setting changes right on site.
 5. **Caching System**: Ensures high performance, negating the impact of variable complexity on code execution speed.
+6. **Export & Import**: Massively dump configuration into a file and massively load configuration from the file using UI or/and commands.
 
 ### Additional Admin Panel Functionalities
 
@@ -26,6 +25,7 @@ The `django-content-settings` module is a versatile addition to the Django ecosy
 - **Preview System**: Preview changes for different variable types before finalizing them.
 - **Bulk Editing**: Facilitate the simultaneous editing of multiple variable types.
 - **Permission System**: Control edit permissions for enhanced security and management.
+- **Tags Navigation**: Every setting has a set of tags, which allows you to organize flexible navigation even with 1000 settings in the system.
 
 ### API Integration
 
