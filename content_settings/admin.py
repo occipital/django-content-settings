@@ -139,7 +139,7 @@ class ContentSettingForm(ModelForm):
         if self.instance.name:
             cs_type = get_type_by_name(self.instance.name)
             if cs_type:
-                self.fields["value"] = cs_type.field
+                self.fields["value"] = cs_type.get_field()
         self.fields["value"].strip = False
 
         if "user_defined_type" in self.fields:

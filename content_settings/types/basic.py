@@ -118,7 +118,8 @@ class SimpleString(BaseSetting):
             self.default, str
         ), "Default should be str (or required or optional for special cases)"
 
-        self.init_assign_kwargs(update_defaults(self, kwargs))
+        updated_kwargs = update_defaults(self, kwargs)
+        self.init_assign_kwargs(updated_kwargs)
 
         assert isinstance(self.version, str), "Version should be str"
         assert (
@@ -250,13 +251,6 @@ class SimpleString(BaseSetting):
         Use on_change_commited attribute–
         """
         return self.on_change_commited
-
-    @cached_property
-    def field(self) -> forms.Field:
-        """
-        the form field
-        """
-        return self.get_field()
 
     def get_suffixes(self) -> Tuple:
         """
@@ -390,7 +384,7 @@ class SimpleString(BaseSetting):
         """
         Converts text value to python value.
         """
-        return self.field.to_python(value)
+        return self.get_field().to_python(value)
 
     def json_view_value(self, value: Any, **kwargs) -> Any:
         """

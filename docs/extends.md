@@ -18,7 +18,9 @@ Using Django Setting [`CONTENT_SETTINGS_TAGS`](settings.md#content_settings_tags
 
 ## Redefine default attributes for all settings
 
-Using Django Setting [`CONTENT_SETTINGS_DEFAULTS`](settings.md#content_settings_defaults) you can change how the default values for all (or for some) settings will look like
+Using Django Setting [`CONTENT_SETTINGS_DEFAULTS`](settings.md#content_settings_defaults) you can change how the default values for all (or for some) settings will look like.
+
+Check the [collections module](source.md#defaultscollections) - it includes defaults for codemirror support. The same kind of configuration you can do to support other code editors.
 
 ## Custom access rules
 

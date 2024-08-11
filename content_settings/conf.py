@@ -1,5 +1,14 @@
 """
 the module collects all settings from all apps and makes them available as `content_settings` object.
+
+It has the following global variables:
+
+* `USER_DEFINED_TYPES_INSTANCE: Dict[str, Callable]` - key is the slug of the user defined setting, value is a function that returns a type with tags and help text
+* `USER_DEFINED_TYPES_INITIAL: Dict[str, BaseSetting]` - key is a slug of the user defined type, value is a type without tags and help text
+* `USER_DEFINED_TYPES_NAME: Dict[str, str]` - the name of the user defined types
+* `ALL: Dict[str, BaseSetting]` - the all registereg settings types
+* `PREFIXSES: Dict[str, Callable]` - all registereg prefixes (using `register_prefix` decorator)
+* `CALL_TAGS: Optional[List[Callable]]` - the list of function that is taken from `CONTENT_SETTINGS_TAGS` setting and used to generate tags for settings.
 """
 
 from importlib import import_module
@@ -14,7 +23,6 @@ from .types.basic import BaseSetting
 from .caching import (
     get_value,
     get_py_value,
-    get_raw_value,
     get_type_by_name,
     get_all_names,
     get_checksum_from_local,
@@ -25,11 +33,12 @@ from .store import add_app_name, get_admin_head, add_admin_head, get_admin_raw_j
 from .context_managers import content_settings_context
 from .utils import import_object
 
-USER_DEFINED_TYPES_INSTANCE = {}
-USER_DEFINED_TYPES_INITIAL = {}
-USER_DEFINED_TYPES_NAME = {}
-ALL = {}
-PREFIXSES = {}
+USER_DEFINED_TYPES_INSTANCE: Dict[str, Callable] = {}
+USER_DEFINED_TYPES_INITIAL: Dict[str, BaseSetting] = {}
+USER_DEFINED_TYPES_NAME: Dict[str, str] = {}
+ALL: Dict[str, BaseSetting] = {}
+PREFIXSES: Dict[str, Callable] = {}
+CALL_TAGS: Optional[List[Callable]] = None
 
 
 if USER_DEFINED_TYPES:
@@ -42,9 +51,6 @@ if USER_DEFINED_TYPES:
         USER_DEFINED_TYPES_INITIAL[slug] = initial_val
         add_admin_head(initial_val)
         USER_DEFINED_TYPES_NAME[slug] = name
-
-
-CALL_TAGS = None
 
 
 def get_call_tags() -> List[Callable]:
@@ -64,7 +70,9 @@ def get_call_tags() -> List[Callable]:
         elif callable(func_tag):
             pass
         else:
-            raise AssertionError(f"func_tag: {func_tag} should be str or callable")
+            raise AssertionError(
+                f"CONTENT_SETTINGS_TAGS: {func_tag} should be str or callable"
+            )
         CALL_TAGS.append(func_tag)
     return CALL_TAGS
 

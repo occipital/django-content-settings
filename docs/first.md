@@ -98,6 +98,18 @@ urlpatterns = [
 ]
 ```
 
+### Stpe 7 (optional and experemental): Code highlight configuration
+
+If you want to have code highlight for JSON/YAML/PY code using [Codemirror](https://codemirror.net/5/) - update setting.py
+
+```python
+from content_settings.defaults.collections import codemirror_all
+
+CONTENT_SETTINGS_DEFAULTS = [
+    *codemirror_all(),
+]
+```
+
 After this configuration, run your project along with the necessary migrations. [Read more](api.md) about the API tools
 
 ## Creating Your First Variable

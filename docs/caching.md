@@ -5,7 +5,7 @@
 This is a very important part of content settings since it solves two main problems:
 
 * Consistency within a call - cache contains DB state as checksum and checksum check is always at the beginning of the call to avoid taking content settings updates from different DB transactions 
-* Unlimited value complexity - updating value from DB includes getting raw text value from DB, converting it into a py object, and storing it in a local thread.
+* Unlimited value complexity - updating value from DB includes getting raw text value from DB, converting it into a py object, and storing py object in a local thread.
 
 ## Procedure of update py value.
 

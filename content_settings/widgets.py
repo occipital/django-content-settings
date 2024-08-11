@@ -17,7 +17,7 @@ class LongInputMix:
         style = attrs.pop("style", "")
         style = "width: calc(100% - 14px);" + style
         attrs["style"] = style
-        super().__init__(attrs)
+        super().__init__(attrs=attrs)
 
 
 class LongTextInput(LongInputMix, TextInput):
