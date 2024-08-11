@@ -9,6 +9,7 @@
 #### master
 
 * new [settings](settings.md) - `CONTENT_SETTINGS_CHECK_UPDATE_CELERY` and `CONTENT_SETTINGS_CHECK_UPDATE_HUEY`
+* fix `widgets_attr`
 
 ### 0.20 Long widgets
 
