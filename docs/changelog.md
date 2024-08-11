@@ -6,7 +6,7 @@
 
 [Issuses left for releasing v1](https://github.com/occipital/django-content-settings/labels/v1)
 
-#### master
+#### 0.20.1
 
 * new [settings](settings.md) - `CONTENT_SETTINGS_CHECK_UPDATE_CELERY` and `CONTENT_SETTINGS_CHECK_UPDATE_HUEY`
 * fix `widgets_attr`
