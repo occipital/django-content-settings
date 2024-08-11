@@ -51,15 +51,13 @@ TEMPLATES = [
 ]
 ```
 
-### Step 4: Access Variables in Templates
-
 Now, you can *use settings* in templates like this:
 
 ```html
 <b>{{ CONTENT_SETTINGS.MY_VAR }}</b>
 ```
 
-### Step 5 (optional): Configure Preview on Site
+### Step 4 (optional): Configure Preview on Site
 
 Add preview on site middleware `"content_settings.middlewares.preivew_on_site"` to the `settings.py` to be able to see the changes live, before applying those for all users.
 
@@ -76,7 +74,9 @@ MIDDLEWARE = [
 ]
 ```
 
-### Step 6 (optional): API Access Configuration
+Now you can save settings in the preview object to see the effect online for one user. Check [the UI page](ui.md#preview-functionality) to understand how it looks.
+
+### Step 5 (optional): API Access Configuration
 
 To access variables through the API, update `urls.py` with the following line:
 
@@ -98,7 +98,9 @@ urlpatterns = [
 ]
 ```
 
-### Stpe 7 (optional and experemental): Code highlight configuration
+The example above shows all of the variables in one end-point, but you can create end-points with subset of settings. Read more about it in [the API page](api.md).
+
+### Stpe 6 (optional and experemental): Code highlight configuration
 
 If you want to have code highlight for JSON/YAML/PY code using [Codemirror](https://codemirror.net/5/) - update setting.py
 
@@ -110,7 +112,9 @@ CONTENT_SETTINGS_DEFAULTS = [
 ]
 ```
 
-After this configuration, run your project along with the necessary migrations. [Read more](api.md) about the API tools
+... and it is not the only extension you can do for your settings. Check [the Possible Extensions page](extends.md) to learn more about how you can extend functionality of content settings.
+
+[The Settings page](settings.md) contains collection of all available settings you can add in `settings.py` of your project to configure Content Settings.
 
 ## Creating Your First Variable
 
