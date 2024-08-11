@@ -39,15 +39,158 @@
 
 
 
-the caching
+the caching backend is working with local thread storage to store the checksum raw and py objects.
 
-### def calc_checksum(values)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L47)</sup>
+django caching backend is used to store the checksum and validates if the checksum was changed.
+
+`DATA` is a local thread storage with the following attributes:
+
+* `ALL_VALUES_CHECKSUM: str` - the checksum of the all values
+* `ALL_VALUES_USER_CHECKSUM: str` - the checksum of the user defined values
+* `ALL_RAW_VALUES: Dict[str, str]` - the raw values (values from the database) of the all settings
+* `ALL_VALUES: Dict[str, Any]` - the python objects of the all settings
+* `ALL_USER_DEFINES: Dict[str, BaseSetting]` - key is the setting name, value is the user defined type (with tags and help text)
+* `POPULATED: bool` - the flag that indicates that all values were populated from the database
+
+### def get_cache()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L39)</sup>
+
+returns caching backend that used for caching checksum values
+
+### def get_cache_key()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L47)</sup>
+
+returns cache key for checksum values (one should not be changed over time)
+
+### def get_user_cache_key()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L57)</sup>
+
+returns cache key for user defined types (one should not be changed over time) if user defined types are not used, returns None
+
+### def calc_checksum(values: Dict[str, Any])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L69)</sup>
 
 generate md5 hash for a dict with keys and values as strings
 
-### def hash_value(value)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L58)</sup>
+### def hash_value(value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L80)</sup>
 
 generate md5 hash for a string
+
+### def set_local_checksum()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L87)</sup>
+
+calculate and set checksum in the local thread
+
+### def set_local_user_checksum()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L98)</sup>
+
+calculate and set checksum in the local thread for user defined types
+
+### def push_user_checksum(value = None, key = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L109)</sup>
+
+save to cache backend the checksum for user defined types
+
+### def push_checksum(value = None, key = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L122)</sup>
+
+save to cache backend the checksum
+
+### def get_checksum_from_store()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L135)</sup>
+
+get the checksum from the cache backend
+
+### def get_user_checksum_from_store()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L142)</sup>
+
+get the checksum from the cache backend for user defined types
+
+### def get_checksum_from_local()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L149)</sup>
+
+get the checksum from the local thread
+
+### def get_checksum_from_user_local()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L156)</sup>
+
+get the checksum from the local thread for user defined types
+
+### def set_new_type(name: str, user_defined_type: str, tags_set: Set[str], help: str = '')<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L163)</sup>
+
+create a new user defined type and saves it to the local thread. The previous type is returned.
+
+### def replace_user_type(name: str, cs_type: BaseSetting)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L183)</sup>
+
+replace the user defined type with the new one. The previous type is returned.
+
+### def set_new_value(name: str, new_value: str, version: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L192)</sup>
+
+takes name, raw value and saves it to the local thread if the value was changed. The previous value is returned.
+
+raw value converts to the python object and saves to the local thread.
+
+if version is not None - it will be verified against the version of the type
+
+### def delete_user_value(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L213)</sup>
+
+delete user defined setting from the local thread and returns its raw value
+
+### def get_type_by_name(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L228)</sup>
+
+get the type of the setting (inluding user defined types) by its name
+
+### def get_userdefined_type_by_name(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L240)</sup>
+
+get the user defined type by its name
+
+### def get_value(name: str, suffix: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L247)</sup>
+
+get the value of the setting by its name and optional suffix
+
+### def get_raw_value(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L259)</sup>
+
+get the raw value of the setting by its name
+
+### def get_py_value(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L268)</sup>
+
+get the python object of the setting by its name
+
+### def is_populated()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L277)</sup>
+
+check if the local thread is populated with the values from the database
+
+### def get_db_objects()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L284)</sup>
+
+get the database objects for the settings
+
+### def get_all_names()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L293)</sup>
+
+get the names of the settings (including user defined types) from the local thread
+
+### def reset_all_values()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L302)</sup>
+
+reset the local thread with the values from the database
+
+### def reset_user_values(db: Dict[str, Any] = None, trigger_checksum: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L334)</sup>
+
+reset the local thread with the values from the database for user defined types
+
+if trigger_checksum is not the same as the checksum in the local thread, the checksum in the cache backend will be updated
+
+### def reset_code_values(db: Dict[str, Any] = None, trigger_checksum: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L377)</sup>
+
+reset the local thread with the values from the database for code settings
+
+if trigger_checksum is not the same as the checksum in the local thread, the checksum in the cache backend will be updated
+
+### def check_update()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L416)</sup>
+
+check if checksum in the cache backend is the same as the checksum in the local thread
+
+if not, the values from the database will be loaded
+
+### def recalc_checksums()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L438)</sup>
+
+recalculate the checksums in the cache backend
+
+### def recalc_user_checksums(db)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L448)</sup>
+
+recalculate the checksums in the cache backend for user defined types and saves them to the cache backend
+
+### def recalc_code_checksums(db: Dict[str, Any])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L472)</sup>
+
+recalculate the checksums in the cache backend for code settings and saves them to the cache backend
+
+it staves it two keys - one in the cache backend with the local checksum and one with the db checksum
 
 
 ## conf
@@ -56,36 +199,45 @@ generate md5 hash for a string
 
 the module collects all settings from all apps and makes them available as `content_settings` object.
 
-### def get_call_tags()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L50)</sup>
+It has the following global variables:
+
+* `USER_DEFINED_TYPES_INSTANCE: Dict[str, Callable]` - key is the slug of the user defined setting, value is a function that returns a type with tags and help text
+* `USER_DEFINED_TYPES_INITIAL: Dict[str, BaseSetting]` - key is a slug of the user defined type, value is a type without tags and help text
+* `USER_DEFINED_TYPES_NAME: Dict[str, str]` - the name of the user defined types
+* `ALL: Dict[str, BaseSetting]` - the all registereg settings types
+* `PREFIXSES: Dict[str, Callable]` - all registereg prefixes (using `register_prefix` decorator)
+* `CALL_TAGS: Optional[List[Callable]]` - the list of function that is taken from `CONTENT_SETTINGS_TAGS` setting and used to generate tags for settings.
+
+### def get_call_tags()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L56)</sup>
 
 returns list of functions from `CONTENT_SETTINGS_TAGS` setting that are used to generate tags for settings.
 the result is cached in `CALL_TAGS` variable.
 
-### def gen_tags(name: str, cs_type: BaseSetting, value: Any)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L72)</sup>
+### def gen_tags(name: str, cs_type: BaseSetting, value: Any)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L80)</sup>
 
 generate tags based on `CONTENT_SETTINGS_TAGS` setting.
 
-### def register_prefix(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L82)</sup>
+### def register_prefix(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L90)</sup>
 
 decorator for registration a new prefix
 
-### def lazy_prefix(name: str, suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L96)</sup>
+### def lazy_prefix(name: str, suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L104)</sup>
 
 lazy__ prefix that gives a lazy proxy object by the name of the setting.
 
-### def type_prefix(name: str, suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L104)</sup>
+### def type_prefix(name: str, suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L112)</sup>
 
 type__ prefix that return setting type by the name of the setting.
 
-### def startswith_prefix(name: str, suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L114)</sup>
+### def startswith_prefix(name: str, suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L122)</sup>
 
 startswith__ prefix that returns all settings as a dict (setting name: setting value) that start with the given name.
 
-### def withtag_prefix(name: str, suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L124)</sup>
+### def withtag_prefix(name: str, suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L132)</sup>
 
 withtag__ prefix that returns all settings as a dict (setting name: setting value) that have the given tag.
 
-### def split_attr(value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L167)</sup>
+### def split_attr(value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L175)</sup>
 
 splits the name of the attr on 3 parts: prefix, name, suffix
 
@@ -93,13 +245,13 @@ splits the name of the attr on 3 parts: prefix, name, suffix
 * name should be uppercase
 * suffix can be any string, but not uppercase
 
-### def validate_all_with_context(context: Dict[str, Any])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L198)</sup>
+### def validate_all_with_context(context: Dict[str, Any])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L206)</sup>
 
 validate all settings with the given context to make sure all of them are valid.
 
 Do not perform if `CONTENT_SETTINGS_CHAIN_VALIDATE = False`
 
-### def get_str_tags(cs_name: str, cs_type: BaseSetting, value: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L218)</sup>
+### def get_str_tags(cs_name: str, cs_type: BaseSetting, value: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L226)</sup>
 
     get tags as a text (joined by `
 `) for specific setting type. name and value are used to generate content tags.
@@ -107,7 +259,7 @@ Do not perform if `CONTENT_SETTINGS_CHAIN_VALIDATE = False`
     from saving in DB.
     
 
-### def set_initial_values_for_db(apply: bool = False)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L234)</sup>
+### def set_initial_values_for_db(apply: bool = False)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L242)</sup>
 
 sync settings with DB.
     * creates settings that are not in DB
@@ -116,25 +268,25 @@ sync settings with DB.
 
 attribute `apply` is used to apply changes in DB immediately. Can be used in tests.
 
-### class _Settings()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L338)</sup>
+### class _Settings()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L346)</sup>
 
 the main object that uses for getting settings for cache.
 
-#### def __dir__(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L352)</sup>
+#### def __dir__(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L360)</sup>
 
 dir() returns all settings names
 
-#### def full_checksum(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L364)</sup>
+#### def full_checksum(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L372)</sup>
 
 the current checksum of the settings.
 
 used for validation of settings weren't changed over time.
 
-#### def admin_head(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L373)</sup>
+#### def admin_head(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L381)</sup>
 
 the admin head.
 
-#### def admin_raw_js(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L380)</sup>
+#### def admin_raw_js(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L388)</sup>
 
 the admin raw js.
 
@@ -346,11 +498,11 @@ Returns a function that checks if the user has a specific permission.
 
 the module is used for connecting signals to the content settings.
 
-### def do_update_stored_checksum()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/signals.py#L27)</sup>
+### def do_update_stored_checksum()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/signals.py#L32)</sup>
 
 update the stored checksum of the settings.
 
-### def trigger_on_change(sender, instance, created)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/signals.py#L39)</sup>
+### def trigger_on_change(sender, instance, created)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/signals.py#L44)</sup>
 
 Trigger on_change and on_change_commited for the content setting
 
@@ -670,220 +822,216 @@ It can assing any attribute that is defined in the class. (The exception is help
 
 All of the changes for type instance can only be done inside of __init__ method. The other methods should not change self object.
 
-#### def init_assign_kwargs(self, kwargs)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L131)</sup>
+#### def init_assign_kwargs(self, kwargs)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L132)</sup>
 
 Assign the attributes from the kwargs to the instance.
 
 Use init__{attribute_name} method if it exists, otherwise use setattr
 
-#### def init__tags(self, tags: Union[None, str, Iterable[str]])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L145)</sup>
+#### def init__tags(self, tags: Union[None, str, Iterable[str]])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L146)</sup>
 
 Assign the tags to the instance from kwargs.
 
-#### def get_admin_head_css(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L159)</sup>
+#### def get_admin_head_css(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L160)</sup>
 
 Return the list of css urls to include in the admin head.
 
-#### def get_admin_head_js(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L165)</sup>
+#### def get_admin_head_js(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L166)</sup>
 
 Return the list of js urls to include in the admin head.
 
-#### def get_admin_head_css_raw(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L171)</sup>
+#### def get_admin_head_css_raw(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L172)</sup>
 
 Return the list of css codes to include in the admin head.
 
-#### def get_admin_head_js_raw(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L177)</sup>
+#### def get_admin_head_js_raw(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L178)</sup>
 
 Return the list of js codes to include in the admin head.
 
-#### def can_view(self, user: User)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L183)</sup>
+#### def can_view(self, user: User)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L184)</sup>
 
 Return True if the user has permission to view the setting in the django admin panel.
 
 Use view_permission attribute
 
-#### def can_view_history(self, user: User)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L193)</sup>
+#### def can_view_history(self, user: User)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L194)</sup>
 
 Return True if the user has permission to view the setting changing history in the django admin panel.
 
 Use view_history_permission attribute, but if it is None, use can_view
 
-#### def can_update(self, user: User)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L209)</sup>
+#### def can_update(self, user: User)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L210)</sup>
 
 Return True if the user has permission to update the setting in the django admin panel.
 
 Use update_permission attribute
 
-#### def can_fetch(self, user: User)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L219)</sup>
+#### def can_fetch(self, user: User)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L220)</sup>
 
 Return True if the user has permission to fetch the setting value using API.
 
 Use fetch_permission attribute
 
-#### def get_admin_preview_as(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L229)</sup>
+#### def get_admin_preview_as(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L230)</sup>
 
 Return the format (PREVIEW Enum) to use for the admin preview.
 
 Use admin_preview_as attribute
 
-#### def get_on_change(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L237)</sup>
+#### def get_on_change(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L238)</sup>
 
 Return the list of functions to call when the setting is changed.
 
 Use on_change attribute
 
-#### def get_on_change_commited(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L245)</sup>
+#### def get_on_change_commited(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L246)</sup>
 
 Return the list of functions to call when the setting is changed and commited.
 Uses for syncing data or triggering emails.
 
 Use on_change_commited attribute–
 
-#### def field(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L255)</sup>
-
-the form field
-
-#### def get_suffixes(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L261)</sup>
+#### def get_suffixes(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L255)</sup>
 
 Return the list of suffixes that can be used
 
-#### def can_suffix(self, suffix: Optional[str])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L267)</sup>
+#### def can_suffix(self, suffix: Optional[str])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L261)</sup>
 
 Return True if the suffix is valid for the setting.
 
-#### def can_assign(self, name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L273)</sup>
+#### def can_assign(self, name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L267)</sup>
 
 Return True if the attribute can be assigned to the instance.
 
-#### def get_help_format(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L285)</sup>
+#### def get_help_format(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L279)</sup>
 
 Generate help for the specific type.
 
 The help of the format goes after the help for the specific setting and expalins the format of the setting.
 
-#### def get_help(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L293)</sup>
+#### def get_help(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L287)</sup>
 
 Generate help for the specific setting (includes format help)
 
-#### def get_tags(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L305)</sup>
+#### def get_tags(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L299)</sup>
 
 Return the tags associated with the setting.
 
-#### def get_content_tags(self, name: str, value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L314)</sup>
+#### def get_content_tags(self, name: str, value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L308)</sup>
 
 Generate tags based on current type and value.
 
 Uses CONTENT_SETTINGS_TAGS for generating, but overriding the method allows you to change the behavior for the specific type.
 
-#### def get_validators(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L324)</sup>
+#### def get_validators(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L318)</sup>
 
 Return the list of validators to apply to the setting python value.
 
-#### def get_validators_raw(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L330)</sup>
+#### def get_validators_raw(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L324)</sup>
 
 Return the list of validators to apply to the setting text value.
 
-#### def get_field(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L336)</sup>
+#### def get_field(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L330)</sup>
 
 Generate the form field for the setting. Which will be used in the django admin panel.
 
-#### def get_widget(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L348)</sup>
+#### def get_widget(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L342)</sup>
 
 Generate the form widget for the setting. Which will be used in the django admin panel.
 
-#### def validate_raw_value(self, value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L360)</sup>
+#### def validate_raw_value(self, value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L354)</sup>
 
 Validate the text value of the setting.
 In the validation you only need to make sure the value is possible to be converted into py object.
 
-#### def validate_value(self, value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L370)</sup>
+#### def validate_value(self, value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L364)</sup>
 
 Full validation of the setting text value.
 
-#### def validate(self, value: Any)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L380)</sup>
+#### def validate(self, value: Any)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L374)</sup>
 
 Validate py object. Validate consistency of the object with the project.
 
-#### def to_python(self, value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L389)</sup>
+#### def to_python(self, value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L383)</sup>
 
 Converts text value to python value.
 
-#### def json_view_value(self, value: Any)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L395)</sup>
+#### def json_view_value(self, value: Any)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L389)</sup>
 
 Converts the setting value to JSON.
 
-#### def give_python_to_admin(self, value: str, name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L401)</sup>
+#### def give_python_to_admin(self, value: str, name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L395)</sup>
 
 Converts the setting text value to setting admin value that will be used for rendering admin preview.
 
 By default it uses to_python method, but it make sense to override it for some types, for example callable types,
 where you want to show the result of the call in the preview.
 
-#### def get_admin_preview_html(self, value: Any, name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L410)</sup>
+#### def get_admin_preview_html(self, value: Any, name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L404)</sup>
 
 Generate the admin preview for PREVIEW.HTML format.
 
-#### def get_admin_preview_text(self, value: Any, name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L416)</sup>
+#### def get_admin_preview_text(self, value: Any, name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L410)</sup>
 
 Generate the admin preview for PREVIEW.TEXT format.
 
-#### def get_admin_preview_python(self, value: Any, name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L422)</sup>
+#### def get_admin_preview_python(self, value: Any, name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L416)</sup>
 
 Generate the admin preview for PREVIEW.PYTHON format.
 
-#### def get_admin_preview_value(self, value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L428)</sup>
+#### def get_admin_preview_value(self, value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L422)</sup>
 
 Generate the admin preview for the setting based on the admin_preview_as attribute (or get_admin_preview_as method).
 
 Using text value of the setting.
 
-#### def get_full_admin_preview_value(self, value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L441)</sup>
+#### def get_full_admin_preview_value(self, value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L435)</sup>
 
 Generate data for json response for preview
 
-#### def get_admin_preview_object(self, value: Any, name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L456)</sup>
+#### def get_admin_preview_object(self, value: Any, name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L450)</sup>
 
 Generate the admin preview for the setting based on the admin_preview_as attribute (or get_admin_preview_as method).
 
 Using admin value of the setting.
 
-#### def lazy_give(self, l_func: Callable, suffix = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L472)</sup>
+#### def lazy_give(self, l_func: Callable, suffix = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L466)</sup>
 
 Return the LazyObject that will be used for the setting value.
 
 This value will be returned using lazy prefix in the content_settings.
 
-#### def give(self, value: Any, suffix: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L480)</sup>
+#### def give(self, value: Any, suffix: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L474)</sup>
 
 The will be returned as the content_settings attribute using python value of the setting.
 
 Suffix can be used.
 
-### class SimpleText(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L492)</sup>
+### class SimpleText(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L486)</sup>
 
 Multiline text setting type.
 
-### class SimpleTextPreview(SimpleText)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L500)</sup>
+### class SimpleTextPreview(SimpleText)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L494)</sup>
 
 Multiline text setting type with preview. By default SimpleText and SimpleString don't have preview, but for showing preview in EachMixin, we need to have preview for each type.
 
-### class SimpleHTML(HTMLMixin, SimpleText)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L508)</sup>
+### class SimpleHTML(HTMLMixin, SimpleText)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L502)</sup>
 
 Multiline HTML setting type.
 
-### class URLString(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L516)</sup>
+### class URLString(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L510)</sup>
 
 URL setting type.
 
-### class EmailString(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L526)</sup>
+### class EmailString(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L520)</sup>
 
 Email setting type.
 
-### class SimpleInt(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L539)</sup>
+### class SimpleInt(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L533)</sup>
 
 Integer setting type.
 
-### class SimpleBool(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L553)</sup>
+### class SimpleBool(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L547)</sup>
 
 Boolean setting type.
 
@@ -891,14 +1039,14 @@ Attributes:
 - yeses (Tuple[str]): Accepted values for True.
 - noes (Tuple[str]): Accepted values for False.
 
-### class SimpleDecimal(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L593)</sup>
+### class SimpleDecimal(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L587)</sup>
 
 Decimal setting type.
 
 Attributes:
 - decimal_json_as_string (bool): set False if you want to return the decimal as a float in the JSON view.
 
-### class SimplePassword(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L611)</sup>
+### class SimplePassword(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L605)</sup>
 
 Password setting type. It is not possible to fetch the value using API. In the admin panel, the value is hidden.
 
