@@ -446,6 +446,9 @@ def recalc_checksums():
 
 
 def recalc_user_checksums(db):
+    """
+    recalculate the checksums in the cache backend for user defined types and saves them to the cache backend
+    """
     from .conf import USER_DEFINED_TYPES_INITIAL
 
     values = {}
@@ -467,6 +470,11 @@ def recalc_user_checksums(db):
 
 
 def recalc_code_checksums(db: Dict[str, Any]) -> None:
+    """
+    recalculate the checksums in the cache backend for code settings and saves them to the cache backend
+
+    it staves it two keys - one in the cache backend with the local checksum and one with the db checksum
+    """
     from .conf import ALL
 
     push_checksum(
