@@ -34,20 +34,6 @@ The module comes with a built-in API system, enabling:
 - **Reading of Individual or Group Variables**: Allows for flexible data retrieval.
 - **Access Permissions**: Manage who can read the variables, ensuring data privacy and security.
 
-### Quick Look
-
-You should be able to quickly see how it works using `cs_test` project in the repository. You need to have [poetry](https://python-poetry.org/) installed.
-
-```bash
-$ make init
-$ make cs-test-migrate
-$ make cs-test
-```
-
-the open `http://localhost:8000/admin/` in your browser and you should see the django admin panel.
-
-the admin user is `admin` with password `1`.
-
 ### How does it work
 
 - **Setup**. [Here](first.md) you can get step-by-step instruction.
@@ -97,6 +83,23 @@ In template:
 ```
 
 Simple as that, we have a lot of *setting types* you can use `SimpleText`, `SimpleHTML`, `SimpleInt`, `SimpleBool`, `SimpleDecimal`, `DateTimeString`, `SimpleTimedelta`, `SimpleYAML`, `SimpleJSON`, `SimpleCSV`, `DjangoTemplate`, `DjangoModelTemplate`, `SimpleEval`, `SimpleExec` and so on... [Read more](types.md) about the types available for you.
+
+### Quick Look
+
+You should be able to quickly see how it works using `cs_test` project in the [repository](https://github.com/occipital/django-content-settings/t). You need to have [poetry](https://python-poetry.org/) installed.
+
+```bash
+
+$ git clone https://github.com/occipital/django-content-settings.git
+$ cd django-content-settings
+$ make init
+$ make cs-test-migrate
+$ make cs-test
+```
+
+the open `http://localhost:8000/admin/` in your browser and you should see the django admin panel.
+
+the admin user is `admin` with password `1`.
 
 # Whats next?
 
