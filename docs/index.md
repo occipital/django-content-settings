@@ -82,8 +82,6 @@ In template:
 <h2>{{CONTENT_SETTINGS.TITLE}}</h2>
 ```
 
-Simple as that, we have a lot of *setting types* you can use `SimpleText`, `SimpleHTML`, `SimpleInt`, `SimpleBool`, `SimpleDecimal`, `DateTimeString`, `SimpleTimedelta`, `SimpleYAML`, `SimpleJSON`, `SimpleCSV`, `DjangoTemplate`, `DjangoModelTemplate`, `SimpleEval`, `SimpleExec` and so on... [Read more](types.md) about the types available for you.
-
 ### Quick Look
 
 You should be able to quickly see how it works using `cs_test` project in the [repository](https://github.com/occipital/django-content-settings/t). You need to have [poetry](https://python-poetry.org/) installed.

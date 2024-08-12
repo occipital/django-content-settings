@@ -60,6 +60,23 @@ In template:
 <h2>{{CONTENT_SETTINGS.TITLE}}</h2>
 ```
 
+### Quick Look
+
+You should be able to quickly see how it works using `cs_test` project in the [repository](https://github.com/occipital/django-content-settings/t). You need to have [poetry](https://python-poetry.org/) installed.
+
+```bash
+
+$ git clone https://github.com/occipital/django-content-settings.git
+$ cd django-content-settings
+$ make init
+$ make cs-test-migrate
+$ make cs-test
+```
+
+the open `http://localhost:8000/admin/` in your browser and you should see the django admin panel.
+
+the admin user is `admin` with password `1`.
+
 # Whats next?
 
 - [**Getting Started**](https://django-content-settings.readthedocs.io/en/master/first/) - this is a step-by-step guide to configure content settings in your project and add your first setting.
