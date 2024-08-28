@@ -8,8 +8,6 @@ The `django-content-settings` module is a versatile addition to the Django ecosy
 
 With `django-content-settings` allows you to store variables with specific functionality in your code, that can be validated and previed in your django admin panel. The validators, previewers and all of the logic is stored in the setting definition.
 
-*the project is in active development. [Those are the tickets left](https://github.com/occipital/django-content-settings/issues?q=is%3Aopen+is%3Aissue+label%3Av1) for releasing 1.0 version*
-
 ### Key Features
 
 1. **Type-Agnostic Variable Creation**: Users can create variables of any type, making the module highly adaptable to various needs.
