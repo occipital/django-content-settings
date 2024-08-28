@@ -1,5 +1,3 @@
-[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
-
 # Possible Extensions
 
 *the article is still in WIP*
@@ -82,3 +80,5 @@ If you want to use preview of your settings you need to add middleware `content_
 The middleware is very simple, it checks if the user has a preview objects and process the response under the new settings context. [Here](https://github.com/occipital/django-content-settings/blob/master/content_settings/middlewares.py) is the source of the middleware.
 
 You might want to create and use your own middleware, and one of the reason for that might be use within [django-impersonate](https://pypi.org/project/django-impersonate/)
+
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)

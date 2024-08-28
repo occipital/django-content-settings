@@ -1,5 +1,3 @@
-[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
-
 # Available Settings
 
 ## Overview
@@ -177,3 +175,5 @@ Available built in types:
 *default: True*
 
 Sync settings configurations (new version, new setting) after migrations is done. You can turn this function off and use command `content_settings_migrate` (see [commands](commands.md#content_settings_migrate))
+
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)

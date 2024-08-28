@@ -1,5 +1,3 @@
-[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
-
 # Variable Types and Attributes
 
 ## Introduction
@@ -209,3 +207,4 @@ SHORT_STR = mix(GiveProcessorsMixin, SimpleString)("This is string", give_proces
 SHORT_STR = mix(GiveProcessorsMixin, SimpleString)("This is string", suffixes={"copy": lambda x: x}, give_processors=(("copy", shorten),))
 ```
 
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)

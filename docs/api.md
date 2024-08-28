@@ -184,3 +184,5 @@ get_type_by_name("TITLE").can_fetch(user)
 
 * overwrite `SimpleString.json_view_value(self, value: Any, **kwargs)`. The function should return string in JSON format.
 * set parameter `json_encoder: type = DjangoJSONEncoder` to JSON Serializer you want
+
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)

@@ -1,5 +1,3 @@
-[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
-
 # User Defined Variables
 
 ## Introduction
@@ -39,3 +37,5 @@ It's important to note that if you decide to create a variable in the code that 
 ## Conclusion
 
 User User-defined types in `django-content-settings` offer significant flexibility and customization for managing variables in Django applications. This feature empowers administrators to create and modify variables directly from the admin panel while still providing the option for developers to override these variables in the code if needed.
+
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)

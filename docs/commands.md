@@ -1,5 +1,3 @@
-[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
-
 # Commands
 
 This is a list of available Django commands for content settings.
@@ -63,3 +61,5 @@ If you want to add all approved values in the user's Preview group, use `--previ
 If you want to limit the approved values you want to add to DB, use `--names` argument
 
 *The import can also be done in Django Admin Panel, [read more about it in ui](ui.md#import)*
+
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)

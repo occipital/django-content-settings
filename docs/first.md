@@ -1,5 +1,3 @@
-[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
-
 # Getting Started
 
 ## Installation and Initial Setup
@@ -168,3 +166,5 @@ In Django templates, access it like this:
 ```
 
 And that's it! You're now ready to use `django-content-settings` in your Django project, effectively managing editable variables through the admin panel and API.
+
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)

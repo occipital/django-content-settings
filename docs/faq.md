@@ -1,5 +1,3 @@
-[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
-
 # Frequently Asked Questions
 
 a lot of cases have been covered in [Cookbook](cookbook.md), but here I just want to cover some of the questions I've been asked from the other users
@@ -44,3 +42,5 @@ If you have a specific question, please use [Discussions in github.com](https://
 If you find a bug, or unexpected behaviour use [Issues in github.com](https://github.com/occipital/django-content-settings/issues).
 
 And, of course, you are very welcome to contribute changes in documentation. You can find markdown sources of the documentation in [docs folder](https://github.com/occipital/django-content-settings/tree/master/docs).
+
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)

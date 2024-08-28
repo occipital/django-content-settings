@@ -1,5 +1,3 @@
-[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
-
 # Using Variables in your project
 
 ## Introduction
@@ -149,3 +147,5 @@ all_main = content_settings.startswith__MAIN
 ### Own prefix
 
 You can register your own prefix using the `conf.register_prefix` decorator. Read more about it in [article about Possible Extensions](extends.md).
+
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)

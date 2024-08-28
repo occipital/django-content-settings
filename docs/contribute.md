@@ -1,5 +1,3 @@
-[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
-
 # How to contribute to the project
 
 ## What can I do
@@ -55,4 +53,4 @@ Some of the make-commands that we have already can make your testing process mor
 * `make test-nox-oldest` - just run all of the tests under the oldes combination
 
 
-_PS: [the ticket](https://github.com/occipital/django-content-settings/issues/5)_
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)

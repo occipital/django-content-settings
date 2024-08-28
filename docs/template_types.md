@@ -1,5 +1,3 @@
-[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
-
 # Templates
 
 The most powerful part of Content Setting where the raw value of your content settings is a string that used for generating actual value in the project.
@@ -610,3 +608,5 @@ SERVICE_FEE_PERCENT = mix(MakeCallMixin, SimpleInt)("10", constant=True)
 # in code
 content_settings.SERVICE_FEE_PERCENT(user) # 10
 ```
+
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)

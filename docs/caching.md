@@ -1,5 +1,3 @@
-[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
-
 # Caching
 
 This is a very important part of content settings since it solves two main problems:
@@ -34,3 +32,5 @@ For simple types `give` function simply returns a py object, but for moving comp
 * at the beginning of request `signals.check_update_for_request`
 * before the celery task (if the celery import is possible) `signals.check_update_for_celery`
 * before the huey task (if the huey import is possible) `signals.check_update_for_huey`
+
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)

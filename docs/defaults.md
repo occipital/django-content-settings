@@ -1,5 +1,3 @@
-[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
-
 # defaults
 
 The defaults context in Django content settings allows you to group settings with common parameters, reducing redundancy and making your code cleaner and more maintainable. This is particularly useful as the number of settings grows, allowing you to manage shared parameters efficiently.
@@ -220,3 +218,5 @@ CONTENT_SETTINGS_DEFAULTS = [
     codemirror_all(),
 ]
 ```
+
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)

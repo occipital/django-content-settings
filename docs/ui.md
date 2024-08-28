@@ -1,5 +1,3 @@
-[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
-
 # User Interface for Django Admin
 
 This guide helps you understand how to use the Django Admin Panel for editing your content settings. This is a user guide, assuming you have a "developer" role in your team and it shouldn't be you.
@@ -172,3 +170,5 @@ Yes.
 
 * You can use commands [content_settings_export](commands.md#content_settings_export) and [content_settings_import](commands.md#content_settings_import) to do export/import from command line or bash/shell script
 * You can use [content_settings.export](source.md#export) module to use it in your python code somehow.
+
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
