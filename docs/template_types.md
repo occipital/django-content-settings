@@ -1,21 +1,21 @@
 # Templates
 
-The most powerful part of Content Setting where the raw value of your content settings is a string that used for generating actual value in the project.
+The most powerful part of Content Setting, where the raw value of your content settings is a string that is used for generating actual value in the project.
 
 Module introduces advanced variable types designed for template rendering and Python code evaluation using `CallToPythonMixin` for using setting variables as functions. I'll explain the mixing implanation on `SimpleFunc` type, but in the actual project you may want to use more advanced types such as `DjangoTemplate`, `DjangoModelTemplate`, `SimpleEval` and so on. It is ok to skip the explanation of the `CallToPythonMixin`.
 
-## CallToPythonMixin - the explanation that can be skiped
+## CallToPythonMixin - the explanation that can be skipped
 
 The mixin has two most important methods you may want to redefine:
 
 * `prepare_python_call` - the function gets py object as an attribute and returns a dict that will be used in kwargs of the attribute call
-* `python_call` - is the function that would be called when the user call function that returned by the attribute
+* `python_call` - is the function that would be called when the user calls a function that is returned by the attribute
 
-If you don't want to overwrite the method you can use attributes
+If you don't want to overwrite the method, you can use attributes.
 
 * `call_func` - the function would be called when the user uses an attribute (uses by `python_call`). It accepts all of the args and kwargs passed to the function when it is called + one more kwarg, by default "prepared", with the value returned by `prepare_python_call`. By default it is `lambda *args, prepared=None, **kwargs: prepared(*args, **kwargs)`
-* `call_prepare_func` - function that prepares value from django admin and store it in the context of python value, By default it is `lambda value: value`
-* `call_func_argument_name` - the name of the attribute for the prepared value. By default "prepared"
+* `call_prepare_func` - a function that prepares value from Django admin and stores it in the context of python value, By default it is `lambda value: value`
+* `call_func_argument_name` - the name of the attribute for the prepared value. By default, "prepared"
 
 With the combination of `call_prepared_func` and `call_func` you can get a performance boost when you using it in code.
 
@@ -23,7 +23,7 @@ With the combination of `call_prepared_func` and `call_func` you can get a perfo
 
 ```python
 class SimpleFunc(CallToPythonMixin, SimpleText):
-    admin_preview_as: PREVIEW = PREVIEW.PYTHON
+ admin_preview_as: PREVIEW = PREVIEW.PYTHON
 ```
 
 The first example is when all of the logic is inside of the actual call:
@@ -31,8 +31,8 @@ The first example is when all of the logic is inside of the actual call:
 ```python
 THE_FUNC = SimpleFunc(
     "Welcome {name}",
-    call_func=lambda name, prepared: prepared.format(name=name),
-    validators=(call_validator("Aex"),),
+ call_func=lambda name, prepared: prepared.format(name=name),
+ validators=(call_validator("Aex"),),
 )
 ```
 
@@ -43,55 +43,55 @@ print(content_settings.THE_FUNC("Alex"))
 # Welcome Alex
 ```
 
-*Make sure you add a `call_validator` so the function has preview in Django Admin*
+*Make sure you add a `call_validator` so the function has a preview in Django Admin*
 
 The second example illustrates using of some kind of preparation before using:
 
 ```python
 THE_FUNC = SimpleFunc(
     "Welcome {name}",
-    call_prepare_func=lambda value: value.format
-    validators=(call_validator(name="Aex"),),
+ call_prepare_func=lambda value: value.format
+ validators=(call_validator(name="Aex"),),
 )
 ``` 
 
-In the code it would be almost the same as in the first example:
+In the code, it would be almost the same as in the first example:
 
 ```python
 print(content_settings.THE_FUNC(name="Alex"))
 # Welcome Alex
 ```
 
-*In the second example the preparation function would be called when the type is defined or value is updated*
+*In the second example, the preparation function would be called when the type is defined or the value is updated*
 
-The third example is a bonus one, in case you want to use not only text value as in input
+The third example is a bonus one, in case you want to use not only text value as in input.
 
 ```python
 THE_SUM_FUNC = mix(CallToPythonMixin, SimpleInt)(
     "10",
-    call_func=lambda value, prepared: prepared + value,
-    validators=(call_validator(20),),
+ call_func=lambda value, prepared: prepared + value,
+ validators=(call_validator(20),),
 )
 ```
 
-*In that case value is an int, so it will be parsed and validated by `SimpleInt` class*
+*In that case, the value is an int, so it will be parsed and validated by `SimpleInt` class*
 
-In the code it is still the same
+In the code, it is still the same.
 
 ```python
 print(content_settings.THE_SUM_FUNC(12))
 # 22
 ```
 
-Those are very basic examples, you might not use those, but it can be helpful to understad how the other template types are working
+Those are very basic examples; you might not use those, but it can be helpful to understand how the other template types are working.
 
 ## Types
 
-Bellow we will show you some examples for template types you can use in your code. The full list you can find in the [source doc](source.md#typestemplate).
+Below, we will show you some examples of template types you can use in your code. You can find the full list in the [source doc](source.md#typestemplate).
 
 ### DjangoTemplate(SimpleCallTemplate)
 
-The most basic one, converts raw value into template and value into a function which takes all of the kwargs into template context and returns rendered value.
+The most basic one converts raw value into template and value into a function that takes all of the kwargs into template context and returns the rendered value.
 
 Example:
 
@@ -99,7 +99,7 @@ Example:
 WELCOME_TEXT = DjangoTemplate("Hi, {{name}}")
 ```
 
-In the code you can do:
+In the code, you can do the following:
 
 ```python
 content_settings.WELCOME_TEXT() # Hi,
@@ -159,11 +159,11 @@ it is the same as:
 content_settings.WELCOME_TEXT("Bob")
 ```
 
-**How preview works?**
+**How does preview work?**
 
-By default rendering for preview will be taken from the first validator and by default it is validator is calling the setting without arguments.
+By default, rendering for the preview will be taken from the first validator, and by default, the validator will call the setting without arguments.
 
-You can assign add more validators using `call_validator`
+You can assign and add more validators using `call_validator`
 
 ```python
 from content_settings.types import required
@@ -176,23 +176,23 @@ WELCOME_TEXT = DjangoTemplate("Hi, {{name}}", template_args_default={"name": req
 
 - **template_args_default**: (Optional) A dictionary that converts an array of arguments, with which the function is called, into a dictionary passed as context to the template. To set required arguments, import `required` from `content_settings.types.template` and use it as a value.
 - **template_static_data**: (Optional) A dictionary of additional values that can be passed to the template from global env (not as arguments to the function). It can also be a function
-- **template_static_includes** (default: `('CONTENT_SETTINGS', 'SETTINGS')`) - by default both `content_settings` and `settings` are included in context, but by adjusting this tuple you can change that.
+- **template_static_includes** (default: `('CONTENT_SETTINGS', 'SETTINGS')`) - by default, both `content_settings` and `settings` are included in context, but by adjusting this tuple, you can change that.
 
-`SimpleCallTemplate` is not covered here but it is a base for `SimpleEval` and `SimpleExec`, that are covered here.
+`SimpleCallTemplate` is not covered here, but it is a base for `SimpleEval` and `SimpleExec`, which are covered here.
 
 ### DjangoTemplateHTML(HTMLMixin, DjangoTemplate)
 
-Same as `DjangoTemplate` but will be rendered and previewed as HTML. In template it will be rendered as safe.
+Same as `DjangoTemplate` but will be rendered and previewed as HTML. In the template, it will be rendered as safe.
 
 ### DjangoTemplateNoArgs(GiveCallMixin, DjangoTemplate)
 
-Same as `DjangoTemplate` but it does not require calling for rendering. Example:
+Same as `DjangoTemplate`, but it does not require calling for rendering. Example:
 
 ```python
 AVATAR = DjangoTemplateNoArgs("""<img src="{{SETTINGS.STATIC_URL}}test.png" />""")
 ```
 
-In code you don't need to call function for rendering template, intead the template will be rendered everytime you get access in the setting attribute:
+In code, you don't need to call the function to render the template. Instead, the template will be rendered every time you get access to the setting attribute:
 
 ```python
 content_settings.AVATAR # <img src="/static/test.png" />
@@ -200,11 +200,11 @@ content_settings.AVATAR # <img src="/static/test.png" />
 
 ### DjangoTemplateNoArgsHTML(HTMLMixin, DjangoTemplateNoArgs)
 
-Same as `DjangoTemplateNoArgs` but will be rendered and previewed as HTML. In template it will be rendered as safe.
+Same as `DjangoTemplateNoArgs` but will be rendered and previewed as HTML. In the template, it will be rendered as safe.
 
 ### DjangoModelTemplate(DjangoModelTemplateMixin, DjangoTemplate)
 
-The same as `DjangoTemplate` but it takes first argument as a model object. The optimization here is preview that will be rendered from the first object of the given queryset in the attribute `template_model_queryset`
+It is the same as `DjangoTemplate`, but it takes the first argument as a model object. The optimization here is a preview that will be rendered from the first object of the given query set in the attribute `template_model_queryset`
 
 For example:
 
@@ -214,7 +214,7 @@ from django.contrib.auth.models import User
 WELCOME_TEXT = DjangoModelTemplate("Hi, {{object.username}}", template_model_queryset=User.objects.all())
 ```
 
-You can defined what will be the name of the object in the context. In our case we want it to be "user" so the type definition can be changed with using `template_object_name` attribute:
+You can define the name of the object in the context. In our case, we want it to be "user," so the type definition can be changed using the `template_object_name` attribute:
 
 ```python
 from django.contrib.auth.models import User
@@ -222,7 +222,7 @@ from django.contrib.auth.models import User
 WELCOME_TEXT = DjangoModelTemplate("Hi, {{user.username}}", template_model_queryset=User.objects.all(), template_object_name="user")
 ```
 
-from `template_model_queryset` we can use a function to control import order:
+From `template_model_queryset`, we can use a function to control import order:
 
 ```python
 def first_user():
@@ -243,13 +243,13 @@ content_settings.WELCOME_TEXT(cur_user)
 
 ### DjangoModelTemplateHTML(DjangoModelTemplate)
 
-Same as `DjangoModelTemplate` but for html rendering
+Same as `DjangoModelTemplate` but for HTML rendering
 
 ### SimpleEval(SimpleCallTemplate)
 
-Designed to store Python code as the setting's value. When the function is called, the arguments dict is passed to the code execution. Same as in `DjangoTemplate` type, `SimpleEval` is compiled before using, so the speed of using it is fast enough.
+Designed to store Python code as the setting's value. When the function is called, the argument dict is passed to the code execution. Same as in the `DjangoTemplate` type, `SimpleEval` is compiled before use, so the speed of using it is fast enough.
 
-`SimpleEval` is based on `SimpleCallTemplate`, same as `DjangoTemplate`, so it has all the same attributes such as `template_args_default`
+`SimpleEval` is based on `SimpleCallTemplate`, the same as `DjangoTemplate`, so it has all the same attributes such as `template_args_default`
 
 Let me show a couple of examples:
 
@@ -267,29 +267,29 @@ content_settings.THE_LOGO_LINK() # /static/logo.png
 
 the text of the value will be interpreted using builtin [`eval`](https://docs.python.org/3/library/functions.html#eval) function with it restrictions. If you want to use `exec` function, you should use `SimpleExec` which will be covered later.
 
-If you want to extend context you can use `template_static_data` attribute from `SimpleCallTemplate`. For example:
+If you want to extend context, you can use the `template_static_data` attribute from `SimpleCallTemplate`. For example:
 
 ```python
 from content_settings.types.template import required
 
-COMISSION = SimpleEval(
+COMMISSION = SimpleEval(
   "total * Decimal('0.2')",
-  template_args_default={
-    "total": required,
-  },
-  template_static_data={
+ template_args_default={
+    "Total": required,
+ },
+ template_static_data={
     "Decimal": Decimal,
-  }
+ }
 
 )
 
 # in code
-content_settings.COMISSION(Decimal('100')) # Decimal("20")
+content_settings.COMMISSION(Decimal('100')) # Decimal("20")
 ```
 
 ### SimpleEvalNoArgs(GiveCallMixin, SimpleEval)
 
-Same as `SimpleEval` but the setting value is not callable, but already evaluated. Similar to `DjangoTemplateNoArgs`
+It is the same as `SimpleEval`, but the setting value is not callable but already evaluated. Similar to `DjangoTemplateNoArgs`
 
 ### DjangoModelEval(DjangoModelTemplateMixin, SimpleEval)
 
@@ -299,17 +299,17 @@ Same as `SimpleEval` but uses one value as a model object. Similar to `DjangoMod
 
 Similar to the `SimpleEval` but use [`exec`](https://docs.python.org/3/library/functions.html#exec) instead of `eval`. Parent class `SystemExec` is responsable for calling `exec` function.
 
-Since the `exec` doesn't return the value, but generates (or extends) the context - the setting value always returns the dict, and `template_return` attrubute shows what will be in the dict.
+Since the `exec` doesn't return the value but generates (or extends) the context - the setting value always returns the dict, and the `template_return` attribute shows what will be in the dict.
 
-There are four options what `template_return` can be:
+There are four options for what `template_return` can be:
 
 * `None` (by default) - the full context will be returned
 * `str` - the name of the variable that  will be returned
-* `dict` - only keys from the given dict is taken from the context and values of the dict are used as defauls
+* `dict` - only keys from the given dict is taken from the context and values of the dict are used as defaults
 * `list` or `tuple` - list of keys from the context
 * `function` - that returns dict with default values
 
-On top of that `SimpleEval` has one additional attributes:
+On top of that `SimpleEval` has several additional attributes:
 
 * `template_bultins`, responsible for limiting builtin env. By default it is `"BUILTINS_SAFE"` all functions except `memoryview`, `open`, `input` and `import`. If you want to include import use `"BUILTINS_ALLOW_IMPORT"`, if you don't want to use any limitation - just assign `None` to the attribute.
 * `template_raise_return_error`, by setting this attribute to True missed values in the context raises `ValidationError`, otherwise returns `None`
@@ -331,14 +331,14 @@ result = 5
 
 content_settings.THE_VALUE() # 5
 
-# We want to return 2 values fee and final
+# We want to return 2 values fees and final
 # but gets one argument price
 THE_PRICE = SimpleExec("""
 fee = price // 3
 final = price - fee
 """,
-    template_return=["fee", "final"],
-    template_args_default={"price": required}
+ template_return=["fee", "final"],
+ template_args_default={"price": required}
 )
 
 content_settings.THE_PRICE(25) # {"fee": 8, "final": 17}
@@ -346,7 +346,7 @@ content_settings.THE_PRICE(25) # {"fee": 8, "final": 17}
 
 ### SimpleExecNoArgs(GiveCallMixin, SimpleExec)
 
-Same as `SimpleExec` but the setting value is not callable, but already evaluated. Similar to `DjangoTemplateNoArgs`
+Same as `SimpleExec`, but the setting value is not callable, but already evaluated. Similar to `DjangoTemplateNoArgs`
 
 ### DjangoModelExec(DjangoModelTemplateMixin, SimpleExec)
 
@@ -356,11 +356,11 @@ Same as `SimpleExec` but uses one value as a model object. Similar to `DjangoMod
 
 It works in the same way as `SimpleExecNoArgs` but it executes the code only once for creation py object, where `SimpleExecNoArgs` compiled once and executes everytime when you access the variable.
 
-*It is somehow more natural way to go, but at the same time more dangures, as it keeps all of the globals in the context of the first execution. You should be aware of it when you use it*
+*It is a more natural way to go, but at the same time more dangures, as it keeps all of the globals in the context of the first execution. You should be aware of it when you use it*
 
 ## Calling Functions in Template *([source](source.md#templatetagscontent_settings_extras))*
 
-if you want create a callable setting, such a `DjangoTemplate` or `SimpleEval`, you can render the result of colling in your template using `content_settings_call` tag from `content_settings_extras` library:
+If you want to create a callable setting, such as `DjangoTemplate` or `SimpleEval`, you can render the result of calling in your template using `content_settings_call` tag from `content_settings_extras` library:
 
 ```html
 {% load content_settings_extras %}
@@ -373,11 +373,11 @@ if you want create a callable setting, such a `DjangoTemplate` or `SimpleEval`, 
         <header>
             <h1>Book List</h1>
         </header>
-            {% for book in object_list %}
-                {% content_settings_call "BOOK_RICH_DESCRIPTION" book _safe=True%}
-            {% empty %}
+ {% for book in object_list %}
+ {% content_settings_call "BOOK_RICH_DESCRIPTION" book _safe=True%}
+ {% empty %}
                 <li>No books found.</li>
-            {% endfor %}
+ {% endfor %}
     </body>
 </html>
 ```
@@ -396,15 +396,15 @@ Or you can call function and not use it for rendering:
         <header>
             <h1>Book List</h1>
         </header>
-            {% for book in object_list %}
-                {% content_settings_call "IS_BOOK_SHOWN" book as is_book_shown %}
+ {% for book in object_list %}
+ {% content_settings_call "IS_BOOK_SHOWN" book as is_book_shown %}
 
-                {% if is_book_shown %}
-                    {{book}}
-                {% endif %}
-            {% empty %}
+ {% if is_book_shown %}
+ {{book}}
+ {% endif %}
+ {% empty %}
                 <li>No books found.</li>
-            {% endfor %}
+ {% endfor %}
     </body>
 </html>
 ```
@@ -413,23 +413,23 @@ Or you can call function and not use it for rendering:
 
 The calidators is important part of Exec and Eval types as user has almost endless flexibility in defining resulted value. In order to limit user you should use validators.
 
-Moreover validators are also use for admin preview, because in admin privew you need to show how the result of the function call should looks like.
+Moreover, validators are also used for admin preview because in admin preview, you need to show how the result of the function call should look.
 
 ### Call Validator
 
-The most simple is `call_validator` from `types.validators`. It just validates that the function is called without exceptins with the specific arguments.
+The most simple is `call_validator` from `types. validators`. It just validates that the function is called without exceptions for specific arguments.
 
 ```python
 PLUS_ONE = SimpleEval(
     "1+val",
-    validators=(
-        call_validator(),
-    ),
-    template_args_default={"val": 3},
+ validators=(
+ call_validator(),
+ ),
+ template_args_default={"val": 3},
 )
 ```
 
-That would creates a validator for calling without arguments. The preview should look like that
+That would create a validator for calling without arguments. The preview should look like that
 
 ```
 >>> PLUS_ONE()
@@ -441,24 +441,24 @@ The good news here is that if the variables doesn't have required arguments - th
 ```python
 PLUS_ONE = SimpleEval(
     "1+val",
-    template_args_default={"val": 3},
+ template_args_default={"val": 3},
 )
 ```
 
-If you  want to test function call with different arguments - just pass those arguments to the function `call_validator`
+If you  want to test a function call with different arguments - just pass those arguments to the function `call_validator`
 
 ```python
 from content_settings.types.validators import call_validator
 
 PLUS_ONE = SimpleEval(
     "1+val",
-    validators=(
-        call_validator(),
-        call_validator(0),
-        call_validator(-1),
-        call_validator(100),
-    ),
-    template_args_default={"val": 3},
+ validators=(
+ call_validator(),
+ call_validator(0),
+ call_validator(-1),
+ call_validator(100),
+ ),
+ template_args_default={"val": 3},
 )
 ```
 
@@ -486,19 +486,19 @@ from content_settings.types.validators import call_validator, result_validator
 
 PLUS_ONE = SimpleEval(
     "1+val",
-    validators=(
-        call_validator(),
-        result_validator(lambda val: isinstance(val, int), "The result should be int", 100)
-    ),
-    template_args_default={"val": 3},
+ validators=(
+ call_validator(),
+ result_validator(lambda val: isinstance(value, int), "The result should be int", 100)
+ ),
+ template_args_default={"val": 3},
 )
 ```
 
-in the example function will be called with one argument 100, and if the result is not it - the error message will be shown "The result should be int"
+in the example function will be called with one argument 100, and if the result is not it - the error message will be shown: "The result should be int."
 
 ### Custom Validator
 
-You can create own validator. It is a function, that accepts function as the only argument.
+You can create your own validator. It is a function that accepts a function as the only argument.
 
 ```python
 
@@ -508,10 +508,10 @@ def is_int(func):
 
 PLUS_ONE = SimpleEval(
     "1+val",
-    validators=(
-        is_int
-    ),
-    template_args_default={"val": 3},
+ validators=(
+ is_int
+ ),
+ template_args_default={"val": 3},
 )
 ```
 
@@ -522,7 +522,7 @@ Even if you have one custom validator - the systems add one validator with no ar
 <<< 4
 ```
 
-Your custom validator will be executed as well, but the execution woudn't be shown. In case of the fail validation - the error will be shown in the preview:
+Your custom validator will be executed as well, but the execution won't be shown. In case of the fail validation - the error will be shown in the preview:
 
 ```
 >>> PLUS_ONE()
@@ -531,7 +531,7 @@ Your custom validator will be executed as well, but the execution woudn't be sho
 ERROR!!! ['The result should be int']
 ```
 
-"???" sign insted of arguments tells that we don't know which arguments were used for calling the function. If you want to provide those arguments you should use a different exception
+"???" sign instead of arguments tells us that we don't know which arguments were used to call the function. If you want to provide those arguments, you should use a different exception.
 
 ```python
 
@@ -542,7 +542,7 @@ def is_int(func):
         raise PreviewValidationError("5", "The result should be int")
 ```
 
-The function takes as a first argument - string representation of the passed arguments. This is how the result might look like:
+The function takes as a first argument - string representation of the passed arguments. This is what the result might look like:
 
 ```
 >>> PLUS_ONE()
@@ -557,30 +557,30 @@ If you want to show valid call without exception you should use `PreviewValidato
 from content_settings.types.validators import PreviewValidationError, PreviewValidator
 
 def is_int(func):
-    ret = func(5)
+ ret = func(5)
     if not isinstance(ret, int):
         raise PreviewValidationError("5", "The result should be int")
     return PreviewValidator("5", ret)
 ```
 
-## Setting Evalution
+## Setting Evaluation
 
-Anover advantage of the template settings is evalution. Imagine the following.
+Another advantage of the template settings is evaluation. Imagine the following.
 
-* In the first itertion you want a lot of flexability for defining service fee by the user, so your setting definition can be
+* In the first iteration, you want a lot of flexibility for defining service fees by the user, so your setting definition can be
 
 ```python
 SERVICE_FEE_PERCENT = DjangoModelEval(
     "5 if user.id in [1, 67] else 10",
-    template_object_name="user",
-    template_model_queryset=User.objects.all(),
+ template_object_name="user",
+ template_model_queryset=User.objects.all(),
 )
 
 # in code
 content_settings.SERVICE_FEE_PERCENT(user)
 ```
 
-* later on, when you have fee settle and you don't want that kind of flexability you may change the type for the setting
+* later on, when you have the fee settle, and you don't want that kind of flexibility, you may change the type for the setting
 
 ```python
 SERVICE_FEE_PERCENT = SimpleInt("10")
@@ -589,7 +589,7 @@ SERVICE_FEE_PERCENT = SimpleInt("10")
 content_settings.SERVICE_FEE_PERCENT # 10
 ```
 
-but if you don't want to change the code you can make it mixin with `MakeCallMixin`
+But if you don't want to change the code, you can make it mixin with `MakeCallMixin`
 
 ```python
 SERVICE_FEE_PERCENT = mix(MakeCallMixin, SimpleInt)("10")
@@ -598,9 +598,9 @@ SERVICE_FEE_PERCENT = mix(MakeCallMixin, SimpleInt)("10")
 content_settings.SERVICE_FEE_PERCENT(user) # 10
 ```
 
-you have a simpler variable but still callable for back compatibility
+You have a simpler variable but still callable for back compatibility
 
-* as the last step you don't want to have this setting even editable - you set `contant=True` for the setting. In that case the constant will be removed from the DB and only default value is used
+* as the last step, you don't want to have this setting even editable - you set `contant=True` for the setting. In that case, the constant will be removed from the DB, and only the default value is used
 
 ```python
 SERVICE_FEE_PERCENT = mix(MakeCallMixin, SimpleInt)("10", constant=True)
