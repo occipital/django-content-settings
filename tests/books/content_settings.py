@@ -13,8 +13,7 @@ from content_settings.types.datetime import DateString
 from content_settings.types.mixins import (
     mix,
     PositiveValidationMixin,
-    DictSuffixesMixin,
-    DictSuffixesPreviewMixin,
+    AdminPreviewSuffixesMixin,
 )
 from content_settings.types.markup import SimpleCSV
 from content_settings.types.template import (
@@ -92,7 +91,7 @@ IS_CLOSED = SimpleBool(
     fetch_permission=permissions.any,
 )
 
-BOOKS = mix(DictSuffixesMixin, SimpleCSV)(
+BOOKS = mix(AdminPreviewSuffixesMixin, SimpleCSV)(
     """
 Kateryna,1.2,1
 The Will,200,0
@@ -115,8 +114,8 @@ The Night of Taras,12,1
 
 BOOK_RICH_DESCRIPTION = DjangoModelTemplate(
     "<b>{{book.title}}</b><br><i>{{book.description}}</i>",
-    model_queryset=Book.objects.all(),
-    obj_name="book",
+    template_model_queryset=Book.objects.all(),
+    template_object_name="book",
     admin_preview_as=PREVIEW.HTML,
     help="The description of the book",
 )
@@ -133,7 +132,7 @@ COMPANY_DESCRIPTION = SplitTranslation(
     help="The description of the company",
 )
 
-INTERESTING_TEXT = mix(DictSuffixesPreviewMixin, SimpleText)(
+INTERESTING_TEXT = mix(AdminPreviewSuffixesMixin, SimpleText)(
     "This is a long interesting text",
     suffixes={
         "trim": lambda text, max_length=10: (

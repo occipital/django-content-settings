@@ -3,6 +3,7 @@ nav:
   - Home: index.md
   - Getting Started: first.md
   - Setting Types and Attributes: types.md
+  - Template Types: template_types.md
   - Using Settings: access.md
   - Permissions: permissions.md
   - Defaults Context: defaults.md

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from functools import cached_property
 from pprint import pformat
-from typing import Optional, Set, Tuple, Union, Any, Callable
+from typing import Optional, Set, Tuple, Union, Any, Callable, Dict
 from collections.abc import Iterable
 from json import dumps
 from inspect import ismethod
@@ -35,34 +35,37 @@ class SimpleString(BaseSetting):
     """
     A very basic class that returns the string value, the same as a given value.
 
-    Attributes (TCallableStr - type for attribute that can be either a string and an import line):
+    Basic attributes (TCallableStr - type for attribute that can be either a string and an import line):
 
-    - constant (bool): Whether the setting is constant (can not be changed).
-    - cls_field (TCallableStr): The form field class to use for the setting. For str value class from django.forms.fields is used.
-    - widget (TCallableStr): The form widget to use for the cls_field. For str value class from django.forms.widgets is used.
-    - widget_attrs (Optional[dict]): Optional attributes for the widget initiation.
-    - fetch_permission (TCallableStr): `"none"` by default. Permission required to fetch the setting in API. For str value function from content_settings.permissions is used
-    - update_permission (TCallableStr): `"staff"` by default. Optional permission required to update  the setting in Django Admin. For str value function from content_settings.permissions is used
-    - view_permission (TCallableStr): `"staff"` by default. Optional permission required to view the setting in Django Admin. For str value function from content_settings.permissions is used
-    - view_history_permission (Optional[TCallableStr]): Optional permission required to see the hisotry of changes. `None` means the permission is taken from `view_permission`. For str value function from content_settings.permissions is used
-    - help_format (Optional[str]): Optional format string for the help text for the format (align to the type).
-    - help (Optional[str]): Optional help text for the setting.
-    - value_required (bool): Whether a value is required for the setting.
-    - version (str): The version of the setting (using for caching).
-    - tags (Optional[Iterable[str]]): Optional tags associated with the setting.
-    - validators (Tuple[TCallableStr]): Validators to apply to the setting value.
-    - validators_raw (Tuple[TCallableStr]): Validators to apply to the text value of the setting.
-    - admin_preview_as (PREVIEW): The format to use for the admin preview.
-    - suffixes (Tuple[str]): Suffixes that can be appended to the setting value.
-    - user_defined_slug (str): it contains a slug from db If the setting is defined in DB only (should not be set in content_settings)
-    - overwrite_user_defined (bool): Whether the setting can overwrite a user defined setting.
-    - default (str): The default value for the setting.
-    - on_change: Tuple[TCallableStr] - list of functions to call when the setting is changed
-    - on_change_commited: Tuple[TCallableStr] - list of functions to call when the setting is changed and commited
-    - admin_head_css: Tuple[str] - list of css urls to include in the admin head
-    - admin_head_js: Tuple[str] - list of js urls to include in the admin head
-    - admin_head_css_raw: Tuple[str] - list of css codes to include in the admin head
-    - admin_head_js_raw: Tuple[str] - list of js codes to include in the admin head
+    - `constant: bool = False`: Whether the setting is constant (can not be changed).
+    - `cls_field: TCallableStr = "CharField"`: The form field class to use for the setting. For str value class from django.forms.fields is used.
+    - `widget: TCallableStr = "LongTextInput"`: The form widget to use for the cls_field. For str value class from django.forms.widgets is used.
+    - `widget_attrs: Optional[dict] = None`: Optional attributes for the widget initiation.
+    - `fetch_permission: TCallableStr = "none"`: Permission required to fetch the setting in API. For str value function from content_settings.permissions is used
+    - `update_permission: TCallableStr = "staff"`: Optional permission required to update  the setting in Django Admin. For str value function from content_settings.permissions is used
+    - `view_permission: TCallableStr = "staff"`: Optional permission required to view the setting in Django Admin. For str value function from content_settings.permissions is used
+    - `view_history_permission: Optional[TCallableStr]`: Optional permission required to see the hisotry of changes. `None` means the permission is taken from `view_permission`. For str value function from content_settings.permissions is used
+    - `help: Optional[str] = ""`: Optional help text for the setting.
+    - `value_required: bool = False`: Whether a value is required for the setting.
+    - `version: str = ""`: The version of the setting (using for caching).
+    - `tags: Optional[Iterable[str]] = None`: Optional tags associated with the setting.
+    - `validators: Tuple[TCallableStr] = ()`: Validators to apply to the setting value.
+    - `validators_raw: Tuple[TCallableStr] = ()`: Validators to apply to the text value of the setting.
+    - `admin_preview_as: PREVIEW = PREVIEW.NONE`: The format to use for the admin preview.
+
+    Advanced attributes - rarely used:
+
+    - `help_format: Optional[str] = "string"`: Optional format string for the help text for the format (align to the type).
+    - `suffixes: Optional[Dict[str, TCallableStr]] = None`: Suffixes that can be appended to the setting value.
+    - `user_defined_slug: Optional[str] = None`: it contains a slug from db If the setting is defined in DB only (should not be set in content_settings)
+    - `overwrite_user_defined: bool = False`: Whether the setting can overwrite a user defined setting.
+    - `default: Union[str, required, optional] = ""`: The default value for the setting.
+    - `on_change: Tuple[TCallableStr] = ()`: list of functions to call when the setting is changed
+    - `on_change_commited: Tuple[TCallableStr] = ()`: list of functions to call when the setting is changed and commited
+    - `admin_head_css: Tuple[str] = ()`: list of css urls to include in the admin head
+    - `admin_head_js: Tuple[str] = ()`: list of js urls to include in the admin head
+    - `admin_head_css_raw: Tuple[str] = ()`: list of css codes to include in the admin head
+    - `admin_head_js_raw: Tuple[str] = ()`: list of js codes to include in the admin head
     """
 
     constant: bool = False
@@ -81,7 +84,7 @@ class SimpleString(BaseSetting):
     validators: Tuple[TCallableStr] = ()
     validators_raw: Tuple[TCallableStr] = ()
     admin_preview_as: PREVIEW = PREVIEW.NONE
-    suffixes: Tuple[str] = ()
+    suffixes: Optional[Dict[str, TCallableStr]] = None
     user_defined_slug: Optional[str] = None
     overwrite_user_defined: bool = False
     default: Union[str, required, optional] = ""
@@ -252,17 +255,23 @@ class SimpleString(BaseSetting):
         """
         return self.on_change_commited
 
-    def get_suffixes(self) -> Tuple:
+    def get_suffixes(self, value: Any) -> Dict[str, Callable]:
         """
         Return the list of suffixes that can be used
         """
         return self.suffixes
 
-    def can_suffix(self, suffix: Optional[str]) -> bool:
+    def get_suffixes_names(self, value: Any) -> Tuple[str]:
+        """
+        Return the tuple of suffixes that can be used
+        """
+        return tuple(self.get_suffixes(value).keys())
+
+    def can_suffix(self, suffix: Optional[str], value: Any) -> bool:
         """
         Return True if the suffix is valid for the setting.
         """
-        return suffix is None or suffix in self.get_suffixes()
+        return suffix is None or suffix in self.get_suffixes_names(value)
 
     def can_assign(self, name: str) -> bool:
         """
@@ -477,7 +486,13 @@ class SimpleString(BaseSetting):
 
         Suffix can be used.
         """
-        return value
+        if suffix is None:
+            return value
+
+        if not self.can_suffix(suffix, value):
+            raise KeyError(f"Suffix {suffix} is not allowed")
+
+        return call_base_str(self.get_suffixes(value)[suffix], value)
 
     def give_python(self, value: str, suffix=None) -> Any:
         return self.give(self.to_python(value), suffix)

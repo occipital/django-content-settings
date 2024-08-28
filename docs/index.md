@@ -87,7 +87,8 @@ Simple as that, we have a lot of *setting types* you can use `SimpleText`, `Simp
 # Whats next?
 
 - [**Getting Started**](first.md) - this is a step-by-step guide to configure content settings in your project and add your first setting.
-- [**Setting Types and Attributes**](types.md) - the guide of all available types and attributes, including some examples.
+- [**Setting Types and Attributes**](types.md) - the guide of all basic available types and attributes, including some examples.
+- [**Template Types**](template_types.md) - the most powerful part of content settings - Templates. Where setting raw value is a text, but setting value is a function.
 - [**Using Settings**](access.md) - multiple ways to access content settings in your project.
 - [**Permissions**](permissions.md) - different settings can have different permissions for different settings' functionality.
 - [**Defaults Context**](defaults.md) - allows you to group settings with common parameters, reducing redundancy and making your code cleaner and more maintainable.

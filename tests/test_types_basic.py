@@ -17,6 +17,8 @@ from content_settings.types.mixins import (
     CallToPythonMixin,
     mix,
     EmptyNoneMixin,
+    ProcessorsMixin,
+    GiveProcessorsMixin,
 )
 from content_settings.models import ContentSetting
 from content_settings.caching import recalc_checksums
@@ -45,6 +47,62 @@ def test_simple_text():
     var = SimpleText()
 
     assert var.give_python("New BookStore") == "New BookStore"
+
+
+def test_upper_processor():
+    var = mix(ProcessorsMixin, SimpleString)(processors=[lambda x: x.upper()])
+
+    assert var.give_python("New BookStore") == "NEW BOOKSTORE"
+
+
+def test_upper_processor_two():
+    var = mix(ProcessorsMixin, SimpleString)(
+        processors=[lambda x: x.upper(), lambda x: x.split()[0]]
+    )
+
+    assert var.give_python("New BookStore") == "NEW"
+
+
+def test_give_processor():
+    var = mix(GiveProcessorsMixin, SimpleString)(give_processors=[lambda x: x.upper()])
+
+    assert var.give_python("New BookStore") == "NEW BOOKSTORE"
+
+
+def test_give_processor_with_unknown_suffix():
+    var = mix(GiveProcessorsMixin, SimpleString)(
+        give_processors=[("unknown_suffix", lambda x: x.upper())]
+    )
+
+    assert var.give_python("New BookStore") == "New BookStore"
+
+
+def test_give_processor_with_none_suffix():
+    var = mix(GiveProcessorsMixin, SimpleString)(
+        give_processors=[(None, lambda x: x.upper())]
+    )
+
+    assert var.give_python("New BookStore") == "NEW BOOKSTORE"
+
+
+def test_give_processor_with_copy_suffix():
+    var = mix(GiveProcessorsMixin, SimpleString)(
+        give_processors=[(None, lambda x: x.upper())],
+        suffixes={"copy": lambda x: x},
+    )
+
+    assert var.give_python("New BookStore") == "NEW BOOKSTORE"
+    assert var.give_python("New BookStore", suffix="copy") == "New BookStore"
+
+
+def test_give_processor_with_copy_suffix_applied():
+    var = mix(GiveProcessorsMixin, SimpleString)(
+        give_processors=[("copy", lambda x: x.upper())],
+        suffixes={"copy": lambda x: x},
+    )
+
+    assert var.give_python("New BookStore") == "New BookStore"
+    assert var.give_python("New BookStore", suffix="copy") == "NEW BOOKSTORE"
 
 
 def test_simple_int():

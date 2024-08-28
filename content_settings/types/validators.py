@@ -6,10 +6,32 @@ from django.core.exceptions import ValidationError
 from pprint import pformat
 
 
+class PreviewValidator:
+    """
+    return instance of the class from the validator to show the result of validation
+    """
+
+    def __init__(self, preview_input: str, preview_output: str):
+        self.preview_input = preview_input
+        self.preview_output = preview_output
+
+
+class PreviewValidationError(ValidationError):
+    """
+    use class instead of ValidatorError to show the input arguments that cause the ValidationError
+    """
+
+    def __init__(self, preview_input: str, *args, **kwargs) -> None:
+        self.preview_input = preview_input
+        super().__init__(*args, **kwargs)
+
+
 class call_validator:
     """
     create a valiator that calls the function with the given args and kwargs.
     """
+
+    has_call_representation = True
 
     def __init__(self, *args, **kwargs):
         self.args = args
@@ -37,6 +59,28 @@ class call_validator:
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {str(self)}>"
+
+
+class result_validator(call_validator):
+    """
+    Not only call the function, but also validate the result of the call.
+
+    takes two new arguments:
+
+    * function that validates the result of the call
+    * error message that will be shown if the function returns False
+    """
+
+    def __init__(self, result_validator, error_message, *args, **kwargs):
+        self.result_validator = result_validator
+        self.error_message = error_message
+        super().__init__(*args, **kwargs)
+
+    def __call__(self, func):
+        ret = super().__call__(func)
+        if not self.result_validator(ret):
+            raise ValidationError(self.error_message)
+        return ret
 
 
 class gen_call_validator(call_validator):

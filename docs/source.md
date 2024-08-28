@@ -601,7 +601,7 @@ Check if it is a string defined as b"string", or is other words bites string.
 
 The function is part of the future idea https://github.com/occipital/django-content-settings/issues/110
 
-### def func_base_str(func: TCallableStr, call_base: Any = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/utils.py#L67)</sup>
+### def obj_base_str(func: TCallableStr, call_base: Any = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/utils.py#L67)</sup>
 
 if a given function is not callable it is converted into callable function
 
@@ -1293,12 +1293,12 @@ Mixing that uses one argument for the template from the model queryset.
 
 Attributes:
 
-- `model_queryset` - QuerySet or a callable that returns a Model Object. For QuerySet, the first object will be used. For callable, the object returned by the callable will be used. The generated object will be used as validator and for preview.
-- `obj_name` - name of the object in the template. Default: "object".
+- `template_model_queryset` - QuerySet or a callable that returns a Model Object. For QuerySet, the first object will be used. For callable, the object returned by the callable will be used. The generated object will be used as validator and for preview.
+- `template_object_name` - name of the object in the template. Default: "object".
 
 #### def get_first_call_validator(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L220)</sup>
 
-generates the first validator based of model_queryset, which will be used for validation and for preview.
+generates the first validator based of template_model_queryset, which will be used for validation and for preview.
 
 ### class DjangoModelTemplate(DjangoModelTemplateMixin, DjangoTemplate)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L244)</sup>
 
@@ -1326,12 +1326,12 @@ Template that executes the Python code (using `exec` function).
 
 Attributes:
 
-- `call_return` - dictates what will be returned as a setting value.
+- `template_return` - dictates what will be returned as a setting value.
     - If `None`, the whole context will be returned.
     - If a dictionary, only the keys from the dictionary will be returned. The values will be used as defaults.
     - If a callable, the callable will be called and the return value will be used as a dictionary.
     - If an iterable, the iterable will be used as keys for the return dictionary. The values will be `None` by default.
-- `allow_import` - allows importing modules. Default: `False`.
+- `template_allow_import` - allows importing modules. Default: `False`.
 
 ### class DjangoModelExec(DjangoModelTemplateMixin, SimpleExec)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/template.py#L370)</sup>
 

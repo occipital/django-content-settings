@@ -3,7 +3,6 @@ import pytest
 from content_settings.utils import class_names, call_base_str
 from content_settings.types.basic import SimpleString, SimpleInt
 from content_settings.types.datetime import TimeString
-from content_settings.types.template import SimpleExecOneKey
 from content_settings import functools
 
 
@@ -27,19 +26,6 @@ from content_settings import functools
                 ("content_settings.types.mixins", "EmptyNoneMixin"),
             ],
             id="TimeString",
-        ),
-        pytest.param(
-            SimpleExecOneKey,
-            [
-                ("content_settings.types.template", "SimpleExecOneKey"),
-                ("content_settings.types.template", "GiveOneKeyMixin"),
-                ("content_settings.types.template", "SimpleExec"),
-                ("content_settings.types.template", "SimpleCallTemplate"),
-                ("content_settings.types.mixins", "CallToPythonMixin"),
-                ("content_settings.types.template", "StaticDataMixin"),
-                ("content_settings.types.basic", "SimpleText"),
-            ],
-            id="SimpleExecOneKey",
         ),
     ],
 )

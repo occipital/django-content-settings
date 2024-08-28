@@ -78,7 +78,8 @@ In template:
 # Whats next?
 
 - [**Getting Started**](https://django-content-settings.readthedocs.io/en/master/first/) - this is a step-by-step guide to configure content settings in your project and add your first setting.
-- [**Setting Types and Attributes**](https://django-content-settings.readthedocs.io/en/master/types/) - the guide of all available types and attributes, including some examples.
+- [**Setting Types and Attributes**](https://django-content-settings.readthedocs.io/en/master/types/) - the guide of all basic available types and attributes, including some examples.
+- [**Template Types**](https://django-content-settings.readthedocs.io/en/master/template_types/) - the most powerful part of content settings - Templates. Where setting raw value is a text, but setting value is a function.
 - [**Using Settings**](https://django-content-settings.readthedocs.io/en/master/access/) - multiple ways to access content settings in your project.
 - [**Permissions**](https://django-content-settings.readthedocs.io/en/master/permissions/) - different settings can have different permissions for different settings' functionality.
 - [**Defaults Context**](https://django-content-settings.readthedocs.io/en/master/defaults/) - allows you to group settings with common parameters, reducing redundancy and making your code cleaner and more maintainable.

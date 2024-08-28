@@ -5,7 +5,7 @@ For example `array.TypedStringsList`
 """
 
 from enum import Enum, auto
-from typing import Union, Any, Dict
+from typing import Union, Any, Dict, Optional
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
@@ -62,6 +62,9 @@ class BaseEach:
         return sum(
             (cs.get_admin_head_js_raw() for cs in self.get_all_cs_types()), start=()
         )
+
+    def can_suffix(self, suffix: Optional[str], value: Any) -> bool:
+        return all(cs.can_suffix(suffix, value) for cs in self.get_all_cs_types())
 
 
 TCSType = Union[BaseEach, BaseSetting]

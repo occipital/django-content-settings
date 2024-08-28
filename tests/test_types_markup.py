@@ -14,7 +14,6 @@ from content_settings.types.markup import (
     SimpleYAML,
 )
 from content_settings.types.template import DjangoTemplateNoArgs
-from content_settings.types.mixins import mix, DictSuffixesMixin
 from content_settings.types import required, optional
 
 from tests import yaml_installed
@@ -75,7 +74,7 @@ def test_csv_typed():
 
 
 def test_csv_typed_suffix():
-    var = mix(DictSuffixesMixin, SimpleCSV)(
+    var = SimpleCSV(
         csv_fields={
             "name": SimpleString(),
             "available": SimpleBool(),

@@ -2,9 +2,17 @@
 
 # Changelog
 
-📖 - documentation is required [issue](https://github.com/occipital/django-content-settings/issues/30)
+### master
 
-[Issuses left for releasing v1](https://github.com/occipital/django-content-settings/labels/v1)
+* `DjangoTemplateNoArgsHTML` and change `DjangoTemplateHTML`
+* `ProcessorsMixin` and `GiveProcessorsMixin` new mixins
+* new doc about [template types](template_types.md)
+* `result_validator`
+* `PreviewValidator`, `PreviewValidationError`
+* `SimpleExecNoCompile`. More in [template types](template_types.md).
+* refactoring of template attributes. They all have prefix template now. More in [template types](template_types.md).
+* `suffixes` attribute is a dict with function as value.
+* `template_bultins` attrubute as a replacement for `allow_import`. More in [template types](template_types.md).
 
 #### 0.20.1
 

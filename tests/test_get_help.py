@@ -198,8 +198,15 @@ pytestmark = [pytest.mark.django_db(transaction=True)]
             ),
             (
                 "SimpleExec_with_help_return",
-                SimpleExec(help="A value", call_return=["name", "value"]),
-                "A value<br><br>Python code that execute and returns generated variables. Available objects:<ul><li>CONTENT_SETTINGS</li><li>SETTINGS</li></ul>Return Dict: <ul><li>name - default: None</li><li>value - default: None</li></ul>",
+                SimpleExec(help="A value", template_return=["name", "value"]),
+                "A value<br><br>Python code that execute and returns generated variables. Available objects:<ul><li>CONTENT_SETTINGS</li><li>SETTINGS</li></ul>Return Dict: <ul><li>name</li><li>value</li></ul>",
+            ),
+            (
+                "SimpleExec_with_help_return_dict",
+                SimpleExec(
+                    help="A value", template_return={"name": "Mike", "value": 60}
+                ),
+                "A value<br><br>Python code that execute and returns generated variables. Available objects:<ul><li>CONTENT_SETTINGS</li><li>SETTINGS</li></ul>Return Dict: <ul><li>name - default: Mike</li><li>value - default: 60</li></ul>",
             ),
             (
                 "SimpleStringsList_with_help",

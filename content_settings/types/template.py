@@ -17,10 +17,33 @@ from django.utils.safestring import mark_safe
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext as _
 
+from content_settings.utils import obj_base_str
 from .basic import SimpleText
 from .mixins import CallToPythonMixin, GiveCallMixin, HTMLMixin
 from .validators import call_validator, gen_signle_arg_call_validator
 from . import PREVIEW, required
+
+
+BUILTINS_SAFE = {}
+BUILTINS_ALLOW_IMPORT = {}
+
+
+def gen_builtins():
+    if isinstance(BUILTINS_SAFE, dict):
+        yield from __builtins__.items()
+    else:
+        for name in dir(__builtins__):
+            yield name, getattr(__builtins__, name)
+
+
+for name, value in gen_builtins():
+    if name in ["memoryview", "open", "input"]:
+        continue
+    BUILTINS_ALLOW_IMPORT[name] = value
+
+    if name == "__import__":
+        continue
+    BUILTINS_SAFE[name] = value
 
 
 class STATIC_INCLUDES(Enum):
@@ -89,16 +112,17 @@ class SimpleCallTemplate(CallToPythonMixin, StaticDataMixin, SimpleText):
 
     def get_validators(self):
         validators = super().get_validators()
-        if validators:
+
+        if validators and any(isinstance(v, call_validator) for v in validators):
             return validators
 
         has_required_args = any(
             v == required for v in self.get_template_args_default().values()
         )
         if has_required_args:
-            return ()
+            return validators
 
-        return (call_validator(),)
+        return (call_validator(), *validators)
 
     def get_help_format(self):
         yield _("Available objects:")
@@ -182,6 +206,14 @@ class DjangoTemplate(SimpleCallTemplate):
         )
 
 
+class DjangoTemplateHTML(HTMLMixin, DjangoTemplate):
+    """
+    Same as `DjangoTemplate` but the rendered value is marked as safe.
+    """
+
+    pass
+
+
 class DjangoTemplateNoArgs(GiveCallMixin, DjangoTemplate):
     """
     Same as `DjangoTemplate` but the setting value is not callablle, but already rendered value.
@@ -190,7 +222,7 @@ class DjangoTemplateNoArgs(GiveCallMixin, DjangoTemplate):
     pass
 
 
-class DjangoTemplateHTML(HTMLMixin, DjangoTemplateNoArgs):
+class DjangoTemplateNoArgsHTML(HTMLMixin, DjangoTemplateNoArgs):
     """
     Same as `DjangoTemplateNoArgs` but the rendered value is marked as safe.
     """
@@ -204,32 +236,34 @@ class DjangoModelTemplateMixin:
 
     Attributes:
 
-    - `model_queryset` - QuerySet or a callable that returns a Model Object. For QuerySet, the first object will be used. For callable, the object returned by the callable will be used. The generated object will be used as validator and for preview.
-    - `obj_name` - name of the object in the template. Default: "object".
+    - `template_model_queryset` - QuerySet or a callable that returns a Model Object. For QuerySet, the first object will be used. For callable, the object returned by the callable will be used. The generated object will be used as validator and for preview.
+    - `template_object_name` - name of the object in the template. Default: "object".
     """
 
-    model_queryset: Optional[Union[QuerySet, Callable]] = None
-    obj_name: str = "object"
+    template_model_queryset: Optional[Union[QuerySet, Callable]] = None
+    template_object_name: str = "object"
 
     def get_template_args_default(self):
         return {
-            self.obj_name: required,
+            self.template_object_name: required,
             **super().get_template_args_default(),
         }
 
     def get_first_call_validator(self):
         """
-        generates the first validator based of model_queryset, which will be used for validation and for preview.
+        generates the first validator based of template_model_queryset, which will be used for validation and for preview.
         """
-        if self.model_queryset is not None:
-            if isinstance(self.model_queryset, QuerySet):
-                first = self.model_queryset.first()
+        if self.template_model_queryset is not None:
+            if isinstance(self.template_model_queryset, QuerySet):
+                first = self.template_model_queryset.first()
                 if first is not None:
                     return call_validator(first)
-            elif callable(self.model_queryset):
-                return gen_signle_arg_call_validator(self.model_queryset)
+            elif callable(self.template_model_queryset):
+                return gen_signle_arg_call_validator(self.template_model_queryset)
             else:
-                raise ValueError(_("model_queryset must be a QuerySet or a callable"))
+                raise ValueError(
+                    _("template_model_queryset must be a QuerySet or a callable")
+                )
 
     def get_validators(self):
         validators = super().get_validators()
@@ -267,6 +301,7 @@ class SimpleEval(SimpleCallTemplate):
     """
 
     admin_preview_as: PREVIEW = PREVIEW.PYTHON
+    template_bultins: Optional[Union[str, Dict]] = "BUILTINS_SAFE"
 
     def get_help_format(self):
         yield _("Python code that returns a value.")
@@ -281,8 +316,12 @@ class SimpleEval(SimpleCallTemplate):
         globs = {
             **self.get_template_full_static_data(),
             **self.prepate_input_to_dict(*args, **kwargs),
-            "__import__": None,
         }
+
+        if self.template_bultins:
+            globs["__builtins__"] = obj_base_str(
+                self.template_bultins, "content_settings.types.template"
+            )
 
         return eval(template, globs)
 
@@ -303,48 +342,106 @@ class SimpleEvalNoArgs(GiveCallMixin, SimpleEval):
     pass
 
 
-class SimpleExec(SimpleCallTemplate):
+class SystemExec:
     """
-    Template that executes the Python code (using `exec` function).
+    Mixin class that brings exec functionality into type
 
     Attributes:
 
-    - `call_return` - dictates what will be returned as a setting value.
-        - If `None`, the whole context will be returned.
+    - `template_return` - dictates what will be returned as a setting value.
+        - If `None`, the whole context will be returned. The default value.
+        - if a string, the string will be used as a key from the context and that value will be returned.
         - If a dictionary, only the keys from the dictionary will be returned. The values will be used as defaults.
         - If a callable, the callable will be called and the return value will be used as a dictionary.
         - If an iterable, the iterable will be used as keys for the return dictionary. The values will be `None` by default.
-    - `allow_import` - allows importing modules. Default: `False`.
+    - `template_bultins` - allows to limit the builtin functions. By default it is `"BUILTINS_SAFE"`, which allows all functions except `memoryview`, `open`, `input` and `import`. If you want to include import use `"BUILTINS_ALLOW_IMPORT"`, if you don't want to use any limitation - just assign `None` to the attribute.
+    - `template_raise_return_error` - raises an error if `template_return` doesn't match the context. Default: `False`.
+    """
+
+    template_return: Optional[Union[Iterable, Callable, Dict, str]] = None
+    template_bultins: Optional[Union[str, Dict]] = "BUILTINS_SAFE"
+    template_raise_return_error: bool = False
+
+    def get_template_return(self):
+        return self.template_return
+
+    def get_template_raise_return_error(self):
+        return self.template_raise_return_error
+
+    def get_template_bultins(self):
+        return obj_base_str(self.template_bultins, "content_settings.types.template")
+
+    def get_help_format(self):
+        yield from super().get_help_format()
+
+        template_return = self.get_template_return()
+
+        if template_return is None or callable(template_return):
+            yield _("Return Dict is not specified")
+        elif isinstance(template_return, str):
+            yield _("Return value from the variable: %(variable)s") % {
+                "variable": template_return
+            }
+        elif isinstance(template_return, dict):
+            yield _("Return Dict: ")
+            yield "<ul>"
+            for name, value in template_return.items():
+                yield f"<li>{name} - default: {value}</li>"
+            yield "</ul>"
+        elif isinstance(template_return, Iterable):
+            yield _("Return Dict: ")
+            yield "<ul>"
+            for name in template_return:
+                yield f"<li>{name}</li>"
+            yield "</ul>"
+        else:
+            raise ValueError(_("Invalid template_return"))
+
+    def system_exec(self, code, globs):
+        globs = {**globs}
+        if self.template_bultins:
+            globs["__builtins__"] = self.get_template_bultins()
+
+        exec(code, globs)
+        template_return = self.get_template_return()
+
+        if template_return is None:
+            return globs
+        elif callable(template_return):
+            return template_return(globs)
+        elif isinstance(template_return, str):
+            if self.get_template_raise_return_error() and template_return not in globs:
+                raise ValidationError(
+                    _("Variable %(variable)s is required")
+                    % {"variable": template_return}
+                )
+            return globs.get(template_return)
+        elif isinstance(template_return, dict):
+            return {k: globs.get(k, v) for k, v in template_return.items()}
+        elif isinstance(template_return, Iterable):
+            if self.get_template_raise_return_error() and (
+                diff_keys := set(template_return).difference(set(globs.keys()))
+            ):
+                raise ValidationError(
+                    _("Variables in the context are required: %(variables)s")
+                    % {"variables": ", ".join(diff_keys)}
+                )
+            return {k: globs.get(k, None) for k in template_return}
+        else:
+            raise ValidationError(_("Invalid template_return"))
+
+
+class SimpleExec(SystemExec, SimpleCallTemplate):
+    """
+    Template that executes the Python code (using `exec` function).
     """
 
     admin_preview_as: PREVIEW = PREVIEW.PYTHON
-    call_return: Optional[Union[Iterable, Callable, Dict]] = None
-    allow_import: bool = False
-
-    def get_call_return(self):
-        if self.call_return is None:
-            return None
-
-        if isinstance(self.call_return, dict):
-            return self.call_return
-
-        if callable(self.call_return):
-            return self.call_return()
-
-        return {name: None for name in self.call_return}
 
     def get_help_format(self):
         yield _("Python code that execute and returns generated variables.")
         yield " "
         yield from super().get_help_format()
-        if self.get_call_return() is None:
-            yield _("Return Dict is not specified")
-        else:
-            yield _("Return Dict: ")
-            yield "<ul>"
-            for name, value in self.get_call_return().items():
-                yield f"<li>{name} - default: {value}</li>"
-            yield "</ul>"
 
     def prepare_python_call(self, value):
         return {"template": compile(value, "<string>", "exec")}
@@ -356,23 +453,7 @@ class SimpleExec(SimpleCallTemplate):
             **self.prepate_input_to_dict(*args, **kwargs),
         }
 
-        if not self.allow_import:
-            globs["__import__"] = None
-
-        exec(template, globs)
-        call_return = self.get_call_return()
-
-        if call_return is None:
-            return globs
-        return {k: globs.get(k, v) for k, v in call_return.items()}
-
-
-class DjangoModelExec(DjangoModelTemplateMixin, SimpleExec):
-    """
-    Same as `SimpleExec` but uses one value as a model object.
-    """
-
-    pass
+        return self.system_exec(template, globs)
 
 
 class SimpleExecNoArgs(GiveCallMixin, SimpleExec):
@@ -383,84 +464,25 @@ class SimpleExecNoArgs(GiveCallMixin, SimpleExec):
     pass
 
 
-class SimpleExecNoCall(StaticDataMixin, SimpleText):
+class DjangoModelExec(DjangoModelTemplateMixin, SimpleExec):
     """
-    Same as `SimpleExec` but the setting value is not callable, but already executed.
+    Same as `SimpleExec` but uses one value as a model object.
+    """
 
-    The class is not inherited from `SimpleCallTemplate`, and technically can be a part of markdown module.
+    pass
+
+
+class SimpleExecNoCompile(SystemExec, StaticDataMixin, SimpleText):
+    """
+    It is not a Template, probably closed to markdown module, as it simply takes the text value and convert it into py object, which is not a compiled code but the result of execution of the code.
+
+    But it is in the template module as it is very similar to `SimpleExecNoArgs`.
+
+    It is super easy to shot in the foot with this class so be very cautious.
     """
 
     admin_preview_as: PREVIEW = PREVIEW.PYTHON
-    call_return = None
-    allow_import = False
-
-    def get_help_format(self):
-        yield _("Available objects:")
-        yield "<ul>"
-
-        for name in self.get_template_full_static_data().keys():
-            yield f"<li>{name}</li>"
-
-        yield "</ul>"
-
-    def get_call_return(self):
-        if self.call_return is None:
-            return None
-        if isinstance(self.call_return, dict):
-            return self.call_return
-
-        return {name: None for name in self.call_return}
 
     def to_python(self, value: str) -> Any:
-        value = compile(value, "<string>", "exec")
-
-        globs = {
-            **self.get_template_full_static_data(),
-        }
-
-        if not self.allow_import:
-            globs["__import__"] = None
-
-        exec(value, globs)
-        call_return = self.get_call_return()
-
-        if call_return is None:
-            return globs
-        return {k: globs.get(k, v) for k, v in call_return.items()}
-
-
-class GiveOneKeyMixin:
-    """
-    Mixin that returns only one key from the result dict.
-
-    Attributes:
-
-    - `one_key_name` - name of the key that will be returned. Default: "result".
-    """
-
-    one_key_name: str = "result"
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if hasattr(self, "call_return"):
-            self.call_return = {self.one_key_name: required}
-        self.one_key_name = self.one_key_name.lower()
-
-    def give(self, value, suffix=None):
-        return super().give(value, suffix)[self.one_key_name]
-
-
-class SimpleExecOneKey(GiveOneKeyMixin, SimpleExec):
-    """
-    Same as `SimpleExec` but returns only one key (from attribute `one_key_name`) from the result dict.
-    """
-
-    pass
-
-
-class SimpleExecOneKeyNoCall(GiveOneKeyMixin, SimpleExecNoCall):
-    """
-    Same as `SimpleExecNoCall` but returns only one key (from attribute `one_key_name`) from the result dict.
-    """
-
-    pass
+        value = super().to_python(value)
+        return self.system_exec(value, self.get_template_full_static_data())

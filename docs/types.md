@@ -161,197 +161,6 @@ var = SimpleCSV(
     },
 )
 ```
-    
-    
-
-## Templates (`content_settings.types.template`) *([source](source.md#typestemplate))*
-
-Module introduces advanced variable types designed for template rendering and Python code evaluation using `CallToPythonMixin` for using setting variables as functions. I'll explain the mixing implanation on `SimpleFunc` type, but in the actual project you may want to use more advanced types such as `DjangoTemplate`, `DjangoModelTemplate`, `SimpleEval` and so on. It is ok to skip the explanation of the `CallToPythonMixin`.
-
-The mixin has two most important methods you may want to redefine:
-
-* `prepare_python_call` - the function gets py object as an attribute and returns a dict that will be used in kwargs of the attribute call
-* `python_call` - is the function that would be called when the user call function that returned by the attribute
-
-If you don't want to overwrite the method you can use attributes
-
-* `call_func` - the function would be called when the user uses an attribute (uses by `python_call`). It accepts all of the args and kwargs passed to the function when it is called + one more kwarg, by default "prepared", with the value returned by `prepare_python_call`. By default it is `lambda *args, prepared=None, **kwargs: prepared(*args, **kwargs)`
-* `call_prepare_func` - function that prepares value from django admin and store it in the context of python value, By default it is `lambda value: value`
-* `call_func_argument_name` - the name of the attribute for the prepared value. By default "prepared"
-
-With the combination of `call_prepared_func` and `call_func` you can get a performance boost when you using it in code.
-
-- **SimpleFunc**: The simplest use of `CallToPythonMixin` with text value. The definition of the type is super simple:
-
-```python
-class SimpleFunc(CallToPythonMixin, SimpleText):
-    admin_preview_as: PREVIEW = PREVIEW.PYTHON
-```
-
-The first example is when all of the logic is inside of the actual call:
-
-```python
-THE_FUNC = SimpleFunc(
-    "Welcome {name}",
-    call_func=lambda name, prepared: prepared.format(name=name),
-    validators=(call_validator("Aex"),),
-)
-```
-
-in the code it would be:
-
-```python
-print(content_settings.THE_FUNC("Alex"))
-# Welcome Alex
-```
-
-*Make sure you add a `call_validator` so the function has some kind of in Django admin*
-
-The second example illustrates using of some kind of preparation before using:
-
-```python
-THE_FUNC = SimpleFunc(
-    "Welcome {name}",
-    call_prepare_func=lambda value: value.format
-    validators=(call_validator(name="Aex"),),
-)
-``` 
-
-In the code it would be almost the same as in the first example:
-
-```python
-print(content_settings.THE_FUNC(name="Alex"))
-# Welcome Alex
-```
-
-*In the second example the preparation function would be called when the type is defined or value is updated*
-
-The third example is a bonus one, in case you want to use not only text value as in input
-
-```python
-THE_SUM_FUNC = mix(CallToPythonMixin, SimpleInt)(
-    "10",
-    call_func=lambda value, prepared: prepared + value,
-    validators=(call_validator(20),),
-)
-```
-
-*In that case value is an int, so it will be parsed and validated by `SimpleInt` class*
-
-In the code it is still the same
-
-```python
-print(content_settings.THE_SUM_FUNC(12))
-# 22
-```
-
-Those are very basic examples, you might not use those, but it can be helpful to understad how the other template types are working
-
-- **DjangoTemplate**: is used for rendering a Django template specified in the variable's value
-    - **template_args_default**: (Optional) A dictionary that converts an array of arguments, with which the function is called, into a dictionary passed as context to the template. To set required arguments, import `required` from `content_settings.types.template` and use it as a value.
-    - **template_static_data**: (Optional) A dictionary of additional values that can be passed to the template from global env (not as arguments to the function). It can also be a function
-    - **template_static_includes** (default: `('CONTENT_SETTINGS', 'SETTINGS')`) - by default both `content_settings` and `settings` are included in context, but by adjusting this tuple you can change that.
-
-Example:
-
-```python
-# content_settings.py
-SHORT_DESCRIPTION = DjangoTemplate("""
-<b>{{title}}</b><br>
-{% if description %}
-<i>{{description}}</i>
-{% endif %}
-    """,
-    template_args_default={
-        "title": "Undefined",
-        "description": None,
-    },
-)
-
-# in code
-
-content_settings.SHORT_DESCRIPTION("Hello world", "your first line of code")
-
-# returns:
-# <b>Hello world</b><br>
-# <i>your first line of code</i>
-```
-
-- **DjangoTemplateNoArgs**: the same as `DjangoTemplate` but without input arguments and return value without calling the attribute
-- **DjangoTemplateHTML**: the mix of `DjangoTemplateNoArgs` and `HTMLMixin` - which means the returned value should be trated as valid HTML (the same as `SimpleHTML`)
-
-```python
-# content_settings.py
-TITLE_IMG = DjangoTemplate("<img src='{{SETTINGS.STATIC_URL}}title.png' />")
-
-# in code
-
-content_settings.TITLE_IMG
-
-# returns:
-# /static/title.png
-```
-
-    - you can still pass input arguments `call` suffix, like `content_settings.TITLE_IMG__call`
-
-- **DjangoModelTemplate**: is a specialized class for rendering templates for individual Django model objects
-    - **model_queryset**: A query set of objects that can be used as an argument. The setting only takes the first element for preview purposes in the admin panel.
-    - **obj_name**: The name under which the model object is passed to the template.
-- **DjangoModelTemplateHTML**: same as *DjangoModelTemplate* but generate HTML instead
-- **SimpleEval**: is designed to store Python code as the setting's value. When the function is called, the arguments dict is passed to the code execution.
-
-Example:
-
-```python
-from content_settings.types.template import required
-
-COMISSION = SimpleEval(
-  "total * Decimal('0.2')",
-  template_args_default={
-    "total": required,
-  },
-  template_static_data={
-    "Decimal": Decimal,
-  }
-
-)
-
-# in code
-content_settings.COMISSION(Decimal('100'))
-
-# returns
-Decimal("20")
-```
-
-- **SimpleEvalNoArgs**: the same as `SimpleEval` but without passing input args. It works the same as `DjangoTemplateNoArgs` and simply getting an attribute.
-- **DjangoModelEval**: the same as `DjangoModelTemplate` but for `SimpleEval`
-- **SimpleExec** - works the same as `SimpleEval` but instead of using `exec` for the code it uses `eval`. It returns a dics of all global values after the code run. With `call_return` you can limit returned dict (for list - it is a list of limited values and for dict - it is limited values with default values)
-- **DjangoModelExec**
-- **SimpleExecNoArgs**
-
-### Calling Functions in Template *([source](source.md#templatetagscontent_settings_extras))*
-
-if you want create a callable setting, such a `DjangoTemplate` or `SimpleEval`, you can render the result of colling in your template using `content_settings_call` tag from `content_settings_extras` library:
-
-```html
-{% load content_settings_extras %}
-
-<html>
-    <head>
-        <title>{{CONTENT_SETTINGS.TITLE}}</title>
-    </head>
-    <body>
-        <header>
-            <h1>Book List</h1>
-        </header>
-            {% for book in object_list %}
-                {% content_settings_call "BOOK_RICH_DESCRIPTION" book _safe=True%}
-            {% empty %}
-                <li>No books found.</li>
-            {% endfor %}
-    </body>
-</html>
-```
 
 ## Mixins *([source](source.md#typesmixins))*
 
@@ -372,64 +181,31 @@ MAX_PRICE = mix(PositiveValidationMixin, SimpleDecimal)("9.99", help="maximum al
 - **MinMaxValidationMixin** - adds a validator that the result value is bigger or/and lower. It adds attributes `min_value` and `max_value`
 - **EmptyNoneMixin** - set value to None it is an empty value
 - **PositiveValidationMixin** - shortcut to for `MinMaxValidationMixin` to make sure the value is positive
-- **DictSuffixesMixin** - supports a dict of available suffixes for the variable. For example:
+- **ProcessorsMixin** - to post process generated py-object value. It adds an additional attribute to your type `processors: Iterable[TCallableStr, ...] = ()`. Here is a small example that can make a truncate text using function [shorten function](https://docs.python.org/3/library/textwrap.html#textwrap.shorten)
 
 ```python
-from content_settings.types.basic import SimpleText
-from content_settings.types.mixins import DictSuffixesMixin
+import textwrap
 
-class TruncText(, SimpleText):
-    suffixes = {
-        "trunc": lambda text, max_length=10: (text[: max_length - 3] + "...")
-        if len(text) > max_length
-        else text
-    }
-MY_VAR = TruncText("default value")
+def shorten(value):
+    return textwrap.shorten(value, width=20, placeholder='...')
 
-# now you can get actual setting value by
-actual_value = content_settings.MY_VAR
-
-# and truncated value by
-truncated_value = content_settings.MY_VAR__trunc
+SHORT_STR = mix(ProcessorsMixin, SimpleString)("This is string", processors=(shorten,))
 ```
 
-- **CallToPythonMixin** - that makes your setting a function, which accepts attributes from the setting and from the arguments. It uses for `types.template.*` classes
-- **types.each.EachMixin** (puted into separate module as it has additional classes to support this one such as `Item`, `Keys` or `Values`) - when your setting returns a list or dict or mix of those, and you want to make sure that every element is veryfied, previewed and converted using a specific content type. For example:
+- **GiveProcessorsMixin** - to post process setting value. The main difference with `ProcessorsMixin` - the value will be processed every time when you request the setting attribute. Additional attribute is `give_processors: Iterable[Union[TCallableStr, Tuple[Optional[str], TCallableStr]], ...] = ()`. In the same way as for `ProcessorsMixin.processors` you can add functions in the `give_processors`, but you can also add tuple with two arguments suffix as a string and function. Here are some of the examples:
 
 ```python
-from content_settings.types.basic import SimpleString, SimpleDecimal
-from content_settings.types.array import SimpleStringsList
-from content_settings.types.each import EachMixin, Item
+import textwrap
 
-# this actualy part of our codebase
-# SimpleStringsList - converts text to the list of values and EachMixin converts every element into specific type
-class TypedStringsList(EachMixin, SimpleStringsList):
-    line_type = SimpleString()
+def shorten(value):
+    return textwrap.shorten(value, width=20, placeholder='...')
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.each = Item(self.line_type)
+SHORT_STR = mix(GiveProcessorsMixin, SimpleString)("This is string", give_processors=(shorten,))
 
-# you can do a list of decimal values by
-MY_DECIMALS = TypedStringsList(line_type=SimpleDecimal())
+# is the same as 
+SHORT_STR = mix(GiveProcessorsMixin, SimpleString)("This is string", give_processors=((None, shorten),))
 
-# or as a mixin
-MY_DECIMALS = mix(EachMixin, SimpleStringsList)(each=Item(SimpleDecimal()))
+# you can define suffix and define give processor for the suffix only
+SHORT_STR = mix(GiveProcessorsMixin, SimpleString)("This is string", suffixes={"copy": lambda x: x}, give_processors=(("copy", shorten),))
 ```
 
-- **AdminPreviewSuffixesMixin(AdminPreviewMenuMixin)** - allows you to build menu for preview based on available suffixes
-- **DictSuffixesPreviewMixin** - basically a mix of `DictSuffixesMixin` and `AdminPreviewSuffixesMixin`
-- **AdminPreviewActionsMixin** - allows you to set up the set of actions in the preview menu. The list of tuples in attribute admin_preview_actions is responsable for that. For example, the valiable you are changing is part of the email, and before apply the variable you want to see how the email is actually look like. You can also use actions change the raw text value, generate js alert and generate text before and after the preview.
-
-```python
-HTML_WITH_ACTIONS = mix(AdminPreviewActionsMixin, SimpleHTML)(
-    "",
-    admin_preview_actions=[
-        ("before", lambda resp, *a, **k: resp.before_html("<p>Text Before</p>")),
-        ("alert", lambda resp, *a, **k: resp.alert("Let you know, you are good")),
-        ("reset to hi", lambda resp, *a, **k: resp.value("Hello world")),
-        ("say hi", lambda resp, *a, **k: resp.html("<h1>HI</h1>")),
-    ],
-    help="Some html with actions",
-)
-```

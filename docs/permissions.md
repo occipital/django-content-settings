@@ -124,7 +124,3 @@ MAX_PRICE = SimpleDecimal(
 )
 ```
 
-
----
-
-This documentation provides an overview of the `content_settings.permissions` module, offering versatile and straightforward functions to manage permissions in Django applications effectively.

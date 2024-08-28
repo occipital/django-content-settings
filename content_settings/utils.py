@@ -64,18 +64,18 @@ def is_bline(func: TCallableStr) -> bool:
     return isinstance(func, bytes)
 
 
-def func_base_str(func: TCallableStr, call_base: Any = None) -> Callable:
+def obj_base_str(obj: Any, call_base: Any = None) -> Callable:
     """
-    if a given function is not callable it is converted into callable function
+    if a given obj is not String - return the obj. If it is string than try to find it using call_base
     """
-    if callable(func):
-        return func
+    if is_bline(obj):
+        obj = obj.decode("utf-8")
 
-    if is_bline(func):
-        func = func.decode("utf-8")
+    if not isinstance(obj, str):
+        return obj
 
-    if "." in func:
-        return import_object(func)
+    if "." in obj:
+        return import_object(obj)
 
     assert (
         call_base
@@ -83,7 +83,7 @@ def func_base_str(func: TCallableStr, call_base: Any = None) -> Callable:
     if isinstance(call_base, str):
         call_base = import_object(call_base)
 
-    return getattr(call_base, func)
+    return getattr(call_base, obj)
 
 
 def call_base_str(func: TCallableStr, *args, call_base: Any = None, **kwargs) -> Any:
@@ -93,7 +93,7 @@ def call_base_str(func: TCallableStr, *args, call_base: Any = None, **kwargs) ->
     It is not only minimise the amout of import lines but also allows to use string attributes in `CONTENT_SETTINGS_DEFAULTS`.
     """
 
-    func = func_base_str(func, call_base)
+    func = obj_base_str(func, call_base)
 
     if function_has_argument(func, "call_base"):
         kwargs["call_base"] = call_base

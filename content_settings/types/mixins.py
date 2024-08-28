@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union, Dict, Callable
+from typing import Any, Mapping, Optional, Union, Dict, Tuple, Iterable
 from pprint import pformat
 from decimal import Decimal
 
@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
-from .validators import call_validator
+from .validators import call_validator, PreviewValidator, PreviewValidationError
 from . import PREVIEW, pre, TCallableStr
 from ..utils import call_base_str
 
@@ -21,6 +21,53 @@ def mix(*cls):
     mix(HTMLMixin, SimpleInt)
     """
     return type("", cls, {})
+
+
+class ProcessorsMixin:
+    """
+    Mixin that adds processors to the type.
+
+    The processors is a pipeline of functions that are applied to the py object.
+    """
+
+    processors: Iterable[TCallableStr] = ()
+
+    def get_processors(self):
+        return self.processors
+
+    def to_python(self, value: str) -> Any:
+        py_value = super().to_python(value)
+        for processor in self.get_processors():
+            py_value = call_base_str(processor, py_value)
+        return py_value
+
+
+class GiveProcessorsMixin:
+    """
+    Mixin that adds processors to the type.
+    """
+
+    give_processors: Iterable[
+        Union[TCallableStr, Tuple[Optional[str], TCallableStr]]
+    ] = ()
+
+    def get_give_processors(self):
+        return self.give_processors
+
+    def give(self, value: Any, suffix: Optional[str] = None):
+        ret = super().give(value, suffix)
+
+        for processor_pair in self.get_give_processors():
+            if isinstance(processor_pair, tuple):
+                processor_suffix, processor_func = processor_pair
+            else:
+                processor_suffix = None
+                processor_func = processor_pair
+
+            if processor_suffix == suffix:
+                ret = call_base_str(processor_func, ret)
+
+        return ret
 
 
 class MinMaxValidationMixin:
@@ -130,11 +177,7 @@ class CallToPythonMixin:
         return call_base_str(self.get_call_func(), *args, **kwargs)
 
     def get_preview_validators(self):
-        return [
-            validator
-            for validator in self.get_validators()
-            if isinstance(validator, call_validator)
-        ]
+        return [validator for validator in self.get_validators()]
 
     def to_python(self, value):
         value = super().to_python(value)
@@ -152,11 +195,30 @@ class CallToPythonMixin:
             return [(None, e)]
         ret = []
         for validator in self.get_preview_validators():
-            str_validator = f"{name}({str(validator)})"
+            has_call_representation = getattr(
+                validator, "has_call_representation", False
+            )
+            if has_call_representation:
+                str_validator = f"{name}({str(validator)})"
+            else:
+                str_validator = f"{name}(???)"
+
             try:
-                ret.append((str_validator, validator(value)))
+                ret_validator = validator(value)
+            except PreviewValidationError as e:
+                ret.append((f"{name}({e.preview_input})", e))
             except Exception as e:
                 ret.append((str_validator, e))
+            else:
+                if isinstance(ret_validator, PreviewValidator):
+                    ret.append(
+                        (
+                            f"{name}({ret_validator.preview_input})",
+                            ret_validator.preview_output,
+                        )
+                    )
+                elif has_call_representation:
+                    ret.append((str_validator, ret_validator))
         return ret
 
     def get_admin_preview_object(self, value, name, **kwargs):
@@ -178,7 +240,8 @@ class CallToPythonMixin:
 
         def f():
             for validator, val in value:
-                yield pre(f">>> {validator}")
+                if validator is not None:
+                    yield pre(f">>> {validator}")
 
                 if isinstance(val, Exception):
                     yield f"ERROR!!! {val}"
@@ -200,8 +263,8 @@ class GiveCallMixin:
     If suffix is "call" then callable should be returned.
     """
 
-    def get_suffixes(self):
-        return ("call",) + super().get_suffixes()
+    def get_suffixes_names(self, value: Any):
+        return ("call",) + super().get_suffixes_names(value)
 
     def get_validators(self):
         return (call_validator(),) + super().get_validators()
@@ -227,27 +290,14 @@ class MakeCallMixin:
     Can be usefull when you change callable types to a simple type but don't want to change the code that uses that type.
     """
 
-    def get_suffixes(self):
-        return ("call",) + super().get_suffixes()
+    def get_suffixes_names(self, value: Any):
+        return ("call",) + super().get_suffixes_names(value)
 
     def give_python_to_admin(self, value, name, **kwargs):
         return self.give_python(value)()
 
     def give(self, value, suffix=None):
         return lambda *args, **kwargs: value
-
-
-class DictSuffixesMixin:
-    """
-    Mixin that adds suffixes to the type using dictionary of functions.
-    """
-
-    suffixes: Dict[str, Callable[[Any], Any]] = {}
-
-    def give(self, value, suffix=None):
-        if suffix is None:
-            return value
-        return self.suffixes[suffix](value)
 
 
 class AdminPreviewMenuMixin:
@@ -267,7 +317,7 @@ class AdminPreviewMenuMixin:
             return ""
         return "<div>" + html_items + "</div>"
 
-    def get_admin_preview_object(self, value: str, name: str, **kwargs) -> str:
+    def get_admin_preview_object(self, value: Any, name: str, **kwargs) -> str:
 
         return self.get_admin_preview_html_menu(
             value, name, **kwargs
@@ -280,14 +330,18 @@ class AdminPreviewMenuMixin:
 
 
 class AdminSuffixesMixinPreview:
-    admin_preview_suffixes = ()
+    admin_preview_suffixes = None
     admin_preview_suffixes_default = "default"
 
     def get_admin_preview_suffixes_default(self):
         return self.admin_preview_suffixes_default
 
-    def get_admin_preview_suffixes(self, value: str, name: str, **kwargs):
-        return self.admin_preview_suffixes
+    def get_admin_preview_suffixes(self, value: Any, name: str, **kwargs):
+        return (
+            self.get_suffixes_names(value)
+            if self.admin_preview_suffixes is None
+            else self.admin_preview_suffixes
+        )
 
     def gen_admin_preview_html_menu_items(
         self, value: Any, name: str, suffix: Optional[str] = None, **kwargs
@@ -405,8 +459,3 @@ class AdminActionsMixinPreview:
 
 class AdminPreviewActionsMixin(AdminActionsMixinPreview, AdminPreviewMenuMixin):
     pass
-
-
-class DictSuffixesPreviewMixin(DictSuffixesMixin, AdminPreviewSuffixesMixin):
-    def get_admin_preview_suffixes(self, value: str, name: str, **kwargs):
-        return tuple(self.suffixes.keys())

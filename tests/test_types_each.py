@@ -12,8 +12,6 @@ from content_settings.types.markup import (
 )
 from content_settings.types.each import EachMixin, Item, Keys, Values
 from content_settings.types.mixins import mix
-from content_settings.types.template import DjangoTemplateNoArgs
-from content_settings.types.mixins import mix, DictSuffixesMixin
 from content_settings.types.markup import SimpleYAML
 from content_settings.types.basic import SimpleHTML
 from content_settings.types import required, optional

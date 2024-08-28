@@ -166,7 +166,7 @@ No, if your template has no input arguments you can use mixin `GiveCallMixin` or
 
 If you have an oposite situation use `MakeCallMixin`
 
-### You want to use `DjangoModelTemplate`, but you can't import model to assign querie to `model_queryset`
+### You want to use `DjangoModelTemplate`, but you can't import model to assign querie to `template_model_queryset`
 
 Use `DjangoTemplate` (lower level) class with `gen_args_call_validator` in validators
 

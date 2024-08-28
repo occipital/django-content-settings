@@ -55,6 +55,7 @@ def codemirror_python(
         or_(
             full_name_exact("content_settings.types.template.SimpleEval"),
             full_name_exact("content_settings.types.template.SimpleExec"),
+            full_name_exact("content_settings.types.template.SimpleExecNoCompile"),
         ),
         add_admin_head(
             css=[f"{path}codemirror.min.css"],

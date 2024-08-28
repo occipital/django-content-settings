@@ -4,13 +4,14 @@ from django.core.exceptions import ValidationError
 
 from content_settings.types.template import (
     DjangoTemplate,
+    DjangoTemplateNoArgs,
     SimpleEval,
     SimpleEvalNoArgs,
     required,
     SimpleExec,
-    SimpleExecNoCall,
-    SimpleExecOneKeyNoCall,
     SimpleFunc,
+    SimpleExecNoArgs,
+    SimpleExecNoCompile,
 )
 from content_settings.types.validators import call_validator
 from content_settings.types import PREVIEW
@@ -71,7 +72,22 @@ def test_simple_func_preview():
     )
 
 
+def test_django_template_as_text():
+    var = DjangoTemplate("Hi")
+
+    assert var.give_python("Hi")() == "Hi"
+
+
+# from docs
 def test_django_template():
+    var = DjangoTemplate("")
+    template = "Hi, {{name}}"
+    assert var.give_python(template)() == "Hi, "
+    assert var.give_python(template)(name="Alex") == "Hi, Alex"
+    assert var.give_python(template)(last="L") == "Hi, "
+
+
+def test_django_template_default_args():
     var = DjangoTemplate(template_args_default={"title": "Undefined"})
 
     template = """
@@ -81,6 +97,15 @@ def test_django_template():
     assert var.give_python(template)() == "<h1>Undefined</h1>"
     assert var.give_python(template)("Book Store") == "<h1>Book Store</h1>"
     assert var.give_python(template)("Book Store", "ignoring") == "<h1>Book Store</h1>"
+    assert var.give_python(template)(title="Book Store") == "<h1>Book Store</h1>"
+
+
+def test_django_template_no_args():
+    var = DjangoTemplateNoArgs()
+
+    template = """<img src="{{SETTINGS.STATIC_URL}}test.png" />"""
+
+    assert var.give_python(template) == '<img src="/static/test.png" />'
 
 
 def test_django_template_required():
@@ -92,6 +117,18 @@ def test_django_template_required():
 
     with pytest.raises(ValidationError):
         var.give_python(template)()
+
+
+def test_django_template_required_passed():
+    var = DjangoTemplate(template_args_default={"title": required})
+
+    template = """
+    <h1>{{ title }}</h1>
+    """.strip()
+
+    assert var.give_python(template)("Book Store") == "<h1>Book Store</h1>"
+    assert var.give_python(template)("Book Store", "ignoring") == "<h1>Book Store</h1>"
+    assert var.give_python(template)(title="Book Store") == "<h1>Book Store</h1>"
 
 
 def test_django_template_with_validator():
@@ -228,13 +265,13 @@ def test_eval_noargs_call():
     assert var.give_python(value, "call")(base_url="/my/") == "/my/test.png"
 
 
-def test_exec_call_return_tuple():
+def test_exec_template_return_tuple():
     from decimal import Decimal
 
     var = SimpleExec(
         template_args_default={"value": Decimal("0.0")},
         template_static_data={"Decimal": Decimal},
-        call_return=("result", "fee"),
+        template_return=("result", "fee"),
     )
 
     value = """
@@ -247,13 +284,99 @@ result = value - fee
     }
 
 
-def test_exec_call_return_dict():
+def test_exec_template_return_str():
+    var = SimpleExec(
+        template_return="result",
+    )
+
+    value = """
+result = 5
+    """
+    assert var.give_python(value)() == 5
+
+
+def test_exec_template_return_str_with_arg():
+    var = SimpleExec(
+        template_return="result",
+    )
+
+    value = """
+result = 5 + additional
+    """
+    assert var.give_python(value)(additional=10) == 15
+
+
+def test_exec_template_return_str_with_arg_raise_error():
+    from decimal import Decimal
+
+    var = SimpleExec(
+        template_return="result",
+        template_raise_return_error=True,
+    )
+
+    value = """
+not_a_variable = 5
+    """
+    with pytest.raises(Exception) as e:
+        var.give_python(value)()
+    assert str(e.value) == "['Variable result is required']"
+
+
+def test_exec_template_return_list_with_arg_raise_error():
+    from decimal import Decimal
+
+    var = SimpleExec(
+        template_return=["result", "fee"],
+        template_raise_return_error=True,
+    )
+
+    value = """
+result = 5
+    """
+    with pytest.raises(Exception) as e:
+        var.give_python(value)()
+    assert str(e.value) == "['Variables in the context are required: fee']"
+
+
+def test_exec_template_return_list_with_arg_raise_error_fail():
+    var = SimpleExec(
+        template_return=["result", "fee"],
+        template_raise_return_error=True,
+    )
+
+    value = """
+result = 5
+fee = 10
+    """
+    assert var.give_python(value)() == {
+        "result": 5,
+        "fee": 10,
+    }
+
+
+def test_exec_template_return_callable():
+    from decimal import Decimal
+
+    def sqr_result(context):
+        return context["result"] ** 2
+
+    var = SimpleExec(
+        template_return=sqr_result,
+    )
+
+    value = """
+result = 5
+    """
+    assert var.give_python(value)() == 25
+
+
+def test_exec_template_return_dict():
     from decimal import Decimal
 
     var = SimpleExec(
         template_args_default={"value": Decimal("0.0")},
         template_static_data={"Decimal": Decimal},
-        call_return={
+        template_return={
             "result": Decimal("0.00"),
             "fee": Decimal("0.00"),
             "tax": Decimal("0.00"),
@@ -271,31 +394,78 @@ result = value - fee
     }
 
 
-def test_exec_call_return_lambda_dict():
-    from decimal import Decimal
+def test_exec_template_import_not_allowed():
 
     var = SimpleExec(
-        template_args_default={"value": Decimal("0.0")},
-        template_static_data={"Decimal": Decimal},
-        call_return=lambda: {
-            "result": Decimal("0.00"),
-            "fee": Decimal("0.00"),
-            "tax": Decimal("0.00"),
-        },
+        template_return=[
+            "result",
+        ],
     )
 
     value = """
-fee = value * Decimal("0.1")
-result = value - fee
+from decimal import Decimal
+result = Decimal("100")
     """
-    assert var.give_python(value)(Decimal("100")) == {
-        "fee": Decimal("10.0"),
-        "result": Decimal("90.0"),
-        "tax": Decimal("0.00"),
-    }
+
+    with pytest.raises(ImportError):
+        var.give_python(value)()
 
 
-def test_exec_call_return_none():
+def test_exec_template_import_allowed():
+    from decimal import Decimal
+
+    var = SimpleExec(
+        template_return=[
+            "result",
+        ],
+        template_bultins=None,
+    )
+
+    value = """
+from decimal import Decimal
+result = Decimal("100")
+    """
+
+    assert var.give_python(value)() == {"result": Decimal("100")}
+
+
+def test_exec_template_return_dict_import_allowed_by_setting():
+    from decimal import Decimal
+
+    var = SimpleExec(
+        template_return=[
+            "result",
+        ],
+        template_bultins="BUILTINS_ALLOW_IMPORT",
+    )
+
+    value = """
+from decimal import Decimal
+result = Decimal("100")
+    """
+
+    assert var.give_python(value)() == {"result": Decimal("100")}
+
+
+def test_exec_template_open_is_not_allowed():
+    from decimal import Decimal
+
+    var = SimpleExec(
+        template_return=[
+            "result",
+        ],
+        template_bultins="BUILTINS_ALLOW_IMPORT",
+    )
+
+    value = """
+result = open("test.txt")
+    """
+
+    with pytest.raises(NameError) as e:
+        var.give_python(value)()
+
+
+def test_exec_template_return_none():
     from decimal import Decimal
 
     var = SimpleExec(
@@ -313,23 +483,73 @@ result = value - fee
     assert globs["result"] == Decimal("90.0")
 
 
-def test_exec_no_call():
-    var = SimpleExecNoCall()
+def test_exec_template_return_dict_no_args():
+    from decimal import Decimal
+
+    var = SimpleExecNoArgs(
+        template_args_default={"value": Decimal("100")},
+        template_static_data={"Decimal": Decimal},
+        template_return={
+            "result": Decimal("0.00"),
+            "fee": Decimal("0.00"),
+            "tax": Decimal("0.00"),
+        },
+    )
 
     value = """
-name = 'Alex'
-nationality = 'Ukrainian'
+fee = value * Decimal("0.1")
+result = value - fee
     """
-    globs = var.give_python(value)
-    assert globs["name"] == "Alex"
-    assert globs["nationality"] == "Ukrainian"
+    assert var.give_python(value) == {
+        "fee": Decimal("10.0"),
+        "result": Decimal("90.0"),
+        "tax": Decimal("0.00"),
+    }
 
 
-def test_exec_one_key_no_call():
-    var = SimpleExecOneKeyNoCall(one_key_name="result")
+def test_exec_template_return_dict_no_args_call():
+    from decimal import Decimal
+
+    var = SimpleExecNoArgs(
+        template_args_default={"value": Decimal("100")},
+        template_static_data={"Decimal": Decimal},
+        template_return={
+            "result": Decimal("0.00"),
+            "fee": Decimal("0.00"),
+            "tax": Decimal("0.00"),
+        },
+    )
 
     value = """
-result="Name"
-"""
+fee = value * Decimal("0.1")
+result = value - fee
+    """
+    assert var.give_python(value, "call")(Decimal("20")) == {
+        "result": Decimal("18.0"),
+        "fee": Decimal("2.0"),
+        "tax": Decimal("0.00"),
+    }
 
-    assert var.give_python(value) == "Name"
+
+def test_exec_no_compile_return_dict_no_args():
+    from decimal import Decimal
+
+    var = SimpleExecNoCompile(
+        template_static_data={"Decimal": Decimal},
+        template_return={
+            "result": Decimal("0.00"),
+            "fee": Decimal("0.00"),
+            "tax": Decimal("0.00"),
+        },
+    )
+
+    value = """
+value = Decimal("100")
+fee = value * Decimal("0.1")
+result = value - fee
+    """
+    assert var.give_python(value) == {
+        "fee": Decimal("10.0"),
+        "result": Decimal("90.0"),
+        "tax": Decimal("0.00"),
+    }

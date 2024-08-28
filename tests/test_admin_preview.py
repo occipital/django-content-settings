@@ -19,6 +19,9 @@ from content_settings.types.validators import (
     call_validator,
     gen_args_call_validator,
     gen_kwargs_call_validator,
+    PreviewValidator,
+    PreviewValidationError,
+    result_validator,
 )
 from content_settings.types.template import required, STATIC_INCLUDES
 from content_settings.types.mixins import MakeCallMixin, mix, AdminPreviewActionsMixin
@@ -50,8 +53,8 @@ with defaults(admin_preview_as=PREVIEW.HTML):
                 (
                     DjangoModelTemplate(
                         "<b>{{book.title}}</b><br><i>{{book.description}}</i>",
-                        model_queryset=Book.objects.all(),
-                        obj_name="book",
+                        template_model_queryset=Book.objects.all(),
+                        template_object_name="book",
                     ),
                     "<b>The Poplar</b><br><i>A book about poplar trees</i>",
                     init_books,
@@ -59,8 +62,8 @@ with defaults(admin_preview_as=PREVIEW.HTML):
                 (
                     DjangoModelTemplate(
                         "<b>{{book.title}}</b><br><i>{{book.description}}</i>",
-                        model_queryset=lambda: Book.objects.all().first(),
-                        obj_name="book",
+                        template_model_queryset=lambda: Book.objects.all().first(),
+                        template_object_name="book",
                     ),
                     "<b>The Poplar</b><br><i>A book about poplar trees</i>",
                     init_books,
@@ -68,7 +71,7 @@ with defaults(admin_preview_as=PREVIEW.HTML):
                 (
                     DjangoModelEval(
                         '{"name": object.title, "description": object.description}',
-                        model_queryset=Book.objects.all(),
+                        template_model_queryset=Book.objects.all(),
                     ),
                     "{'name': 'The Poplar', 'description': 'A book about poplar trees'}",
                     init_books,
@@ -375,6 +378,23 @@ with defaults(admin_preview_as=PREVIEW.TEXT):
 
 with defaults(admin_preview_as=PREVIEW.PYTHON):
 
+    def validate_arg_5_int(value):
+        preview_input = "5"
+        ret = value(5)
+        if not isinstance(ret, int):
+            raise PreviewValidationError(preview_input, "returned value should be int")
+        return PreviewValidator(preview_input, ret)
+
+    def validate_int_silently(value):
+        ret = value()
+        if not isinstance(ret, int):
+            raise PreviewValidationError("", "returned value should be int")
+
+    def validate_exception(value):
+        ret = value()
+        if not isinstance(ret, int):
+            raise ValueError("test")
+
     @pytest.mark.parametrize(
         "var,value,initial",
         adjust_params(
@@ -438,6 +458,70 @@ with defaults(admin_preview_as=PREVIEW.PYTHON):
                     ),
                     "<pre>>>> VAR(val=Decimal('2'))</pre>\n<pre>&lt;&lt;&lt; Decimal('0.6')</pre>\n<pre>>>> VAR(Decimal('0.5'))</pre>\n<pre>&lt;&lt;&lt; Decimal('2.4')</pre>",
                 ),
+                (
+                    SimpleEval(
+                        "f'1+{val}'",
+                        validators=(
+                            call_validator(),
+                            validate_arg_5_int,
+                        ),
+                        template_args_default={"val": 3},
+                    ),
+                    "<pre>>>> VAR()</pre>\n<pre>&lt;&lt;&lt; '1+3'</pre>\n<pre>>>> VAR(5)</pre>\nERROR!!! ['returned value should be int']",
+                ),
+                (
+                    SimpleEval(
+                        "f'1+{val}'",
+                        validators=(
+                            call_validator(),
+                            result_validator(
+                                lambda x: isinstance(x, int),
+                                "returned value should be int",
+                                5,
+                            ),
+                        ),
+                        template_args_default={"val": 3},
+                    ),
+                    "<pre>>>> VAR()</pre>\n<pre>&lt;&lt;&lt; '1+3'</pre>\n<pre>>>> VAR(5)</pre>\nERROR!!! ['returned value should be int']",
+                ),
+                (
+                    SimpleEval(
+                        "1+val",
+                        validators=(
+                            call_validator(),
+                            validate_int_silently,
+                        ),
+                        template_args_default={"val": 3},
+                    ),
+                    "<pre>>>> VAR()</pre>\n<pre>&lt;&lt;&lt; 4</pre>",
+                ),
+                (
+                    SimpleEval(
+                        "f'1+{val}'",
+                        validators=(
+                            call_validator(),
+                            validate_int_silently,
+                        ),
+                        template_args_default={"val": 3},
+                    ),
+                    "<pre>>>> VAR()</pre>\n<pre>&lt;&lt;&lt; '1+3'</pre>\n<pre>>>> VAR()</pre>\nERROR!!! ['returned value should be int']",
+                ),
+                (
+                    SimpleEval(
+                        "f'1+{val}'",
+                        validators=(validate_exception,),
+                        template_args_default={"val": 3},
+                    ),
+                    "<pre>>>> VAR()</pre>\n<pre>&lt;&lt;&lt; '1+3'</pre>\n<pre>>>> VAR(???)</pre>\nERROR!!! test",
+                ),
+                (
+                    SimpleEval(
+                        "1+val",
+                        validators=(validate_exception,),
+                        template_args_default={"val": 3},
+                    ),
+                    "<pre>>>> VAR()</pre>\n<pre>&lt;&lt;&lt; 4</pre>",
+                ),
             ]
         ),
     )
@@ -490,17 +574,3 @@ def test_preview_actions_menu_alert():
     assert var.get_full_admin_preview_value("Text", "VAR", action="1") == {
         "alert": "Let you know, you are good"
     }
-
-
-"""
-TODO:
-- python preview for list
-- python preview for typed list
-- preview for eval
-  - with no preview
-  - with one preview
-  - with two previews
-  - with error
-- json
-- csv
-"""

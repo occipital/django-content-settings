@@ -11,7 +11,6 @@ from content_settings.types.basic import (
     SimpleHTML,
     SimpleTextPreview,
 )
-from content_settings.types.mixins import mix, DictSuffixesMixin
 from content_settings.types.array import (
     SplitByFirstLine,
     split_validator_in,
@@ -264,7 +263,7 @@ def test_split_key_validator():
     assert err.value.message == "Wrong Name FF"
 
 
-class TruncText(DictSuffixesMixin, SimpleText):
+class TruncText(SimpleText):
     suffixes = {
         "trunc": lambda text, max_length=10: (
             (text[: max_length - 3] + "...") if len(text) > max_length else text
@@ -526,8 +525,8 @@ def test_split_with_django_template():
             "SUBJECT": SimpleTextPreview(),
             "BODY": DjangoModelTemplateHTML(
                 "",
-                model_queryset=Book.objects.all(),
-                obj_name="book",
+                template_model_queryset=Book.objects.all(),
+                template_object_name="book",
             ),
         },
         split_key_validator=split_validator_in(["BODY", "SUBJECT"]),
@@ -549,8 +548,8 @@ def test_split_with_django_template_full():
             "SUBJECT": SimpleTextPreview(),
             "BODY": DjangoModelTemplateHTML(
                 "",
-                model_queryset=Book.objects.all(),
-                obj_name="book",
+                template_model_queryset=Book.objects.all(),
+                template_object_name="book",
             ),
         },
         split_key_validator=split_validator_in(["BODY", "SUBJECT"]),
@@ -576,8 +575,8 @@ def test_split_with_django_template_subject():
             "SUBJECT": SimpleTextPreview(""),
             "BODY": DjangoModelTemplateHTML(
                 "",
-                model_queryset=Book.objects.all(),
-                obj_name="book",
+                template_model_queryset=Book.objects.all(),
+                template_object_name="book",
             ),
         },
         split_key_validator=split_validator_in(["BODY", "SUBJECT"]),
