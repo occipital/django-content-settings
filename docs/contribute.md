@@ -11,7 +11,7 @@
 
 ```
 pre-commit install
-poetry install
+make init
 make test
 
 ```
