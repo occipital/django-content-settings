@@ -90,7 +90,7 @@ $ make cs-test
 the open `http://localhost:8000/admin/` in your browser and you should see the django admin panel.
 
 the admin user is `admin` with password `1`.
-```
+
 
 # Whats next?
 

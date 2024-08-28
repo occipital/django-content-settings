@@ -5,11 +5,11 @@
 ### master
 
 * `DjangoTemplateNoArgsHTML` and change `DjangoTemplateHTML`
-* `ProcessorsMixin` and `GiveProcessorsMixin` new mixins
+* `ProcessorsMixin` and `GiveProcessorsMixin` new mixins. More in [types](types.md#mixins-source)
 * new doc about [template types](template_types.md)
 * `result_validator`
-* `PreviewValidator`, `PreviewValidationError`
-* `SimpleExecNoCompile`. More in [template types](template_types.md).
+* `PreviewValidator`, `PreviewValidationError`. More in [template types](template_types.md#custom-validator).
+* `SimpleExecNoCompile`. More in [template types](template_types.md#simpleexecnocompilesystemexec-staticdatamixin-simpletext).
 * refactoring of template attributes. They all have prefix template now. More in [template types](template_types.md).
 * `suffixes` attribute is a dict with function as value.
 * `template_bultins` attrubute as a replacement for `allow_import`. More in [template types](template_types.md).
