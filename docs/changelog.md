@@ -2,7 +2,7 @@
 
 # Changelog
 
-### master
+### 0.21 types.template refactoring
 
 * `DjangoTemplateNoArgsHTML` and change `DjangoTemplateHTML`
 * `ProcessorsMixin` and `GiveProcessorsMixin` new mixins. More in [types](types.md#mixins-source)
