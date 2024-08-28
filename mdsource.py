@@ -105,14 +105,15 @@ for dirname, dirs, files in os.walk(SOURCE_FOLDER):
         main_lines.append(mddoc)
 
 with open(os.path.join("docs", "source.md"), "w") as fh:
-    fh.write(
-        """
-[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
-
-"""
-    )
     fh.write("# Module List\n\n")
     fh.write("\n".join(module_list))
     fh.write("\n\n")
 
     fh.write("\n".join(main_lines))
+    fh.write(
+        """
+
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
+
+"""
+    )
