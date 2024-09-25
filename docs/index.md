@@ -4,6 +4,9 @@
 
 # Django Content Settings - the most advanced admin editable setting
 
+[![GitHub stars](https://img.shields.io/github/stars/occipital/django-content-settings?style=social)](https://github.com/occipital/django-content-settings/stargazers)
+
+
 The `django-content-settings` module is a versatile addition to the Django ecosystem, offering users the ability to easily create and manage editable variables directly from the Django admin panel. What sets this module apart is its ability to handle variables of any type without restricting their complexity. Thanks to an integrated caching system, these variables can be used efficiently in code, irrespective of their complexity.
 
 With `django-content-settings` allows you to store variables with specific functionality in your code, that can be validated and previed in your django admin panel. The validators, previewers and all of the logic is stored in the setting definition.
