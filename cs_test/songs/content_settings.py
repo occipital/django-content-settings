@@ -21,8 +21,6 @@ from content_settings.types.mixins import (
 from content_settings.types.array import (
     SimpleStringsList,
     TypedStringsList,
-    SplitByFirstLine,
-    split_validator_in,
 )
 from content_settings.types.markup import SimpleYAML, SimpleJSON
 from content_settings.types.each import EachMixin, Keys
@@ -79,20 +77,6 @@ ARTIST_LINE = DjangoModelTemplateHTML(
     "",
     template_model_queryset=Artist.objects.all(),
     template_object_name="artist",
-)
-
-EMAIL_INTRO_TEMPLATE = SplitByFirstLine(
-    "",
-    split_type={
-        "SUBJECT": SimpleTextPreview(""),
-        "BODY": DjangoModelTemplateHTML(
-            "",
-            template_model_queryset=Artist.objects.all(),
-            template_object_name="artist",
-        ),
-    },
-    split_key_validator=split_validator_in(["BODY", "SUBJECT"]),
-    split_default_key="BODY",
 )
 
 HTML_WITH_ACTIONS = mix(AdminPreviewActionsMixin, SimpleHTML)(

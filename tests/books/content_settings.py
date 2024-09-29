@@ -21,7 +21,6 @@ from content_settings.types.template import (
     DjangoTemplateNoArgs,
     SimpleEval,
 )
-from content_settings.types.array import SplitTranslation
 from content_settings import permissions
 from content_settings.defaults.context import defaults
 from content_settings.defaults.modifiers import add_tags
@@ -124,12 +123,6 @@ AUTHOR = SimpleStringWithAdminHead(
     "Alexandr Lyabah",
     constant=True,
     fetch_permission=permissions.any,
-)
-
-COMPANY_DESCRIPTION = SplitTranslation(
-    "The best Company",
-    fetch_permission=permissions.any,
-    help="The description of the company",
 )
 
 INTERESTING_TEXT = mix(AdminPreviewSuffixesMixin, SimpleText)(

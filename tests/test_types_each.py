@@ -15,7 +15,6 @@ from content_settings.types.mixins import mix
 from content_settings.types.markup import SimpleYAML
 from content_settings.types.basic import SimpleHTML
 from content_settings.types import required, optional
-from content_settings.types.array import SplitTranslation
 
 from tests import yaml_installed
 
@@ -147,36 +146,6 @@ def test_preview_admin_html():
             "VAR",
         )
         == "[<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Song'</pre></div>,<div class='subitem'><i>translation</i>: <b>Translation</b></div>}</div>]"
-    )
-
-
-@pytest.mark.skipif(not yaml_installed, reason="yaml is installed")
-def test_preview_admin_translation():
-    var = mix(EachMixin, SimpleYAML)(
-        "",
-        each=Item(
-            Keys(
-                name=SimpleString(optional, help="The name of the song"),
-                translation=SplitTranslation(
-                    optional, help="The translation of the song"
-                ),
-            )
-        ),
-        help="The yaml of the site",
-    )
-    assert (
-        var.get_admin_preview_value(
-            """
-- name: Song
-  translation: >
-    === EN ===\n
-    English Shong\n
-    === UA ===\n
-    Ukrainian Song\n                     
-""",
-            "VAR",
-        )
-        == "[<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Song'</pre></div>,<div class='subitem'><i>translation</i>: <div> <b>EN</b>  <a class=\"cs_set_params\" data-param-suffix=\"UA\">UA</a> </div><pre>English Shong</pre></div>}</div>]"
     )
 
 
