@@ -37,17 +37,6 @@ th.column-value {
 div.subitem {
     margin-left: 10px;
 }
-nav[aria-label=Breadcrumbs] {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-}
-nav[aria-label=Breadcrumbs] .breadcrumbs {
-    width: 100%;
-}
-nav[aria-label=Breadcrumbs] .breadcrumbs.breadcrumbs_help {
-    width: initial;
-}
 </style>
 {% endblock %}
 
@@ -58,6 +47,13 @@ nav[aria-label=Breadcrumbs] .breadcrumbs.breadcrumbs_help {
             {% trans "Import JSON" %}
         </a>
     </li>
+    {% if UI_DOC_URL %}
+    <li>
+        <a href="{{ UI_DOC_URL }}" class="viewsitelink">
+            {% trans "Help" %}
+        </a>
+    </li>
+    {% endif %}
 {% endblock %}
 
 {% block result_list %}
@@ -106,9 +102,7 @@ nav[aria-label=Breadcrumbs] .breadcrumbs.breadcrumbs_help {
 {% block breadcrumbs %}
 {{block.super}}
 
-{% if UI_DOC_URL %}
-<div class="breadcrumbs breadcrumbs_help"><a href="{{ UI_DOC_URL }}">{% translate 'Help' %}</a></div>
-{% endif %}
+
 {% endblock %}
 
 
