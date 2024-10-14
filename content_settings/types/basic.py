@@ -30,6 +30,8 @@ from content_settings.types.mixins import HTMLMixin
 from content_settings.defaults.context import update_defaults
 from content_settings.utils import call_base_str
 
+from .mixins import EmptyNoneMixin
+
 
 class SimpleString(BaseSetting):
     """
@@ -369,6 +371,9 @@ class SimpleString(BaseSetting):
         Validate the text value of the setting.
         In the validation you only need to make sure the value is possible to be converted into py object.
         """
+        if not value and not self.value_required:
+            return
+
         for validator in self.get_validators_raw():
             call_base_str(
                 validator, value, call_base="content_settings.types.validators"
@@ -524,7 +529,7 @@ class SimpleHTML(HTMLMixin, SimpleText):
     pass
 
 
-class URLString(SimpleString):
+class URLString(EmptyNoneMixin, SimpleString):
     """
     URL setting type.
     """
@@ -533,8 +538,11 @@ class URLString(SimpleString):
     widget: TCallableStr = "LongURLInput"
     help_format: str = "URL"
 
+    def json_view_value(self, value: Any, **kwargs) -> Any:
+        return "null" if value is None else f'"{value}"'
 
-class EmailString(SimpleString):
+
+class EmailString(EmptyNoneMixin, SimpleString):
     """
     Email setting type.
     """
@@ -544,7 +552,7 @@ class EmailString(SimpleString):
     help_format: str = "Email"
 
     def json_view_value(self, value: Any, **kwargs) -> Any:
-        return f'"{value}"'
+        return "null" if value is None else f'"{value}"'
 
 
 class SimpleInt(SimpleString):

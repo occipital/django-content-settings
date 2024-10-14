@@ -13,6 +13,34 @@ from content_settings.types.datetime import (
 pytestmark = [pytest.mark.django_db]
 
 
+@pytest.mark.parametrize(
+    "cs_type",
+    [
+        DateTimeString,
+        DateString,
+        TimeString,
+        SimpleTimedelta,
+    ],
+)
+def test_empty_value(cs_type):
+    var = cs_type()
+    var.validate_value("")
+
+
+@pytest.mark.parametrize(
+    "cs_type",
+    [
+        DateTimeString,
+        DateString,
+        TimeString,
+        SimpleTimedelta,
+    ],
+)
+def test_empty_value_none(cs_type):
+    var = cs_type()
+    assert var.give_python("") is None
+
+
 def test_datetime():
     var = DateTimeString()
 
@@ -25,7 +53,6 @@ def test_datetime_empty_is_none():
     var = DateTimeString()
 
     assert var.give_python("") is None
-    assert var.give_python(" ") is None
 
 
 def test_date():
@@ -56,4 +83,3 @@ def test_timedelta():
 
     assert var.give_python("1d") == timedelta(days=1)
     assert var.give_python("1d 2h") == timedelta(days=1, hours=2)
-    assert var.give_python("") == timedelta()

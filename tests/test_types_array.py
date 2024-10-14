@@ -14,8 +14,9 @@ pytestmark = [pytest.mark.django_db]
 def test_simple_list():
     var = SimpleStringsList()
 
-    assert var.give_python(
-        """
+    assert (
+        var.give_python(
+            """
         When I die, then bury me
         In my beloved Ukraine,
         My tomb upon a grave mound high
@@ -25,23 +26,26 @@ def test_simple_list():
         My eyes could see, my ears could hear
         The mighty river roar.
                          """
-    ) == [
-        "When I die, then bury me",
-        "In my beloved Ukraine,",
-        "My tomb upon a grave mound high",
-        "Amid the spreading plain,",
-        "So that the fields, the boundless steppes,",
-        "The Dnieper's plunging shore",
-        "My eyes could see, my ears could hear",
-        "The mighty river roar.",
-    ]
+        )
+        == [
+            "When I die, then bury me",
+            "In my beloved Ukraine,",
+            "My tomb upon a grave mound high",
+            "Amid the spreading plain,",
+            "So that the fields, the boundless steppes,",
+            "The Dnieper's plunging shore",
+            "My eyes could see, my ears could hear",
+            "The mighty river roar.",
+        ]
+    )
 
 
 def test_simple_list_comment():
     var = SimpleStringsList()
 
-    assert var.give_python(
-        """
+    assert (
+        var.give_python(
+            """
         When I die, then bury me
         # In my beloved Ukraine,
         # My tomb upon a grave mound high
@@ -51,13 +55,15 @@ def test_simple_list_comment():
         My eyes could see, my ears could hear
         The mighty river roar.
                          """
-    ) == [
-        "When I die, then bury me",
-        "So that the fields, the boundless steppes,",
-        "The Dnieper's plunging shore",
-        "My eyes could see, my ears could hear",
-        "The mighty river roar.",
-    ]
+        )
+        == [
+            "When I die, then bury me",
+            "So that the fields, the boundless steppes,",
+            "The Dnieper's plunging shore",
+            "My eyes could see, my ears could hear",
+            "The mighty river roar.",
+        ]
+    )
 
 
 def test_simple_list_window_new_line():
@@ -69,8 +75,9 @@ def test_simple_list_window_new_line():
 def test_simple_list_comment_starts_with():
     var = SimpleStringsList(comment_starts_with="//")
 
-    assert var.give_python(
-        """
+    assert (
+        var.give_python(
+            """
         When I die, then bury me
         In my beloved Ukraine,
 //        My tomb upon a grave mound high
@@ -80,15 +87,17 @@ def test_simple_list_comment_starts_with():
         My eyes could see, my ears could hear
         The mighty river roar.
                          """
-    ) == [
-        "When I die, then bury me",
-        "In my beloved Ukraine,",
-        "Amid the spreading plain,",
-        "So that the fields, the boundless steppes,",
-        "The Dnieper's plunging shore",
-        "My eyes could see, my ears could hear",
-        "The mighty river roar.",
-    ]
+        )
+        == [
+            "When I die, then bury me",
+            "In my beloved Ukraine,",
+            "Amid the spreading plain,",
+            "So that the fields, the boundless steppes,",
+            "The Dnieper's plunging shore",
+            "My eyes could see, my ears could hear",
+            "The mighty river roar.",
+        ]
+    )
 
 
 class SimpleIntsList(TypedStringsList):
@@ -140,3 +149,15 @@ def test_typed_list_validate():
         """
         )
     assert error.value.message == "item #4: Enter a whole number."
+
+
+@pytest.mark.parametrize("cs_type", [SimpleStringsList, SimpleIntsList])
+def test_empty_value(cs_type):
+    var = cs_type()
+    var.validate_value("")
+
+
+@pytest.mark.parametrize("cs_type", [SimpleStringsList, SimpleIntsList])
+def test_empty_value_list(cs_type):
+    var = cs_type()
+    assert var.give_python("") == []

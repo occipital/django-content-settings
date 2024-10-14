@@ -157,7 +157,7 @@ class TimeString(DateTimeString):
         )
 
 
-class SimpleTimedelta(SimpleString):
+class SimpleTimedelta(EmptyNoneMixin, SimpleString):
     """
     Converts into a timedelta object.
     """
@@ -181,4 +181,7 @@ class SimpleTimedelta(SimpleString):
         yield "</ul>"
 
     def to_python(self, value):
-        return timedelta_format(super().to_python(value))
+        py_value = super().to_python(value)
+        if py_value is None:
+            return None
+        return timedelta_format(py_value)

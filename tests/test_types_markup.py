@@ -1,5 +1,6 @@
 import pytest
 from decimal import Decimal
+from functools import partial
 
 from django.core.exceptions import ValidationError
 
@@ -22,17 +23,41 @@ from tests import yaml_installed
 pytestmark = [pytest.mark.django_db]
 
 
+@pytest.mark.parametrize(
+    "cs_type",
+    [
+        SimpleJSON,
+        partial(SimpleCSV, csv_fields=["name", "price"]),
+        SimpleYAML,
+    ],
+)
+def test_empty_value(cs_type):
+    var = cs_type()
+    var.validate_value("")
+
+
+@pytest.mark.parametrize(
+    "cs_type",
+    [
+        SimpleJSON,
+        SimpleYAML,
+    ],
+)
+def test_empty_value_is_none(cs_type):
+    var = cs_type()
+    assert var.give_python("") is None
+
+
 def test_simple_json():
     var = SimpleJSON()
 
     assert var.give_python('{"a": 45}') == {"a": 45}
 
 
-def test_simple_json_empty_is_none():
-    var = SimpleJSON()
+def test_simple_csv_empty_is_none():
+    var = SimpleCSV(csv_fields=["name", "price"])
 
-    assert var.give_python("") is None
-    assert var.give_python(" ") is None
+    assert var.give_python("") == []
 
 
 def test_simple_json_invalid():

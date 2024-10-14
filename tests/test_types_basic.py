@@ -11,6 +11,9 @@ from content_settings.types.basic import (
     SimpleDecimal,
     SimpleBool,
     EmailString,
+    URLString,
+    SimplePassword,
+    SimpleHTML,
 )
 from content_settings.types.mixins import (
     MinMaxValidationMixin,
@@ -25,6 +28,37 @@ from content_settings.caching import recalc_checksums
 
 
 pytestmark = [pytest.mark.django_db]
+
+
+@pytest.mark.parametrize(
+    "cs_type",
+    [
+        SimpleString,
+        SimpleText,
+        SimpleInt,
+        SimpleDecimal,
+        URLString,
+        SimplePassword,
+        SimpleHTML,
+    ],
+)
+def test_empty_value(cs_type):
+    var = cs_type()
+    var.validate_value("")
+
+
+@pytest.mark.parametrize(
+    "cs_type", [SimpleString, SimpleText, SimplePassword, SimpleHTML]
+)
+def test_empty_value_empty_string(cs_type):
+    var = cs_type()
+    assert var.give_python("") == ""
+
+
+@pytest.mark.parametrize("cs_type", [SimpleDecimal, SimpleInt, URLString, EmailString])
+def test_empty_value_none(cs_type):
+    var = cs_type()
+    assert var.give_python("") is None
 
 
 def test_simple_string():
@@ -145,12 +179,6 @@ def test_simple_decimal():
     assert var.give_python("123.45") == Decimal("123.45")
     assert var.give_python("-1.23") == Decimal("-1.23")
     assert var.give_python("0.0") == Decimal("0.0")
-
-
-def test_simple_empty_decimal():
-    var = SimpleDecimal()
-    var.validate_value("")
-    assert var.give_python("") == None
 
 
 def test_simple_empty_decimal_required():

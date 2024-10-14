@@ -114,14 +114,19 @@ class MinMaxValidationMixin:
 class EmptyNoneMixin:
     """
     Mixin for types that returns None if value is empty string.
+
+    Works only for `value_required=False`
     """
 
-    value_required = False
-
     def to_python(self, value):
-        if value.strip() == "":
+        if not value and not self.value_required:
             return None
         return super().to_python(value)
+
+    def validate_value(self, value: str):
+        if not value and not self.value_required:
+            return
+        super().validate_value(value)
 
 
 class HTMLMixin:
