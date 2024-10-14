@@ -30,6 +30,7 @@ from .settings import (
     CACHE_BACKEND,
     VALUES_ONLY_FROM_DB,
     USER_DEFINED_TYPES,
+    VALIDATE_DEFAULT_VALUE,
 )
 
 
@@ -327,6 +328,29 @@ def reset_all_values() -> None:
     for name, cs_type in ALL.items():
         try:
             cs_type.validate(get_py_value(name))
+        except Exception as e:
+            raise AssertionError(f"Error validating {name}: {e}")
+
+
+def validate_default_values():
+    """
+    validate default values for all of the registered settings.
+
+    Only is VALIDATE_DEFAULT_VALUE is True.
+    """
+
+    if not VALIDATE_DEFAULT_VALUE:
+        return
+
+    from .conf import ALL
+
+    for name, cs_type in ALL.items():
+        # if name == "FEE_COOF":
+        #     import ipdb; ipdb.set_trace()
+        if not isinstance(cs_type.default, str):
+            continue
+        try:
+            cs_type.validate_value(cs_type.default)
         except Exception as e:
             raise AssertionError(f"Error validating {name}: {e}")
 

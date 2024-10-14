@@ -129,6 +129,12 @@ if it is possible to import huey, the system checks updates for every `pre_execu
 
 The values for variables should only be taken from DB. In case of any value is missing in DB - it will raise AssertionError
 
+### `CONTENT_SETTINGS_VALIDATE_DEFAULT_VALUE`
+
+*default: `settings.DEFAULT`*
+
+With the app launch/reload validates not only DB values but also default values
+
 ### `CONTENT_SETTINGS_DEFAULTS`
 
 *default: [] (empty list)*

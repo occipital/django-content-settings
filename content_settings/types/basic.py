@@ -328,13 +328,17 @@ class SimpleString(BaseSetting):
         """
         Return the list of validators to apply to the setting python value.
         """
-        return tuple(self.validators) + tuple(self.get_field().default_validators)
+        return tuple(self.validators)
 
     def get_validators_raw(self) -> Tuple[Callable]:
         """
         Return the list of validators to apply to the setting text value.
         """
-        return tuple(self.validators_raw)
+        return (
+            tuple(self.validators_raw)
+            + tuple(self.get_field().default_validators)
+            + (("not_empty",) if self.value_required else ())
+        )
 
     def get_field(self) -> forms.Field:
         """
@@ -374,8 +378,6 @@ class SimpleString(BaseSetting):
         """
         Full validation of the setting text value.
         """
-        if self.value_required and not value:
-            raise ValidationError("This field is required")
         self.validate_raw_value(value)
         val = self.to_python(value)
         self.validate(val)

@@ -46,6 +46,8 @@ CACHE_SPLITER = get_setting("CACHE_SPLITER", "::")
 
 VALUES_ONLY_FROM_DB = get_setting("VALUES_ONLY_FROM_DB", False) and not settings.DEBUG
 
+VALIDATE_DEFAULT_VALUE = get_setting("VALIDATE_DEFAULT_VALUE", settings.DEBUG)
+
 DEFAULTS = get_setting("DEFAULTS", [])
 
 ADMIN_CHECKSUM_CHECK_BEFORE_SAVE = get_setting(

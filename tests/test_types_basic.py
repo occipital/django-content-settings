@@ -147,6 +147,19 @@ def test_simple_decimal():
     assert var.give_python("0.0") == Decimal("0.0")
 
 
+def test_simple_empty_decimal():
+    var = SimpleDecimal()
+    var.validate_value("")
+    assert var.give_python("") == None
+
+
+def test_simple_empty_decimal_required():
+    var = SimpleDecimal(value_required=True)
+    with pytest.raises(ValidationError) as error:
+        var.validate_value("")
+    assert error.value.message == "Value cannot be empty"
+
+
 def test_simple_decimal_validate():
     var = SimpleDecimal()
 

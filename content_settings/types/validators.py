@@ -6,6 +6,11 @@ from django.core.exceptions import ValidationError
 from pprint import pformat
 
 
+def not_empty(value: str):
+    if not value:
+        raise ValidationError("Value cannot be empty")
+
+
 class PreviewValidator:
     """
     return instance of the class from the validator to show the result of validation
