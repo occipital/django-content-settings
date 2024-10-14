@@ -2,6 +2,12 @@
 
 # Changelog
 
+### 0.23 Empty and Null
+
+* Make sure all types can work with empty values (when those are not required)
+* change verification order
+* new setting `CONTENT_SETTINGS_VALIDATE_DEFAULT_VALUE` - validates not only DB values but also default values
+
 ### 0.22 DCS Family
 
 * Move split by first line into a separate repo. [dcs-split-by-first-line](https://github.com/oduvan/dcs-split-by-first-line)
