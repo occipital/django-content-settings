@@ -57,7 +57,7 @@ ADMIN_CHECKSUM_CHECK_BEFORE_SAVE = get_setting(
 CHAIN_VALIDATE = get_setting("CHAIN_VALIDATE", True)
 
 UI_DOC_URL = get_setting(
-    "UI_DOC_URL", "https://django-content-settings.readthedocs.io/en/0.19/ui/"
+    "UI_DOC_URL", "https://django-content-settings.readthedocs.io/en/0.24/ui/"
 )
 
 CHECK_UPDATE_CELERY = get_setting("CHECK_UPDATE_CELERY", True)
