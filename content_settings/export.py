@@ -16,6 +16,7 @@ from .conf import (
     get_type_by_name,
     validate_all_with_context,
 )
+from .migrate import import_settings
 
 
 User = get_user_model()
@@ -216,13 +217,9 @@ def import_to(
                 **{k: v for k, v in value["full"].items() if k != "version"},
             )
     else:
-        for value in applied:
-            cs = ContentSetting.objects.filter(name=value["name"]).first()
-            if not cs:
-                cs = ContentSetting(name=value["name"])
-            for key, in_value in value["full"].items():
-                setattr(cs, key, in_value)
-            cs.save()
-
-            if user is not None:
-                HistoryContentSetting.update_last_record_for_name(value["name"], user)
+        import_settings(
+            {"settings": {value["name"]: value["full"] for value in applied}},
+            model_cs=ContentSetting,
+            model_cs_history=HistoryContentSetting,
+            user=user,
+        )

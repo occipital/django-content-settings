@@ -7,6 +7,7 @@
 - [export](#export)
 - [functools](#functools)
 - [middlewares](#middlewares)
+- [migrate](#migrate)
 - [models](#models)
 - [permissions](#permissions)
 - [signals](#signals)
@@ -328,17 +329,17 @@ context processor for the django templates that provides content_settings object
 
 Module for exporting, previewing and importing content settings from and to JSON
 
-### def export_to_format(content_settings: Iterable[ContentSetting])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/export.py#L33)</sup>
+### def export_to_format(content_settings: Iterable[ContentSetting])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/export.py#L34)</sup>
 
 Export content settings to JSON format
 
-### def preview_data(data: dict, user: Optional[User] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/export.py#L58)</sup>
+### def preview_data(data: dict, user: Optional[User] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/export.py#L59)</sup>
 
 Validate data and return three lists: errors, applied, skipped
 
 Those list are used for previewing import and applying import.
 
-### def applied_preview(name: str, value: dict, user: Optional[User] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/export.py#L78)</sup>
+### def applied_preview(name: str, value: dict, user: Optional[User] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/export.py#L79)</sup>
 
 the function returns applied element for previewing import.
 
@@ -346,11 +347,11 @@ if function returns None, the setting is not applied, added to skipped list inst
 
 if function raises an exception, the setting is not applied, added to errors list instead.
 
-### def applied_preview_user_defined_type(name: str, value: dict, user: Optional[User] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/export.py#L125)</sup>
+### def applied_preview_user_defined_type(name: str, value: dict, user: Optional[User] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/export.py#L126)</sup>
 
 `applied_preview` for user defined type.
 
-### def import_to(data: Dict, applied: List[Dict], preview: bool, user: Optional[User] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/export.py#L179)</sup>
+### def import_to(data: Dict, applied: List[Dict], preview: bool, user: Optional[User] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/export.py#L180)</sup>
 
 Import content settings from JSON data and previewed apply data. Arguments:
 - data: JSON data
@@ -392,6 +393,83 @@ Available middlewares for the content settings.
 the middleware required for previewing the content settings on the site.
 
 It checks content_settings.can_preview_on_site permission for the user and if the user has it, then the middleware will preview the content settings for the user.
+
+
+## migrate
+
+
+
+A set of functions that can be used inside migrations.
+
+### def RunImport(data: Union[str, dict], reverse_data: Optional[Union[str, dict]] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/migrate.py#L11)</sup>
+
+The function that can be used inside your migration file.
+
+Args:
+    data (Union[str, dict]): The data to import. Can be either a JSON string or a dictionary.
+    reverse_data (Optional[Union[str, dict]], optional): The data to use for reversing the migration. 
+        Can be either a JSON string or a dictionary. If None, the migration will not be reversible. Defaults to None.
+
+Returns:
+    migrations.RunPython: A RunPython operation that can be used in a migration file.
+
+Example:
+    In your migration file:
+
+    from content_settings.migrate import RunImport
+
+    class Migration(migrations.Migration):
+        dependencies = [
+            ('content_settings', '0004_userdefined_preview'),
+        ]
+
+        operations = [
+            RunImport({
+                "settings": {
+                    "AFTER_TITLE": {
+                        "value": "Best Settings Framework",
+                        "version": ""
+                    },
+                    "ARTIST_LINE": {
+                        "value": "",
+                        "version": ""
+                    },
+                    "DAYS_WITHOUT_FAIL": {
+                        "value": "5",
+                        "version": "
+                    },
+                    "WEE": {
+                        "value": "12",
+                        "tags": "",
+                        "help": "12",
+                        "version": "",
+                        "user_defined_type": "text"
+                    }
+                }
+            }),
+        ]
+
+Note:
+    This function is designed to be used within Django migration files. It handles the import of content settings,
+    creating or updating them as necessary. If reverse_data is provided, it also sets up the reverse operation
+    for the migration.
+
+### def import_settings(data: Dict[str, Any], model_cs: Type[models.Model], model_cs_history: Optional[Type[models.Model]] = None, user: Optional[User] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/migrate.py#L91)</sup>
+
+Import content settings from a dictionary.
+
+Args:
+    data (Dict[str, Any]): A dictionary containing the settings to import.
+    model_cs (Type[models.Model]): The ContentSetting model class.
+    model_cs_history (Optional[Type[models.Model]]): The ContentSettingHistory model class, if history tracking is enabled.
+    user (Optional[User]): The user performing the import, if applicable.
+
+Returns:
+    None
+
+This function iterates through the settings in the provided data dictionary,
+creating or updating ContentSetting objects as necessary. It also handles
+history tracking if a history model is provided.
 
 
 ## models

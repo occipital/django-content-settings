@@ -171,4 +171,43 @@ Yes.
 * You can use commands [content_settings_export](commands.md#content_settings_export) and [content_settings_import](commands.md#content_settings_import) to do export/import from command line or bash/shell script
 * You can use [content_settings.export](source.md#export) module to use it in your python code somehow.
 
+> **Can I do import within migration insted of UI or command?**
+
+you can do [`migrate.RunImport`](source.md#migrate). For example
+
+```python
+from django.db import migrations
+from content_settings.migrate import RunImport
+
+
+class Migration(migrations.Migration):
+    dependencies = [
+        ("songs", "0003_admin"),
+    ]
+
+    operations = [
+        RunImport({
+            "settings": {
+                "AFTER_TITLE": {
+                    "value": "Best Settings Framework",
+                    "version": ""
+                },
+                "ARTIST_LINE": {
+                    "value": "The Line",
+                    "version": ""
+                },
+                "DAYS_WITHOUT_FAIL": {
+                    "value": "8",
+                    "version": ""
+                },
+                "DJANGO_TEMPLATE": {
+                    "value": "Hi Man",
+                    "version": ""
+                }
+            }
+        })
+    ]
+
+```
+
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
