@@ -6,7 +6,7 @@ class StaticContentConfig(AppConfig):
     verbose_name = "Content Settings"
 
     def ready(self):
-        import content_settings.signals
+        import content_settings.receivers
         from content_settings.caching import reset_all_values
 
         reset_all_values()

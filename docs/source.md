@@ -10,7 +10,6 @@
 - [migrate](#migrate)
 - [models](#models)
 - [permissions](#permissions)
-- [signals](#signals)
 - [store](#store)
 - [tags](#tags)
 - [utils](#utils)
@@ -164,33 +163,33 @@ validate default values for all of the registered settings.
 
 Only is VALIDATE_DEFAULT_VALUE is True.
 
-### def reset_user_values(db: Dict[str, Any] = None, trigger_checksum: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L358)</sup>
+### def reset_user_values(db: Dict[str, Any] = None, trigger_checksum: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L356)</sup>
 
 reset the local thread with the values from the database for user defined types
 
 if trigger_checksum is not the same as the checksum in the local thread, the checksum in the cache backend will be updated
 
-### def reset_code_values(db: Dict[str, Any] = None, trigger_checksum: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L401)</sup>
+### def reset_code_values(db: Dict[str, Any] = None, trigger_checksum: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L399)</sup>
 
 reset the local thread with the values from the database for code settings
 
 if trigger_checksum is not the same as the checksum in the local thread, the checksum in the cache backend will be updated
 
-### def check_update()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L440)</sup>
+### def check_update()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L438)</sup>
 
 check if checksum in the cache backend is the same as the checksum in the local thread
 
 if not, the values from the database will be loaded
 
-### def recalc_checksums()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L462)</sup>
+### def recalc_checksums()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L460)</sup>
 
 recalculate the checksums in the cache backend
 
-### def recalc_user_checksums(db)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L472)</sup>
+### def recalc_user_checksums(db)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L470)</sup>
 
 recalculate the checksums in the cache backend for user defined types and saves them to the cache backend
 
-### def recalc_code_checksums(db: Dict[str, Any])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L496)</sup>
+### def recalc_code_checksums(db: Dict[str, Any])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L494)</sup>
 
 recalculate the checksums in the cache backend for code settings and saves them to the cache backend
 
@@ -401,13 +400,13 @@ It checks content_settings.can_preview_on_site permission for the user and if th
 
 A set of functions that can be used inside migrations.
 
-### def RunImport(data: Union[str, dict], reverse_data: Optional[Union[str, dict]] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/migrate.py#L11)</sup>
+### def RunImport(data: Union[str, dict], reverse_data: Optional[Union[str, dict]] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/migrate.py#L12)</sup>
 
 The function that can be used inside your migration file.
 
 Args:
     data (Union[str, dict]): The data to import. Can be either a JSON string or a dictionary.
-    reverse_data (Optional[Union[str, dict]], optional): The data to use for reversing the migration. 
+    reverse_data (Optional[Union[str, dict]], optional): The data to use for reversing the migration.
         Can be either a JSON string or a dictionary. If None, the migration will not be reversible. Defaults to None.
 
 Returns:
@@ -454,7 +453,7 @@ Note:
     creating or updating them as necessary. If reverse_data is provided, it also sets up the reverse operation
     for the migration.
 
-### def import_settings(data: Dict[str, Any], model_cs: Type[models.Model], model_cs_history: Optional[Type[models.Model]] = None, user: Optional[User] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/migrate.py#L91)</sup>
+### def import_settings(data: Dict[str, Any], model_cs: Type[models.Model], model_cs_history: Optional[Type[models.Model]] = None, user: Optional[User] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/migrate.py#L96)</sup>
 
 Import content settings from a dictionary.
 
@@ -571,21 +570,6 @@ Returns True if the user is active and a superuser.
 ### def has_perm(perm)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/permissions.py#L41)</sup>
 
 Returns a function that checks if the user has a specific permission.
-
-
-## signals
-
-
-
-the module is used for connecting signals to the content settings.
-
-### def do_update_stored_checksum()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/signals.py#L33)</sup>
-
-update the stored checksum of the settings.
-
-### def trigger_on_change(sender, instance, created)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/signals.py#L45)</sup>
-
-Trigger on_change and on_change_commited for the content setting
 
 
 ## store

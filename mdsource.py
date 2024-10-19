@@ -5,6 +5,7 @@ from pathlib import Path
 
 GITHUB_PREFIX = "https://github.com/occipital/django-content-settings/blob/master/"
 SOURCE_FOLDER = "content_settings"
+IGNORE_MODULES = ["receivers.py", "apps.py", "admin.py"]
 
 
 def split_path(path):
@@ -87,6 +88,8 @@ for dirname, dirs, files in os.walk(SOURCE_FOLDER):
 
     for name in sorted(files):
         if not name.endswith(".py"):
+            continue
+        if name in IGNORE_MODULES:
             continue
 
         mddoc = "".join(md_from_file(os.path.join(dirname, name)))

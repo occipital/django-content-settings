@@ -345,8 +345,6 @@ def validate_default_values():
     from .conf import ALL
 
     for name, cs_type in ALL.items():
-        # if name == "FEE_COOF":
-        #     import ipdb; ipdb.set_trace()
         if not isinstance(cs_type.default, str):
             continue
         try:

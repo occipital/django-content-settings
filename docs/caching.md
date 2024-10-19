@@ -33,4 +33,6 @@ For simple types `give` function simply returns a py object, but for moving comp
 * before the celery task (if the celery import is possible) `signals.check_update_for_celery`
 * before the huey task (if the huey import is possible) `signals.check_update_for_huey`
 
+See also [`content_setting.caching`](source.md#caching)
+
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
