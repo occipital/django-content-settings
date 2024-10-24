@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb:10.5
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: django_db
+      MYSQL_USER: django_user
+      MYSQL_PASSWORD: djangopassword
+    ports:
+      - "3306:3306"
+
+  web:
+    build: .
+    command: make cs-test
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DJANGO_SETTINGS_MODULE=cs_test.settings_maria
+
+volumes:
+  mariadb_data:

@@ -210,7 +210,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="usertagsetting",
             name="tag",
-            field=models.TextField(verbose_name="Tag"),
+            field=models.CharField(max_length=200, verbose_name="Tag"),
         ),
         migrations.AlterField(
             model_name="usertagsetting",

@@ -91,7 +91,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("name", models.CharField(max_length=200)),
-                ("tag", models.TextField()),
+                ("tag", models.CharField(max_length=200)),
                 (
                     "user",
                     models.ForeignKey(

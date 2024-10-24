@@ -214,7 +214,7 @@ class UserTagSetting(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("User")
     )
     name = models.CharField(max_length=200, verbose_name=_("Name"))
-    tag = models.TextField(verbose_name=_("Tag"))
+    tag = models.CharField(max_length=200, verbose_name=_("Tag"))
 
     class Meta:
         unique_together = (("user", "name", "tag"),)
