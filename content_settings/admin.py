@@ -163,7 +163,7 @@ class ContentSettingFormWithChainValidation(ContentSettingForm):
 
 
 class ContentSettingAdmin(admin.ModelAdmin):
-    list_display = ["name", "value", "setting_help", "setting_tags", "marks"]
+    list_display = ["name", "value", "setting_help_and_tags", "marks"]
     list_editable = [
         "value",
     ]
@@ -511,6 +511,13 @@ class ContentSettingAdmin(admin.ModelAdmin):
         return mark_safe(help + html_classes(obj.name))
 
     setting_help.short_description = _("Help")
+
+    def setting_help_and_tags(self, obj):
+        return mark_safe(
+            f"<div style='min-width: 300px;'>{self.setting_help(obj)}<br>{self.setting_tags(obj)}</div>"
+        )
+
+    setting_help_and_tags.short_description = _("Help")
 
     def setting_tags(self, obj):
         cs_type = get_type_by_name(obj.name)
