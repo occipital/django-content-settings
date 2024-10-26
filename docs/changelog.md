@@ -2,6 +2,15 @@
 
 # Changelog
 
+### 0.25 MySQL fix and UI
+
+* `UserTagSetting.tag` is now charfield, so it works correctly with MySQL
+* Django Admin UI updated, and more space dedicated to help text
+
+### 0.24 migrate
+
+* using migrate module you can add content settings change into migration
+
 ### 0.23 Empty and Null
 
 * Make sure all types can work with empty values (when those are not required)
