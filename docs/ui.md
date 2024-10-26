@@ -28,8 +28,7 @@ Here are the main elements of the list:
 
 ![The List of Settings, preview](img/ui/list_view_preview.png)
 
-* (3) **Column "Help"** - Information about the setting's purpose and format. Clicking on "..." at the end of the information shows system information about the setting.
-* (4) **Column "Tags"** - A list of tags associated with the setting. At the top panel, you can filter the list by choosing a tag (6).
+* (3) **Column "Help"** - Information about the setting's purpose and format. Clicking on "..." at the end of the information shows system information about the setting. (4) A list of tags associated with the setting. At the top panel, you can filter the list by choosing a tag (6).
 * (5) **Column "Marks"** - You can add a specific mark for the setting by clicking on any of the icons in the column. The chosen mark is visible only to you, and you should be able to filter by the mark in the future. *The list of available marks is customizable by the developer.*
 * (6) **Filter by tags** - You can filter the list of settings by clicking on a tag name in the filter. If you click on a tag "main," only settings with the "main" tag will be shown. You can cancel the filter by clicking "X" after the name of the chosen tag or add one more tag in the filter.
 
@@ -38,6 +37,7 @@ Here are the main elements of the list:
 * (7) **Search filter** - You can use this field to find a specific setting you need. The search phrase you enter is used to find a setting by name, help, or tag.
 * (8) **Add content setting** - You can add your own setting. If the button is not activated for you, the function is not enabled by the developer.
 * (8) **Import JSON** - You can import setting from a JSON file or from JSON text.
+* (8) **Help** - Link to this page.
 * (9) **Preview on site** - Allows you to see the changes on the site, but only for you. Make the changes, enable "Preview on site," and click "Save." More about this can be read further in the article.
 * (10) **Save** - The button you should click to apply all of the changes.
 
