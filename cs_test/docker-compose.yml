@@ -14,9 +14,11 @@ services:
       - "3306:3306"
 
   web:
-    build: .
+    build:
+      context: ..
+      dockerfile: cs_test/Dockerfile
     command: make cs-test
-    volumes:
+    volumes:  
       - .:/app
     ports:
       - "8000:8000"

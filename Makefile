@@ -37,10 +37,16 @@ publish:
 
 cs-test:
 	make cs-test-migrate
-	poetry run poetry run python cs_test/manage.py runserver
+	poetry run poetry run python cs_test/manage.py runserver 0.0.0.0:8000
 
 cs-test-migrate:
 	poetry run poetry run python cs_test/manage.py migrate
 
 cs-test-shell:
 	poetry run poetry run python cs_test/manage.py shell
+
+cs-test-docker-build:
+	docker compose -f cs_test/docker-compose.yml build
+
+cs-test-docker-up:
+	docker compose -f cs_test/docker-compose.yml up

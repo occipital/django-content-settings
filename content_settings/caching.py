@@ -1,7 +1,14 @@
 """
 the caching backend is working with local thread storage to store the checksum raw and py objects.
 
-django caching backend is used to store the checksum and validates if the checksum was changed.
+**Start App Workflow**
+
+* The start of content setting use is call `reset_all_values` that is triggered by `receivers.db_connection_done` (triggered by `connection_created` signal)
+* `get_cache_key` is a checksum of the current app. It holds a checksum of the current content settings configuration. It is calculated once and never changes. The calculated checksum is used as a key for cached backend. In that key the system stores checksum of the current raw values of the content settings.
+* *side note: the system monitors updates values of the checksum only in the app checksum key, which means only changes that made by the same content settings configuration will trigger the update.*
+* 
+
+*django caching backend is used to store the checksum and validates if the checksum was changed.*
 
 `DATA` is a local thread storage with the following attributes:
 
