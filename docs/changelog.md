@@ -2,6 +2,11 @@
 
 # Changelog
 
+### master
+
+* `cache_triggers` - module that adjusts 
+* setting value in code `content_settings.IS_OPEN = "-"`
+
 ### 0.25 MySQL fix and UI
 
 * `UserTagSetting.tag` is now charfield, so it works correctly with MySQL

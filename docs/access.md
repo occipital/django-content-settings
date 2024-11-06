@@ -148,4 +148,24 @@ all_main = content_settings.startswith__MAIN
 
 You can register your own prefix using the `conf.register_prefix` decorator. Read more about it in [article about Possible Extensions](extends.md).
 
+## Assign Values
+
+You can assign value right in the code (not only in Admin Panel)
+
+```python
+content_settings.IS_OPEN = "-"
+assert content_settings.IS_OPEN is False
+```
+
+This is not how CS was intended to use, so keep in mind:
+
+* assign value is always string (raw_value), but returned value has a type of the setting
+* the assigning process includes value validation process, so changing is not immidiate
+* by assigning the value updates the DB value as well as cache for trigger
+* for user defined values you can also define creation attributes that would be used in case type setting is not created
+
+```python
+content_settings.IS_OPEN = ("-", "bool")
+```
+
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)

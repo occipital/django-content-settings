@@ -53,6 +53,22 @@ def test_get_simple_text():
     assert resp.json()["TITLE"] == "New Title"
 
 
+def test_get_simple_text_after_reassign():
+    from content_settings.conf import content_settings
+
+    client = get_anonymous_client()
+
+    resp = client.get("/books/fetch/all/")
+    assert resp.status_code == 200
+    assert resp.json()["TITLE"] == "Book Store"
+
+    content_settings.TITLE = "New Title"
+
+    resp = client.get("/books/fetch/all/")
+    assert resp.status_code == 200
+    assert resp.json()["TITLE"] == "New Title"
+
+
 def test_fetch_group_single_value():
     client = get_anonymous_client()
     resp = client.get("/books/fetch/home/")

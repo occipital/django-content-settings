@@ -37,11 +37,17 @@ def get_form_checksum():
 
 
 def set_new_type(
-    name: str, user_defined_type: str, tags_set: Set[str], help: str = ""
+    name: str,
+    user_defined_type: str,
+    tags_set: Optional[Set[str]] = None,
+    help: str = "",
 ) -> Optional[BaseSetting]:
     """
     create a new user defined type and saves it to the local thread. The previous type is returned.
     """
+    if tags_set is None:
+        tags_set = set()
+
     from .conf import USER_DEFINED_TYPES_INSTANCE
 
     prev_cs_type = cs_type = DATA.ALL_USER_DEFINES.get(name)
@@ -84,6 +90,46 @@ def set_new_value(name: str, new_value: str, version: Optional[str] = None) -> s
         DATA.ALL_VALUES[name] = cs_type.to_python(new_value)
 
     return prev_value
+
+
+def set_new_db_value(name: str, value: str, *type_define) -> str:
+    """
+    set the new value for the setting in DB
+    """
+    from .models import ContentSetting
+    from .conf import get_str_tags
+
+    if type_define:
+        assert USER_DEFINED_TYPES, "User defined types are not enabled"
+
+    cs_type = get_type_by_name(name)
+    assert (
+        cs_type is not None or type_define
+    ), f"{name} is not defined in any content_settings.py file"
+    if not cs_type:
+        set_new_type(name, *type_define)
+        cs_type = get_type_by_name(name)
+
+    cs_type.validate_value(value)
+
+    try:
+        cs = ContentSetting.objects.get(name=name)
+    except ContentSetting.DoesNotExist:
+        ContentSetting.objects.create(
+            name=name,
+            value=value,
+            version=cs_type.version,
+            tags=get_str_tags(name, cs_type, value),
+            help=cs_type.get_help(),
+            user_defined_type=cs_type.user_defined_slug,
+        )
+    else:
+        assert cs.version == cs_type.version, "Version mismatch"
+
+        cs.value = value
+        cs.save()
+
+    return set_new_value(name, value, version=None)
 
 
 def delete_user_value(name: str) -> Optional[str]:

@@ -1,5 +1,7 @@
 import pytest
 
+from content_settings.types.basic import ValidationError
+
 from content_settings.conf import content_settings
 from content_settings.models import ContentSetting
 from content_settings.caching import reset_all_values, get_raw_value
@@ -44,3 +46,47 @@ def test_withtag():
 def test_get_raw_value():
     assert get_raw_value("TITLE") == "Book Store"
     assert get_raw_value("IS_OPEN") == "1"
+
+
+def test_assign_value():
+    content_settings.TITLE = "New Title"
+    assert content_settings.TITLE == "New Title"
+
+
+def test_assign_value_to_wrong_version():
+    from content_settings.models import ContentSetting
+
+    ContentSetting.objects.filter(name="TITLE").update(version="WRONG")
+    with pytest.raises(AssertionError):
+        content_settings.TITLE = "New Title"
+
+
+def test_assign_value_creates_new_setting():
+    from content_settings.models import ContentSetting
+
+    ContentSetting.objects.filter(name="TITLE").delete()
+
+    content_settings.TITLE = "New Title"
+
+    assert ContentSetting.objects.get(name="TITLE").value == "New Title"
+    assert content_settings.TITLE == "New Title"
+
+
+def test_assert_prefix_error():
+    with pytest.raises(AssertionError):
+        content_settings.startswith__TITLE = "1"
+
+
+def test_assert_suffix_error():
+    with pytest.raises(AssertionError):
+        content_settings.TITLE__suffix = "1"
+
+
+def test_assign_bool_value():
+    content_settings.IS_OPEN = "+"
+    assert content_settings.IS_OPEN is True
+
+
+def test_assign_non_valid_value():
+    with pytest.raises(ValidationError):
+        content_settings.IS_OPEN = "123"
