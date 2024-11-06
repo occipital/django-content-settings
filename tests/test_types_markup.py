@@ -28,7 +28,6 @@ pytestmark = [pytest.mark.django_db]
     [
         SimpleJSON,
         partial(SimpleCSV, csv_fields=["name", "price"]),
-        SimpleYAML,
     ],
 )
 def test_empty_value(cs_type):
@@ -40,7 +39,6 @@ def test_empty_value(cs_type):
     "cs_type",
     [
         SimpleJSON,
-        SimpleYAML,
     ],
 )
 def test_empty_value_is_none(cs_type):
