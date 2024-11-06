@@ -2,7 +2,7 @@
 
 # Changelog
 
-### master
+### 0.26 cache triggers and setting assign
 
 * `cache_triggers` - module that adjusts 
 * setting value in code `content_settings.IS_OPEN = "-"`
