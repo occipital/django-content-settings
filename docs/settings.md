@@ -8,35 +8,26 @@ The `content_settings.settings.py` module in the `django-content-settings` packa
 
 Detailed information about caching can be found in a [dedicated section](caching.md). The following are the settings related to caching:
 
-### `CONTENT_SETTINGS_CHECKSUM_KEY_PREFIX`
+### `CONTENT_SETTINGS_CACHE_TRIGGER`
 
-*default: `"CS_CHECKSUM_"`*
+Triggers class and configuration.
 
-Specifies the prefix used when storing checksums.
+Can be string as classname:
 
-### `CONTENT_SETTINGS_CHECKSUM_USER_KEY_PREFIX`
+```python
+CONTENT_SETTINGS_CACHE_TRIGGER = "content_settings.cache_triggers.VersionChecksum"
+```
 
-*default: `"CS_USER_CHECKSUM_"`*
+Can be a dict with backend key as classname and other keys are keys for init arguments:
 
-Specifies the prefix used when storing checksums for user defined settings.
+```python
+CONTENT_SETTINGS_CACHE_TRIGGER = {
+    "backend": "content_settings.cache_triggers.VersionChecksum",
+    "cache_timeout": 100000,
+}
+```
 
-### `CONTENT_SETTINGS_CACHE_BACKEND`
-
-*default: `"default"`*
-
-Defines the cache backend used for storing checksums.
-
-### `CONTENT_SETTINGS_CACHE_TIMEOUT`
-
-*default: `60 * 60 * 24`*
-
-Sets the timeout for cache keys. Defines how long (in seconds) the cache keys will be stored before expiration.
-
-### `CONTENT_SETTINGS_CACHE_SPLITER`
-
-*default: `"::"`*
-
-Specifies the string used to join values in caching. This value should not be used in the version value.
+other keys, except "backend" can be different from different backends. [Read more about this in caching section](caching.md)
 
 ## Admin Panel
 

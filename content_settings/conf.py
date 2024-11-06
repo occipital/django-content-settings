@@ -25,8 +25,7 @@ from .caching import (
     get_py_value,
     get_type_by_name,
     get_all_names,
-    get_checksum_from_local,
-    get_checksum_from_user_local,
+    get_form_checksum,
 )
 from .settings import USER_DEFINED_TYPES, TAGS, CHAIN_VALIDATE
 from .store import add_app_name, get_admin_head, add_admin_head, get_admin_raw_js
@@ -369,13 +368,13 @@ class _Settings:
         return cs_type is not None and cs_type.can_suffix(suffix)
 
     @property
-    def full_checksum(self):
+    def form_checksum(self):
         """
         the current checksum of the settings.
 
         used for validation of settings weren't changed over time.
         """
-        return get_checksum_from_local() + get_checksum_from_user_local()
+        return get_form_checksum()
 
     @cached_property
     def admin_head(self):

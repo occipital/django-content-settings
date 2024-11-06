@@ -405,7 +405,7 @@ def test_prevent_checksum_import(webtest_admin):
             ),
             "_applied": ["XARCHER_DEVIDER"],
             "_import": "Import",
-            "content_settings_full_checksum": "wrong",
+            "content_settings_form_checksum": "wrong",
         },
     )
 
@@ -425,7 +425,7 @@ def test_checksum_import(webtest_admin):
             ),
             "_applied": ["XARCHER_DEVIDER"],
             "_import": "Import",
-            "content_settings_full_checksum": content_settings.full_checksum,
+            "content_settings_form_checksum": content_settings.form_checksum,
         },
     )
 
@@ -454,7 +454,7 @@ def test_userdeined_applied(webtest_admin):
                     }
                 }
             ),
-            "content_settings_full_checksum": content_settings.full_checksum,
+            "content_settings_form_checksum": content_settings.form_checksum,
         },
     )
 
@@ -504,7 +504,7 @@ def test_userdeined_applied_update(webtest_admin):
                     }
                 }
             ),
-            "content_settings_full_checksum": content_settings.full_checksum,
+            "content_settings_form_checksum": content_settings.form_checksum,
         },
     )
 
@@ -549,7 +549,7 @@ def test_userdeined_skiped(webtest_admin):
                     }
                 }
             ),
-            "content_settings_full_checksum": content_settings.full_checksum,
+            "content_settings_form_checksum": content_settings.form_checksum,
         },
     )
 
@@ -587,7 +587,7 @@ def test_userdeined_applied_update_tags(webtest_admin):
                     }
                 }
             ),
-            "content_settings_full_checksum": content_settings.full_checksum,
+            "content_settings_form_checksum": content_settings.form_checksum,
         },
     )
 
@@ -637,7 +637,7 @@ def test_userdeined_skiped_tags(webtest_admin):
                     }
                 }
             ),
-            "content_settings_full_checksum": content_settings.full_checksum,
+            "content_settings_form_checksum": content_settings.form_checksum,
         },
     )
 
@@ -666,7 +666,7 @@ def test_userdeined_error_validated(webtest_admin):
                     }
                 }
             ),
-            "content_settings_full_checksum": content_settings.full_checksum,
+            "content_settings_form_checksum": content_settings.form_checksum,
         },
     )
 
@@ -700,7 +700,7 @@ def test_userdeined_error_wrong_type(webtest_admin):
                     }
                 }
             ),
-            "content_settings_full_checksum": content_settings.full_checksum,
+            "content_settings_form_checksum": content_settings.form_checksum,
         },
     )
 
@@ -730,7 +730,7 @@ def test_userdeined_error_invalid_format(webtest_admin):
                     }
                 }
             ),
-            "content_settings_full_checksum": content_settings.full_checksum,
+            "content_settings_form_checksum": content_settings.form_checksum,
         },
     )
 
@@ -761,7 +761,7 @@ def test_userdeined_error_invalid_format_int(webtest_admin):
                     }
                 }
             ),
-            "content_settings_full_checksum": content_settings.full_checksum,
+            "content_settings_form_checksum": content_settings.form_checksum,
         },
     )
 
@@ -792,7 +792,7 @@ def test_userdeined_error_invalid_version(webtest_admin):
                     }
                 }
             ),
-            "content_settings_full_checksum": content_settings.full_checksum,
+            "content_settings_form_checksum": content_settings.form_checksum,
         },
     )
 
@@ -829,7 +829,9 @@ def test_prevent_chain_import_with_userdefined(webtest_admin):
     assert b"Error validating XSHOT_CALCULATION" in resp.content
 
 
-@pytest.mark.skipif(testing_settings_min, reason="Only for non min testing settings")
+@pytest.mark.skipif(
+    not testing_settings_full, reason="Only for non min testing settings"
+)
 def test_prevent_chain_import_with_userdefined_updated(webtest_admin):
     ContentSetting.objects.create(
         name="GIG", value="0", tags="", help="", version="", user_defined_type="bool"

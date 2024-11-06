@@ -265,13 +265,6 @@ def test_assert_version_not_string():
         var = SimpleFormat("123", version=2)
 
 
-def test_assert_version_not_supported():
-    from content_settings.settings import CACHE_SPLITER
-
-    with pytest.raises(AssertionError):
-        var = SimpleFormat("123", version=f"2{CACHE_SPLITER}1")
-
-
 def test_email_validate_fail():
     var = EmailString()
     with pytest.raises(ValidationError) as error:

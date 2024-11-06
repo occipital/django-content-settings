@@ -12,7 +12,7 @@ def tests(session, django, pyyaml):
         return
     session.install(f"django=={django}")
     if pyyaml:
-        session.install("PyYAML==6.0.2")
+        session.install("PyYAML")
     if session.python == "3.12":
         session.install("setuptools")
     session.install("pytest~=7.4.3")

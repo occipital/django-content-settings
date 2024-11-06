@@ -38,11 +38,18 @@ USER_TAGS = get_setting(
     },
 )
 
-CACHE_BACKEND = get_setting("CACHE_BACKEND", "default")
-
-CACHE_TIMEOUT = get_setting("CACHE_TIMEOUT", 60 * 60 * 24)
-
-CACHE_SPLITER = get_setting("CACHE_SPLITER", "::")
+CACHE_TRIGGER = get_setting(
+    "CACHE_TRIGGER", "content_settings.cache_triggers.VersionChecksum"
+)
+if isinstance(CACHE_TRIGGER, str):
+    CACHE_TRIGGER = {
+        "backend": CACHE_TRIGGER,
+    }
+elif isinstance(CACHE_TRIGGER, dict) and "backend" not in CACHE_TRIGGER:
+    CACHE_TRIGGER = {
+        "backend": "content_settings.cache_triggers.VersionChecksum",
+        **CACHE_TRIGGER,
+    }
 
 VALUES_ONLY_FROM_DB = get_setting("VALUES_ONLY_FROM_DB", False) and not settings.DEBUG
 

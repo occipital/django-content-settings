@@ -335,11 +335,11 @@ class ContentSettingAdmin(admin.ModelAdmin):
 
         return extra_context
 
-    def full_checksum_valid(self, request):
+    def form_checksum_valid(self, request):
         if (
             ADMIN_CHECKSUM_CHECK_BEFORE_SAVE
-            and request.POST["content_settings_full_checksum"]
-            != content_settings.full_checksum
+            and request.POST["content_settings_form_checksum"]
+            != content_settings.form_checksum
         ):
             add_message(
                 request,
@@ -352,7 +352,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
         return True
 
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
-        if request.method == "POST" and not self.full_checksum_valid(request):
+        if request.method == "POST" and not self.form_checksum_valid(request):
             return HttpResponseRedirect(request.path)
         return super().changeform_view(
             request,
@@ -381,7 +381,7 @@ class ContentSettingAdmin(admin.ModelAdmin):
         return ContentSettingFormset
 
     def changelist_view(self, request, extra_context=None):
-        if request.method == "POST" and not self.full_checksum_valid(request):
+        if request.method == "POST" and not self.form_checksum_valid(request):
             return HttpResponseRedirect(request.path)
 
         def key_value_from_request():
@@ -893,10 +893,10 @@ class ContentSettingAdmin(admin.ModelAdmin):
         )
         if request.POST.get("_import"):
             if (
-                "content_settings_full_checksum" in request.POST
+                "content_settings_form_checksum" in request.POST
                 and ADMIN_CHECKSUM_CHECK_BEFORE_SAVE
-                and request.POST["content_settings_full_checksum"]
-                != content_settings.full_checksum
+                and request.POST["content_settings_form_checksum"]
+                != content_settings.form_checksum
             ):
                 return response_error(
                     _(

@@ -1,19 +1,8 @@
 """
 the caching backend is working with local thread storage to store the checksum raw and py objects.
 
-**Start App Workflow**
-
-* The start of content setting use is call `reset_all_values` that is triggered by `receivers.db_connection_done` (triggered by `connection_created` signal)
-* `get_cache_key` is a checksum of the current app. It holds a checksum of the current content settings configuration. It is calculated once and never changes. The calculated checksum is used as a key for cached backend. In that key the system stores checksum of the current raw values of the content settings.
-* *side note: the system monitors updates values of the checksum only in the app checksum key, which means only changes that made by the same content settings configuration will trigger the update.*
-* 
-
-*django caching backend is used to store the checksum and validates if the checksum was changed.*
-
 `DATA` is a local thread storage with the following attributes:
 
-* `ALL_VALUES_CHECKSUM: str` - the checksum of the all values
-* `ALL_VALUES_USER_CHECKSUM: str` - the checksum of the user defined values
 * `ALL_RAW_VALUES: Dict[str, str]` - the raw values (values from the database) of the all settings
 * `ALL_VALUES: Dict[str, Any]` - the python objects of the all settings
 * `ALL_USER_DEFINES: Dict[str, BaseSetting]` - key is the setting name, value is the user defined type (with tags and help text)
@@ -21,151 +10,30 @@ the caching backend is working with local thread storage to store the checksum r
 """
 
 from threading import local
-import hashlib
-from functools import lru_cache
 from typing import Any, Dict, Set, Optional, List
 
 from django.core.cache import caches
 from django.conf import settings
 
+from .utils import import_object
 from .types import BaseSetting
 from .settings import (
-    CHECKSUM_KEY_PREFIX,
-    CHECKSUM_USER_KEY_PREFIX,
-    CACHE_SPLITER,
-    CACHE_TIMEOUT,
-    CACHE_BACKEND,
     VALUES_ONLY_FROM_DB,
-    USER_DEFINED_TYPES,
     VALIDATE_DEFAULT_VALUE,
+    CACHE_TRIGGER,
+    USER_DEFINED_TYPES,
 )
 
+
+TRIGGER = import_object(CACHE_TRIGGER["backend"])(
+    **{k: v for k, v in CACHE_TRIGGER.items() if k != "backend"}
+)
 
 DATA = local()
 
 
-def get_cache() -> Any:
-    """
-    returns caching backend that used for caching checksum values
-    """
-    return caches[CACHE_BACKEND]
-
-
-@lru_cache(maxsize=None)
-def get_cache_key() -> str:
-    """
-    returns cache key for checksum values (one should not be changed over time)
-    """
-    from .conf import ALL
-
-    return calc_checksum({name: ALL[name].version for name in ALL.keys()})
-
-
-@lru_cache(maxsize=None)
-def get_user_cache_key() -> Optional[str]:
-    """
-    returns cache key for user defined types (one should not be changed over time) if user defined types are not used, returns None
-    """
-    if not USER_DEFINED_TYPES:
-        return None
-
-    from .conf import USER_DEFINED_TYPES_INITIAL
-
-    return calc_checksum({k: v.version for k, v in USER_DEFINED_TYPES_INITIAL.items()})
-
-
-def calc_checksum(values: Dict[str, Any]) -> str:
-    """
-    generate md5 hash for a dict with keys and values as strings
-    """
-    return hash_value(
-        CACHE_SPLITER.join(
-            f"{name}{CACHE_SPLITER}{values[name]}" for name in sorted(values.keys())
-        )
-    )
-
-
-def hash_value(value: str) -> str:
-    """
-    generate md5 hash for a string
-    """
-    return hashlib.md5(value.encode("utf-8")).hexdigest()
-
-
-def set_local_checksum() -> None:
-    """
-    calculate and set checksum in the local thread
-    """
-    from .conf import ALL
-
-    DATA.ALL_VALUES_CHECKSUM = calc_checksum(
-        {k: v for k, v in DATA.ALL_RAW_VALUES.items() if k in ALL}
-    )
-
-
-def set_local_user_checksum() -> None:
-    """
-    calculate and set checksum in the local thread for user defined types
-    """
-    from .conf import ALL
-
-    DATA.ALL_VALUES_USER_CHECKSUM = calc_checksum(
-        {k: v for k, v in DATA.ALL_RAW_VALUES.items() if k not in ALL}
-    )
-
-
-def push_user_checksum(value=None, key=None) -> None:
-    """
-    save to cache backend the checksum for user defined types
-    """
-    if key is None:
-        key = get_user_cache_key()
-
-    if value is None:
-        value = DATA.ALL_VALUES_USER_CHECKSUM
-
-    get_cache().set(CHECKSUM_USER_KEY_PREFIX + key, value, CACHE_TIMEOUT)
-
-
-def push_checksum(value=None, key=None) -> None:
-    """
-    save to cache backend the checksum
-    """
-    if key is None:
-        key = get_cache_key()
-
-    if value is None:
-        value = DATA.ALL_VALUES_CHECKSUM
-
-    get_cache().set(CHECKSUM_KEY_PREFIX + key, value, CACHE_TIMEOUT)
-
-
-def get_checksum_from_store() -> Optional[str]:
-    """
-    get the checksum from the cache backend
-    """
-    return get_cache().get(CHECKSUM_KEY_PREFIX + get_cache_key())
-
-
-def get_user_checksum_from_store() -> Optional[str]:
-    """
-    get the checksum from the cache backend for user defined types
-    """
-    return get_cache().get(CHECKSUM_USER_KEY_PREFIX + get_user_cache_key())
-
-
-def get_checksum_from_local() -> str:
-    """
-    get the checksum from the local thread
-    """
-    return DATA.ALL_VALUES_CHECKSUM
-
-
-def get_checksum_from_user_local() -> Optional[str]:
-    """
-    get the checksum from the local thread for user defined types
-    """
-    return DATA.ALL_VALUES_USER_CHECKSUM
+def get_form_checksum():
+    return TRIGGER.get_form_checksum()
 
 
 def set_new_type(
@@ -312,21 +180,22 @@ def reset_all_values() -> None:
     reset the local thread with the values from the database
     """
     if not is_populated():
-        DATA.ALL_VALUES: Dict[str, Any] = {}
-        DATA.ALL_RAW_VALUES: Dict[str, str] = {}
-        DATA.ALL_VALUES_CHECKSUM: str = ""
-        DATA.ALL_VALUES_USER_CHECKSUM: str = ""
-        DATA.ALL_USER_DEFINES: Dict[str, BaseSetting] = {}
-        DATA.POPULATED: bool = False
+        DATA.ALL_VALUES = {}
+        DATA.ALL_RAW_VALUES = {}
+        DATA.ALL_USER_DEFINES = {}
+        DATA.POPULATED = False
 
+    # test DB access
     try:
-        db = get_db_objects()
+        from .models import ContentSetting
+
+        ContentSetting.objects.all().first()
     except Exception:
         DATA.POPULATED = False
         return
-    if USER_DEFINED_TYPES:
-        reset_user_values(db)
-    reset_code_values(db)
+
+    reset_values()
+    TRIGGER.reset()
 
     DATA.POPULATED = True
 
@@ -360,9 +229,7 @@ def validate_default_values():
             raise AssertionError(f"Error validating {name}: {e}")
 
 
-def reset_user_values(
-    db: Dict[str, Any] = None, trigger_checksum: Optional[str] = None
-) -> None:
+def reset_user_values(db: Optional[Dict[str, Any]] = None) -> None:
     """
     reset the local thread with the values from the database for user defined types
 
@@ -397,15 +264,8 @@ def reset_user_values(
     for name in set(DATA.ALL_USER_DEFINES.keys()) - names:
         delete_user_value(name)
 
-    set_local_user_checksum()
 
-    if trigger_checksum != get_checksum_from_user_local():
-        push_user_checksum()
-
-
-def reset_code_values(
-    db: Dict[str, Any] = None, trigger_checksum: Optional[str] = None
-) -> None:
+def reset_values(db: Optional[Dict[str, Any]] = None) -> None:
     """
     reset the local thread with the values from the database for code settings
 
@@ -415,6 +275,9 @@ def reset_code_values(
 
     if db is None:
         db = get_db_objects()
+
+    # the first run (not raw values)
+    is_init = not bool(DATA.ALL_RAW_VALUES)
 
     for name, cs_type in ALL.items():
         if cs_type.constant:
@@ -431,15 +294,13 @@ def reset_code_values(
                 version=(None if settings.DEBUG else db[name].version),
             )
 
-        else:
-            if VALUES_ONLY_FROM_DB:
+        elif is_init:
+            if VALUES_ONLY_FROM_DB:  # todo: only if it is new
                 raise AssertionError(f"VALUES_ONLY_FROM_DB: {name} is not in DB")
             set_new_value(name, ALL[name].default, version=ALL[name].version)
 
-    set_local_checksum()
-
-    if trigger_checksum != get_checksum_from_local():
-        push_checksum()
+    if USER_DEFINED_TYPES:
+        reset_user_values(db)
 
 
 def check_update() -> None:
@@ -451,95 +312,15 @@ def check_update() -> None:
     if not is_populated():
         reset_all_values()
         return
-    store_checksum = get_checksum_from_store()
-    if store_checksum is not None and store_checksum != get_checksum_from_local():
-        reset_code_values(trigger_checksum=store_checksum)
 
-    if USER_DEFINED_TYPES:
-        store_user_checksum = get_user_checksum_from_store()
-        if (
-            store_user_checksum is not None
-            and store_user_checksum != get_checksum_from_user_local()
-        ):
-            reset_user_values(trigger_checksum=store_user_checksum)
+    if TRIGGER.check():
+        reset_values()
+
+        TRIGGER.after_update()
 
 
 def recalc_checksums():
     """
     recalculate the checksums in the cache backend
     """
-    db = get_db_objects()
-    recalc_code_checksums(db)
-    if USER_DEFINED_TYPES:
-        recalc_user_checksums(db)
-
-
-def recalc_user_checksums(db):
-    """
-    recalculate the checksums in the cache backend for user defined types and saves them to the cache backend
-    """
-    from .conf import USER_DEFINED_TYPES_INITIAL
-
-    values = {}
-    for name, cs in db.items():
-        if not cs.user_defined_type:
-            continue
-        if cs.user_defined_type not in USER_DEFINED_TYPES_INITIAL:
-            break
-        if cs.version == USER_DEFINED_TYPES_INITIAL[cs.user_defined_type].version:
-            values[name] = cs.user_defined_type + CACHE_SPLITER + db[name].value
-        elif name in DATA.ALL_RAW_VALUES:
-            values[name] = (
-                cs.user_defined_type + CACHE_SPLITER + DATA.ALL_RAW_VALUES[name]
-            )
-        else:
-            break
-    else:
-        push_user_checksum(calc_checksum(values))
-
-
-def recalc_code_checksums(db: Dict[str, Any]) -> None:
-    """
-    recalculate the checksums in the cache backend for code settings and saves them to the cache backend
-
-    it staves it two keys - one in the cache backend with the local checksum and one with the db checksum
-    """
-    from .conf import ALL
-
-    push_checksum(
-        calc_checksum({k: v.value for k, v in db.items()}),
-        calc_checksum({k: v.version for k, v in db.items()}),
-    )
-
-    db_versions = {}
-    db_values = {}
-
-    for name in set(ALL.keys()) | set(db.keys()):
-        if name not in ALL or ALL[name].constant:
-            continue
-
-        if name in db:
-            db_versions[name] = db[name].version
-            db_values[name] = db[name].value
-        else:
-            db_versions[name] = ALL[name].version
-            db_values[name] = ALL[name].default
-
-    db_version_key = calc_checksum(db_versions)
-    push_checksum(calc_checksum(db_values), db_version_key)
-
-    if db_version_key == get_cache_key() or not is_populated():
-        return
-
-    local_values = {}
-    for name in ALL.keys():
-        if name in db:
-            db_version = db[name].version
-            if db_version != ALL[name].version:
-                local_values[name] = DATA.ALL_RAW_VALUES[name]
-            else:
-                local_values[name] = db[name].value
-        else:
-            local_values[name] = ALL[name].default
-
-    push_checksum(calc_checksum(local_values))
+    TRIGGER.db_changed()

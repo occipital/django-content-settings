@@ -4,7 +4,6 @@ The most basic types for the content settings. SimpleString is used as the base 
 
 from __future__ import annotations
 
-from functools import cached_property
 from pprint import pformat
 from typing import Optional, Set, Tuple, Union, Any, Callable, Dict
 from collections.abc import Iterable
@@ -16,7 +15,6 @@ from django.contrib.auth.models import User
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.exceptions import ValidationError
 
-from content_settings.settings import CACHE_SPLITER
 from content_settings.types.lazy import LazyObject
 from content_settings.types import (
     PREVIEW,
@@ -127,9 +125,6 @@ class SimpleString(BaseSetting):
         self.init_assign_kwargs(updated_kwargs)
 
         assert isinstance(self.version, str), "Version should be str"
-        assert (
-            CACHE_SPLITER not in self.version
-        ), f"Version should not contain CACHE_SPLITER:{CACHE_SPLITER}"
         assert (
             self.get_admin_preview_as() in PREVIEW
         ), f"admin_preview_as should be one of {PREVIEW}"
