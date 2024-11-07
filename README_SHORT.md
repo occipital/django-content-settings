@@ -2,14 +2,17 @@
 
 The `django-content-settings` module is a versatile addition to the Django ecosystem, offering users the ability to easily create and manage editable variables directly from the Django admin panel. What sets this module apart is its ability to handle variables of any type without restricting their complexity. Thanks to an integrated caching system, these variables can be used efficiently in code, irrespective of their complexity.
 
+For the full documentation, please visit [here](https://django-content-settings.readthedocs.io/).
+
 ### Key Features
 
-1. **Type-Agnostic Variable Creation**: Users can create variables of any type, making the module highly adaptable to various needs.
-2. **Editability from Django Admin Panel**: Seamless integration with the Django admin panel allows for effortless editing of variables.
-3. **Flexible permission model**: Every setting can have its own permission rule for viewing, editing, fetching in API, and viewing changes history.
+1. **Type-Agnostic Variable Creation**: Users can create variables of any type, making the module highly adaptable to various needs. Read more about [basic types](https://django-content-settings.readthedocs.io/en/master/types/) and [template types](https://django-content-settings.readthedocs.io/en/master/template_types/).
+3. **Flexible permission model**: Every setting can have its own permission rule for viewing, editing, fetching in API, and viewing changes history. [Read more about available API](https://django-content-settings.readthedocs.io/en/master/api/)
 4. **Preview**: Preview the setting before applying and the option to preview the setting changes right on site.
-5. **Caching System**: Ensures high performance, negating the impact of variable complexity on code execution speed.
 6. **Export & Import**: Massively dump configuration into a file and massively load configuration from the file using UI or/and commands.
+2. **Editability from Django Admin Panel**: Seamless integration with the Django admin panel allows for effortless editing of variables. [See how Django Admin for content settings looks](https://django-content-settings.readthedocs.io/en/master/ui/)
+5. **Caching System**: Ensures high performance, negating the impact of variable complexity on code execution speed. [More about caching and speed optimization](https://django-content-settings.readthedocs.io/en/master/caching/)
+6. **Extensions**: The project has not only multiple [settings for configurations](https://django-content-settings.readthedocs.io/en/master/settings/) but also many [different extension points](https://django-content-settings.readthedocs.io/en/master/extends/).
 
 ### Additional Admin Panel Functionalities
 
@@ -19,7 +22,7 @@ The `django-content-settings` module is a versatile addition to the Django ecosy
 - **Permission System**: Control edit permissions for enhanced security and management.
 - **Tags Navigation**: Every setting has a set of tags, which allows you to organize flexible navigation even with 1000 settings in the system.
 
-For the full documentation, please visit [here](https://django-content-settings.readthedocs.io/).
+[Read about of of it here](https://django-content-settings.readthedocs.io/en/master/ui/)
 
 ### How does it look
 

@@ -33,13 +33,6 @@ With `django-content-settings` allows you to store variables with specific funct
 
 [Read about of of it here](ui.md)
 
-### API Integration
-
-The module comes with a built-in API system, enabling:
-
-- **Reading of Individual or Group Variables**: Allows for flexible data retrieval.
-- **Access Permissions**: Manage who can read the variables, ensuring data privacy and security.
-
 ### How does it work
 
 - **Setup**. [Here](first.md) you can get step-by-step instruction.
