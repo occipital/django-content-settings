@@ -20,6 +20,10 @@ For testing and checking front-end part of the project we have cs_test project/f
 
 After setting up the env you need `make cs-test-migrate` to create a db for the project, then you can `make cs-test` to start local runserver with content settings configured or `make cs-test-shell` to access to shell of the content settings.
 
+### Docker container to test different backends
+
+To test and adjusts MySQL backend we have docker compose file for current cs_test project. To built it use `make cs-test-docker-build` and `make cs-test-docker-up` to start. Feel free to adjust docker for your needs and tests.
+
 ## When you update documentation
 
 Creating good documentation is hard, and there is always room for making it better. I would really appreciate you help here, but don't forget a couple of things:
