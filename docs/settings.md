@@ -10,6 +10,8 @@ Detailed information about caching can be found in a [dedicated section](caching
 
 ### `CONTENT_SETTINGS_CACHE_TRIGGER`
 
+*default: "content_settings.cache_triggers.VersionChecksum"*
+
 Triggers class and configuration.
 
 Can be string as classname:
@@ -37,7 +39,7 @@ Additional functionalities related to the admin panel can be found in a [special
 
 Allows the addition of custom tags that users can assign to variables. This is a dict where the keys are tag names and the values are tuples. Each tuple contains two elements: the first element is the display representation when the tag is added, and the second is its display when it can be added.
 
-**Default Value**:
+*default:*
 
 ```python
 {
