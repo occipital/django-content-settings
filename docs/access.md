@@ -160,7 +160,7 @@ assert content_settings.IS_OPEN is False
 This is not how CS was intended to use, so keep in mind:
 
 * assign value is always string (raw_value), but returned value has a type of the setting
-* the assigning process includes value validation process, so changing is not immidiate
+* the assigning process includes value validation process, so changing takes time
 * by assigning the value updates the DB value as well as cache for trigger
 * for user defined values you can also define creation attributes that would be used in case type setting is not created
 

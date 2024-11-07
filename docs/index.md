@@ -15,12 +15,13 @@ With `django-content-settings` allows you to store variables with specific funct
 
 ### Key Features
 
-1. **Type-Agnostic Variable Creation**: Users can create variables of any type, making the module highly adaptable to various needs.
-2. **Editability from Django Admin Panel**: Seamless integration with the Django admin panel allows for effortless editing of variables.
-3. **Flexible permission model**: Every setting can have its own permission rule for viewing, editing, fetching in API, and viewing changes history.
+1. **Type-Agnostic Variable Creation**: Users can create variables of any type, making the module highly adaptable to various needs. Read more about [basic types](types.md) and [template types](template_types.md).
+3. **Flexible permission model**: Every setting can have its own permission rule for viewing, editing, fetching in API, and viewing changes history. [Read more about available API](api.md)
 4. **Preview**: Preview the setting before applying and the option to preview the setting changes right on site.
-5. **Caching System**: Ensures high performance, negating the impact of variable complexity on code execution speed.
 6. **Export & Import**: Massively dump configuration into a file and massively load configuration from the file using UI or/and commands.
+2. **Editability from Django Admin Panel**: Seamless integration with the Django admin panel allows for effortless editing of variables. [See how Django Admin for content settings looks](ui.md)
+5. **Caching System**: Ensures high performance, negating the impact of variable complexity on code execution speed. [More about caching and speed optimization](caching.md)
+6. **Extensions**: The project has not only multiple [settings for configurations](settings.md) but also many [different extension points](extends.md).
 
 ### Additional Admin Panel Functionalities
 
@@ -29,6 +30,8 @@ With `django-content-settings` allows you to store variables with specific funct
 - **Bulk Editing**: Facilitate the simultaneous editing of multiple variable types.
 - **Permission System**: Control edit permissions for enhanced security and management.
 - **Tags Navigation**: Every setting has a set of tags, which allows you to organize flexible navigation even with 1000 settings in the system.
+
+[Read about of of it here](ui.md)
 
 ### API Integration
 
@@ -84,6 +87,8 @@ In template:
 ```html
 <h2>{{CONTENT_SETTINGS.TITLE}}</h2>
 ```
+
+More about access settings [read here](access.md).
 
 ### Quick Look
 

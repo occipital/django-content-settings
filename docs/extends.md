@@ -82,3 +82,7 @@ The middleware is very simple, it checks if the user has a preview objects and p
 You might want to create and use your own middleware, and one of the reason for that might be use within [django-impersonate](https://pypi.org/project/django-impersonate/)
 
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
+
+## Cache Triggers
+
+Is [part](caching.md) of caching functionality. That allows you to configure how and when to update py objects. See also [`content_settings.cache_triggers`](source.md#cache_triggers)
