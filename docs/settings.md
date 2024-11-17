@@ -10,7 +10,7 @@ Detailed information about caching can be found in a [dedicated section](caching
 
 ### `CONTENT_SETTINGS_CACHE_TRIGGER`
 
-*default: "content_settings.cache_triggers.VersionChecksum"*
+*default: `"content_settings.cache_triggers.VersionChecksum"`*
 
 Triggers class and configuration.
 
@@ -52,25 +52,25 @@ In this default setting, users can tag variables as 'favorites' or 'marked' with
 
 ### `CONTENT_SETTINGS_ADMIN_CHECKSUM_CHECK_BEFORE_SAVE`
 
-*default: False*
+*default: `False`*
 
 make check of the current checksum before saving data in django admin. If the page is opened for too long, and someone change any settings between page is opened and submited - changes wouldn't be applied.
 
 ### `CONTENT_SETTINGS_CHAIN_VALIDATE`
 
-*default: True*
+*default: `True`*
 
 the settings can be connected with each other through the template types or one setting is included into validation of another setting. With having a chain `CONTENT_SETTINGS_CHAIN_VALIDATE = True` the system validates all of the py values before applying a new value.
 
 ### `CONTENT_SETTINGS_UI_DOC_URL`
 
-*default: https://django-content-settings.readthedocs.io/en/0.19/ui/*
+*default: `"https://django-content-settings.readthedocs.io/en/0.19/ui/"`*
 
 Link to the help page of the UI of Django Content settings. The link is shown in Django Admin panel. If the value is `None` - the link woudn't be shown.
 
 ### `CONTENT_SETTINGS_USER_DEFINED_TYPES`
 
-*default: []*
+*default: `[]`*
 
 Empty list means that the user is not allowed to create own user defined settings. Read more about user defined types [here](uservar.md).
 
@@ -90,13 +90,13 @@ CONTENT_SETTINGS_USER_DEFINED_TYPES=[
 
 ### `CONTENT_SETTINGS_PREVIEW_ON_SITE_SHOW`
 
-*default: True*
+*default: `True`*
 
 Use preview on site functionality. In case of `False` value - preview on site middleware `content_settings.middlewares.preivew_on_site` will be ignored and preview on site checkboxes will be hiden.
 
 ### `CONTENT_SETTINGS_PREVIEW_ON_SITE_HREF`
 
-*default: /*
+*default: `"/"`*
 
 Preview on site panel has a link "View On Site". The setting contains href attribute for that link.
 
@@ -104,13 +104,13 @@ Preview on site panel has a link "View On Site". The setting contains href attri
 
 ### `CONTENT_SETTINGS_CHECK_UPDATE_CELERY`
 
-*default: True*
+*default: `True`*
 
 if it is possible to import celery, the system checks updates for every `task_prerun`
 
 ### `CONTENT_SETTINGS_CHECK_UPDATE_HUEY`
 
-*default: True*
+*default: `True`*
 
 if it is possible to import huey, the system checks updates for every `pre_execute`
 
@@ -118,7 +118,7 @@ if it is possible to import huey, the system checks updates for every `pre_execu
 
 ### `CONTENT_SETTINGS_VALUES_ONLY_FROM_DB`
 
-*default: False*
+*default: `False`*
 
 The values for variables should only be taken from DB. In case of any value is missing in DB - it will raise AssertionError
 
@@ -130,7 +130,7 @@ With the app launch/reload validates not only DB values but also default values
 
 ### `CONTENT_SETTINGS_DEFAULTS`
 
-*default: [] (empty list)*
+*default: `[]`*
 
 defines a global defauls contexts for specific types.
 
@@ -158,7 +158,7 @@ CONTENT_SETTINGS_DEFAULTS = [
 
 ### `CONTENT_SETTINGS_TAGS`
 
-*default: [] (empty list)*
+*default: `[]`*
 
 Allows you to add automatically generated tags to all of your settings. It is a list of functions (or import line to the function)
 
@@ -171,7 +171,7 @@ Available built in types:
 
 ### `CONTENT_SETTINGS_UPDATE_DB_VALUES_BY_MIGRATE`
 
-*default: True*
+*default: `True`*
 
 Sync settings configurations (new version, new setting) after migrations is done. You can turn this function off and use command `content_settings_migrate` (see [commands](commands.md#content_settings_migrate))
 
