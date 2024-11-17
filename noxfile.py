@@ -1,11 +1,11 @@
 import nox
 
 
-@nox.session(python=["3.8", "3.9", "3.10", "3.11", "3.12"])
-@nox.parametrize("django", ["3.2", "4.2", "5.0"])
+@nox.session(python=["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"])
+@nox.parametrize("django", ["3.2", "4.2", "5.0", "5.1"])
 @nox.parametrize("pyyaml", [True, False])
 def tests(session, django, pyyaml):
-    if django == "5.0" and session.python in (
+    if django in ["5.0", "5.1"] and session.python in (
         "3.8",
         "3.9",
     ):
@@ -13,7 +13,7 @@ def tests(session, django, pyyaml):
     session.install(f"django=={django}")
     if pyyaml:
         session.install("PyYAML")
-    if session.python == "3.12":
+    if session.python in ["3.12", "3.13"]:
         session.install("setuptools")
     session.install("pytest~=7.4.3")
     session.install("pytest-mock~=3.12.0")
