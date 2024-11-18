@@ -1,6 +1,8 @@
-# defaults
+# Defaults
 
-The defaults context in Django content settings allows you to group settings with common parameters, reducing redundancy and making your code cleaner and more maintainable. This is particularly useful as the number of settings grows, allowing you to manage shared parameters efficiently.
+The defaults context in Django content settings allows you to group settings with common parameters, reducing redundancy and making your code cleaner and more maintainable. This is especially useful as the number of settings grows, enabling you to manage shared parameters efficiently.
+
+---
 
 ## Use Cases
 
@@ -8,7 +10,7 @@ The defaults context in Django content settings allows you to group settings wit
 
 When defining multiple settings with the same parameters, you can use the defaults context to avoid repetition.
 
-Example without using `defaults` context:
+#### Example Without Using `defaults` Context:
 
 ```python
 from content_settings.types.basic import SimpleString, SimpleBool
@@ -19,9 +21,9 @@ SITE_TAG_LINE = SimpleString("Super Songs", update_permission=superuser, tags=["
 SITE_DEV_MODE = SimpleBool("0", update_permission=superuser, tags=["caution"])
 ```
 
-Those are 3 settings, we don't want to allow anyone to edit, so we have to repeat the same parameters for each settings. Using defaults you can group the setting and set parameters for the group instead of the each setting.
+This example repeats parameters for each setting. Using `defaults`, you can group settings and assign shared parameters.
 
-The same example, but using context `defaults`
+#### Example Using the `defaults` Context:
 
 ```python
 from content_settings.types.basic import SimpleString, SimpleBool
@@ -34,9 +36,9 @@ with defaults(update_permission=superuser, tags=["caution"]):
     SITE_DEV_MODE = SimpleBool("0")
 ```
 
-Context `defaults` changes default parameters for the setting inside the context. So when you set the parameter in the setting - it always rewrites the default value.
+The `defaults` context changes default parameters for settings inside the block. If a parameter is explicitly set in a setting, it overrides the default value.
 
-For example, for `SITE_TAG_LINE` you want lower permissions
+#### Example Overriding Defaults:
 
 ```python
 from content_settings.types.basic import SimpleString, SimpleBool
@@ -49,11 +51,15 @@ with defaults(update_permission=superuser, tags=["caution"]):
     SITE_DEV_MODE = SimpleBool("0")
 ```
 
-# Nested defaults contexts
+In this example, `SITE_TAG_LINE` uses `update_permission=staff`, while other settings use `update_permission=superuser`.
 
-You can have context inside context, in that case defaults for internal context overwrites/updates values for external context.
+---
 
-The same example but using two level of context
+### Nested Defaults Contexts
+
+You can nest `defaults` contexts. Inner contexts override or update parameters from outer contexts.
+
+#### Example Using Nested Contexts:
 
 ```python
 from content_settings.types.basic import SimpleString, SimpleBool
@@ -68,15 +74,17 @@ with defaults(update_permission=superuser, tags=["caution"]):
         SITE_TAG_LINE = SimpleString("Super Songs")
 ```
 
-So `SITE_TAG_LINE` will take `update_permission=staff` from internal context and `tags=["caution"]` from external context.
+In this example, `SITE_TAG_LINE` uses `update_permission=staff` from the inner context and `tags=["caution"]` from the outer context.
 
-### Update parameters
+---
 
-The defaults context allows you to override and update default parameters for settings. This means you can add additional parameters, such as more tags or extra help text, on top of what is already defined.
+### Update Parameters
 
-For example you want to add tag `"caution"` to all of the settings inside the context. That means they can have own additional set of tags, and you want to add on top of what is set
+You can use defaults to add or update parameters, such as tags or help text, without overwriting existing ones.
 
-Example without `defaults` context:
+#### Example Adding Tags:
+
+Without `defaults`:
 
 ```python
 from content_settings.types.basic import SimpleString, SimpleBool
@@ -86,7 +94,7 @@ SITE_TAG_LINE = SimpleString("Super Songs", tags=["caution", "ui"])
 SITE_DEV_MODE = SimpleBool("0", tags=["caution", "dev"])
 ```
 
-in that case you should use specific modifier `unite_set_add`
+With `defaults`:
 
 ```python
 from content_settings.types.basic import SimpleString, SimpleBool
@@ -99,18 +107,9 @@ with defaults(unite_set_add(tags=["caution"])):
     SITE_DEV_MODE = SimpleBool("0", tags=["dev"])
 ```
 
-both examples will work the same. Context in the second example add tag `"caution"` to all of the settings inside the context
+---
 
-The context:
-
-```python
-from content_settings.defaults.context import defaults
-from content_settings.defaults.modifiers import unite_set_add
-
-with defaults(unite_set_add(tags=["caution"])):
-```
-
-can be simplified to:
+### Simplifying Defaults with Modifiers
 
 ```python
 from content_settings.defaults.context import defaults
@@ -120,18 +119,20 @@ with defaults(add_tags(["caution"])):
     ...
 ```
 
-or even:
+Or even more simply:
 
 ```python
 from content_settings.defaults.context import default_tags
 
-with default_tags(["caution"])):
+with default_tags(["caution"]):
     ...
 ```
 
-### Global Updates `CONTENT_SETTINGS_DEFAULTS`
+---
 
-Allows you to overwrite defaults globally. For example you want to use code highligh widget for all fields inherited from JSON.
+### Global Updates with `CONTENT_SETTINGS_DEFAULTS`
+
+You can overwrite defaults globally. For example, to apply a code highlight widget for all fields inherited from JSON:
 
 ```python
 from content_settings.defaults.modifiers import set_if_missing
@@ -142,13 +143,13 @@ CONTENT_SETTINGS_DEFAULTS = [
 ]
 ```
 
-or you want to set for all Python fields (which are all SimpleEval and SimpleExec) children
+For applying settings to all Python fields (e.g., `SimpleEval` and `SimpleExec`):
 
 ```python
 from content_settings.permissions import superuser
-from content_settings.functools import _or
 from content_settings.filters import full_name_exact
 from content_settings.defaults.modifiers import set_if_missing
+from content_settings.functools import _or
 
 CONTENT_SETTINGS_DEFAULTS = [
     (_or(
@@ -158,9 +159,13 @@ CONTENT_SETTINGS_DEFAULTS = [
 ]
 ```
 
+---
+
 ### Extend Yeses and Noes
 
-`defaults` context can take into considiration the default value of the type as well. Here is an example when you need to exted `yeses` for `basic.SimpleBool`
+The `defaults` context can modify default values like `yeses` for `SimpleBool`.
+
+#### Example Extending Yeses:
 
 ```python
 from content_settings.types.basic import SimpleBool
@@ -171,9 +176,7 @@ with defaults(unite_tuple_add(yeses=("tak",))):
     SITE_OPENED = SimpleBool("1")
 ```
 
-that allows you to use value "tak" as `True` for `SITE_OPENED`.
-
-Using `CONTENT_SETTINGS_DEFAULTS` you can update default `yeses` for all `SimpleBool` in your project
+Globally updating defaults for all `SimpleBool` settings:
 
 ```python
 from content_settings.filters import full_name_exact
@@ -184,22 +187,13 @@ CONTENT_SETTINGS_DEFAULTS = [
 ]
 ```
 
-Knowing that `yeses` attribute is only SimpleBool setting - you can make defaults for all variables
+---
 
-```python
-from content_settings.filters import any_name
-from content_settings.defaults.modifiers import unite_tuple_add
+### Defaults Collections
 
-CONTENT_SETTINGS_DEFAULTS = [
-    (any_name, unite_tuple_add(yeses=("tak",))),
-]
-```
+In the module [`content_settings.defaults.collections`](source.md#defaultscollections), you can find prebuilt functions for common use cases.
 
-### Defaults collections
-
-in the module [`content_settings.defaults.collections`](source.md#defaultscollections) we have functions that can be used as an element of `CONTENT_SETTINGS_DEFAULTS`
-
-For example, if you want to activate codemirror for all Python code text areas you can do the following:
+#### Example Activating CodeMirror for Python:
 
 ```python
 from content_settings.defaults.collections import codemirror_python
@@ -209,7 +203,7 @@ CONTENT_SETTINGS_DEFAULTS = [
 ]
 ```
 
-or, if you want to activate codemirrow for all supported types
+#### Example Activating CodeMirror for All Supported Types:
 
 ```python
 from content_settings.defaults.collections import codemirror_all
@@ -218,5 +212,7 @@ CONTENT_SETTINGS_DEFAULTS = [
     codemirror_all(),
 ]
 ```
+
+---
 
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)

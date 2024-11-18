@@ -2,17 +2,21 @@
 
 ## Installation and Initial Setup
 
+---
+
 ### Step 1: Install the Module
 
 To begin using `django-content-settings`, first install it using pip:
 
 ```bash
-pip install django-content-settings
+$ pip install django-content-settings
 ```
+
+---
 
 ### Step 2: Update `settings.py` in Your Django Project
 
-After installation, you need to add `content_settings` to the `INSTALLED_APPS` list in your Django project's `settings.py` file. The updated `INSTALLED_APPS` might look like this:
+Add `content_settings` to the `INSTALLED_APPS` list in your Django project’s `settings.py` file:
 
 ```python
 INSTALLED_APPS = (
@@ -28,9 +32,11 @@ INSTALLED_APPS = (
 )
 ```
 
+---
+
 ### Step 3: Configure Templates Context Processor
 
-For using variables in templates, add `content_settings.context_processors.content_settings` to the `context_processors` in the `TEMPLATES` configuration. Your `TEMPLATES` setting might look like this:
+To use settings in templates, add `content_settings.context_processors.content_settings` to the `context_processors` in your `TEMPLATES` configuration:
 
 ```python
 TEMPLATES = [
@@ -49,15 +55,17 @@ TEMPLATES = [
 ]
 ```
 
-Now, you can *use settings* in templates like this:
+Now you can access settings in templates like this:
 
 ```html
 <b>{{ CONTENT_SETTINGS.MY_VAR }}</b>
 ```
 
-### Step 4 (optional): Configure Preview on Site
+---
 
-Add preview on site middleware `"content_settings.middlewares.preivew_on_site"` to the `settings.py` to be able to see the changes live, before applying those for all users.
+### Step 4 (Optional): Configure Preview on Site
+
+To preview changes before applying them to all users, add the `"content_settings.middlewares.preview_on_site"` middleware to your `settings.py`:
 
 ```python
 MIDDLEWARE = [
@@ -66,23 +74,25 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "content_settings.middlewares.preivew_on_site", # <-- update (after AuthenticationMiddleware)
+    "content_settings.middlewares.preview_on_site", # <-- update
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 ```
 
-Now you can save settings in the preview object to see the effect online for one user. Check [the UI page](ui.md#preview-functionality) to understand how it looks.
+This enables saving settings in a preview object to see the effect online for a single user. Check the [UI page](ui.md#preview-functionality) for details.
 
-### Step 5 (optional): API Access Configuration
+---
 
-To access variables through the API, update `urls.py` with the following line:
+### Step 5 (Optional): API Access Configuration
+
+To access variables via API, update `urls.py`:
 
 ```python
 path("content-settings/", FetchAllSettingsView.as_view()),
 ```
 
-Your `urls.py` may look like this now:
+Your updated `urls.py` might look like this:
 
 ```python
 from django.urls import path, include
@@ -96,11 +106,13 @@ urlpatterns = [
 ]
 ```
 
-The example above shows all of the variables in one end-point, but you can create end-points with subset of settings. Read more about it in [the API page](api.md).
+This example exposes all variables at one endpoint. For more control, you can create endpoints for specific subsets of settings. Learn more in the [API page](api.md).
 
-### Stpe 6 (optional and experemental): Code highlight configuration
+---
 
-If you want to have code highlight for JSON/YAML/PY code using [Codemirror](https://codemirror.net/5/) - update setting.py
+### Step 6 (Optional and Experimental): Code Highlight Configuration
+
+To enable code highlighting for JSON, YAML, or Python code using [CodeMirror](https://codemirror.net/5/), update `settings.py`:
 
 ```python
 from content_settings.defaults.collections import codemirror_all
@@ -110,15 +122,19 @@ CONTENT_SETTINGS_DEFAULTS = [
 ]
 ```
 
-... and it is not the only extension you can do for your settings. Check [the Possible Extensions page](extends.md) to learn more about how you can extend functionality of content settings.
+For other extensions, check the [Possible Extensions page](extends.md).
 
-[The Settings page](settings.md) contains collection of all available settings you can add in `settings.py` of your project to configure Content Settings.
+For a complete list of available settings, visit the [Settings page](settings.md).
+
+---
 
 ## Creating Your First Variable
 
+---
+
 ### Step 1: Define the Variable
 
-Create a file named `content_settings.py` in any of your working apps, for example, `books/content_settings.py`. Add the following content:
+Create a file named `content_settings.py` in one of your apps (e.g., `books/content_settings.py`) and add:
 
 ```python
 from content_settings.types.basic import SimpleString
@@ -129,35 +145,45 @@ TITLE = SimpleString(
 )
 ```
 
+---
+
 ### Step 2: Run Migrations
 
-Execute migrations to add *default value* to the database, allowing you to edit it subsequently.
+Run migrations to add the default value to the database, enabling editing via the admin panel:
 
 ```bash
-python manage.py migrate
+$ python manage.py migrate
 ```
+
+---
 
 ### Understanding the Code
 
-- `TITLE`: *setting name* you will use in your code and admin panel.
-- `SimpleString`: *setting type*, in this case, a simple string.
-- `"Book Store"`: *setting default value*.
-- `"The title of the book store"`: A description displayed in the admin panel.
+- **`TITLE`**: The setting name, used in code and the admin panel.
+- **`SimpleString`**: The setting type (a simple string in this case).
+- **`"Book Store"`**: The setting’s default value.
+- **`"The title of the book store"`**: A description displayed in the admin panel.
+
+---
 
 ## Usage in Code and Templates
 
+---
+
 ### In Python Code
 
-To *use setting* in Python code, such as in views:
+Access settings in Python code like this:
 
 ```python
 from content_settings.conf import content_settings
 content_settings.TITLE
 ```
 
+---
+
 ### In Templates
 
-In Django templates, access it like this:
+Access settings in Django templates like this:
 
 ```html
 <head>
@@ -165,6 +191,8 @@ In Django templates, access it like this:
 </head>
 ```
 
-And that's it! You're now ready to use `django-content-settings` in your Django project, effectively managing editable variables through the admin panel and API.
+---
+
+And that's it! You're now ready to use `django-content-settings` to manage editable variables efficiently through the Django admin panel or API.
 
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)

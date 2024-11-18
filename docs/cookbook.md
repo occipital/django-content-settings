@@ -1,10 +1,12 @@
 # Cookbook
 
-Here we will try to cover some of the cases that might be useful in your projects
+This section covers practical use cases for the `django-content-settings` module that might be useful in your projects.
 
-### Grouping multiple settings by the same rule
+---
 
-So imagine you have a group of settings that have the same permission, and also you want to add a note to the helpline for those settings. You can set permissions and helpline for each seating separately, but you can also group them and assign those rules to the group.
+### Grouping Multiple Settings by the Same Rule
+
+Suppose you have a group of settings with the same permission and want to append a note to the help text for those settings. While you can configure each setting individually, grouping them simplifies the process.
 
 ```python
 from content_settings.types.basic import SimpleString
@@ -17,7 +19,7 @@ with defaults(help_suffix("Only superuser can change that"), update_permission=s
     SITE_KEYWORDS = SimpleString("books, store, popular", help="head keywords.")
 ```
 
-The above settigs lines can be replaced without `defaults` as:
+The above code can be replaced with individual configurations as follows:
 
 ```python
 # same imports
@@ -34,9 +36,11 @@ SITE_KEYWORDS = SimpleString(
 )
 ```
 
-### Setting as class attribute (lazy settings)
+---
 
-Imagine you have a `content_settings.py`
+### Setting as a Class Attribute (Lazy Settings)
+
+Consider the following `content_settings.py`:
 
 ```python
 from content_settings.types.basic import SimpleInt
@@ -44,10 +48,9 @@ from content_settings.types.basic import SimpleInt
 POSTS_PER_PAGE = SimpleInt(10, help="How many blog posts will be shown per page")
 ```
 
-If you create a view.py
+In a `views.py`:
 
 ```python
-
 from django.views.generic import ListView
 from blog.models import Post
 from content_settings.conf import content_settings
@@ -58,26 +61,23 @@ class PostListView(ListView):
     paginate_by = content_settings.POSTS_PER_PAGE
 ```
 
-That would work, until you update `POSTS_PER_PAGE` in django admin and found out that update does not work.
-What you should do instead is to set a lazy value to that attribute
-
+The above will work until you update `POSTS_PER_PAGE` in the Django admin, at which point the change won’t reflect. Instead, use a lazy value:
 
 ```python
 # same imports
 
 class PostListView(ListView):
     model = Post
-    paginate_by = content_settings.lazy__POSTS_PER_PAGE # <-- update
+    paginate_by = content_settings.lazy__POSTS_PER_PAGE  # <-- update
 ```
 
-_I know that you can simply overwrite `get_paginate_by` function, I've just use it to show an idea_
+---
 
+### How to Test Setting Changes
 
-### How to test setting change?
+Use `content_settings_context` from `content_settings.context_managers` to test setting changes.
 
-Use `content_settings_context` from `content_settings.context_managers`.
-
-You can use it as test decorator:
+#### As a Decorator:
 
 ```python
 @content_settings_context(TITLE="New Book Store")
@@ -85,7 +85,7 @@ def test_get_simple_text_updated():
     assert content_settings.TITLE == "New Book Store"
 ```
 
-or as context manager:
+#### As a Context Manager:
 
 ```python
 def test_get_simple_text_updated_twice():
@@ -97,9 +97,11 @@ def test_get_simple_text_updated_twice():
         assert content_settings.TITLE == "SUPER New Book Store"
 ```
 
-### I have an endless running command and I want to keep all of the settings updated within that script
+---
 
-In order to do so you need manually check updates inside of the endless loop. Use `check_update` function from `content_settings.caching` module for that.
+### Handling Endless Running Commands
+
+If you have an endless running command and want to keep settings updated, manually check updates inside the loop. Use `check_update` from `content_settings.caching`.
 
 ```python
 from django.core.management.base import BaseCommand
@@ -110,22 +112,22 @@ class Command(BaseCommand):
         while True:
             check_update()
 
-            # your stuff
+            # your logic
 ```
 
-### I want to have all of the celery tasks updated with a celery/huey/other task
+---
 
-It is done automatically.
+### Ensuring Celery/Huey Tasks Have Updated Settings
 
-### Changin variable should trigger a procedure, for example data sync.
+This is handled automatically.
 
-You can add `post_save` handled for `models.ContentSetting` and check which variable was changed.
+---
 
-The important thing to notice here is that `content_settings.VARIABLE` woudn't have a new value in that handler, as the new value appears in the system only after `caching.check_update()` - for django views it is in the beginnging of the next request.
+### Triggering a Procedure When a Variable Changes
 
-In order to get a new value you can have a couple use cases.
+To trigger an action, such as data synchronization, when a setting changes, add a `post_save` signal handler for `models.ContentSetting`.
 
-Case #1 - manually conver raw data into object.
+#### Case #1: Manually Convert Raw Data
 
 ```python
 from django.db.models.signals import post_save
@@ -135,13 +137,13 @@ from content_settings.models import ContentSetting
 @receiver(post_save, sender=ContentSetting)
 def process_variable_update(instance, created, **kwargs):
     if instance.name != 'VARIABLE':
-        continue
+        return
     val = content_settings.type__VARIABLE.give_python(instance.value)
 
     # process value
 ```
 
-Case #2 - use `content_settings_context` from `context_managers`. One was created to tests and it is used in admin-panel for preview variables which use other variables in change view, but you can use it in real code
+#### Case #2: Use `content_settings_context`
 
 ```python
 # same imports
@@ -150,7 +152,7 @@ from content_settings.context_managers import content_settings_context
 @receiver(post_save, sender=ContentSetting)
 def process_variable_update(instance, created, **kwargs):
     if instance.name != 'VARIABLE':
-        continue
+        return
 
     with content_settings_context(VARIABLE=instance.value):
         val = content_settings.VARIABLE
@@ -158,15 +160,19 @@ def process_variable_update(instance, created, **kwargs):
     # process value
 ```
 
-### What if I had a SimpleText variable, but after some project iterations, I realized I needed a template? Should I go back and change all of the variables from `VARNAME` to `VARNAME()`?
+---
 
-No, if your template has no input arguments you can use mixin `GiveCallMixin` or use NoArgs types such as `DjangoTemplateNoArgs` and `SimpleEvalNoArgs`.
+### Upgrading a Variable from SimpleText to Template
 
-If you have an oposite situation use `MakeCallMixin`
+If you previously used a `SimpleText` variable and later need a template, you don’t have to update all references from `VARNAME` to `VARNAME()`.
 
-### You want to use `DjangoModelTemplate`, but you can't import model to assign querie to `template_model_queryset`
+Use `GiveCallMixin` or `NoArgs` types such as `DjangoTemplateNoArgs` or `SimpleEvalNoArgs`. For the opposite scenario, use `MakeCallMixin`.
 
-Use `DjangoTemplate` (lower level) class with `gen_args_call_validator` in validators
+---
+
+### Using `DjangoModelTemplate` Without Directly Importing a Model
+
+If you cannot import a model to assign a query to `template_model_queryset`, use `DjangoTemplate` with `gen_args_call_validator`.
 
 ```python
 def getting_first_profile():

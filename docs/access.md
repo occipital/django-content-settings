@@ -1,8 +1,8 @@
-# Using Variables in your project
+# Using Variables in Your Project
 
 ## Introduction
 
-This article describes how to use settings created with the `django-content-settings` module in various contexts, such as code, templates, and API.
+This article describes how to use settings created with the `django-content-settings` module in various contexts, such as code, templates, and APIs.
 
 ## Creating a Variable
 
@@ -18,7 +18,7 @@ By default, if not altered in the admin panel, `MAX_PRICE` will return `Decimal(
 
 ## Access in Templates
 
-Using variables in templates is straightforward. If you've added `content_settings.context_processors.content_settings` to your `context_processors`, you can access `content_settings.conf.content_settings` using `{{CONTENT_SETTINGS}}`.
+Using variables in templates is straightforward. If you've added `content_settings.context_processors.content_settings` to your `context_processors`, you can access `content_settings.conf.content_settings` using `{{ CONTENT_SETTINGS }}`.
 
 ```html
 <b>Max Price:</b> {{ CONTENT_SETTINGS.MAX_PRICE }}
@@ -26,36 +26,36 @@ Using variables in templates is straightforward. If you've added `content_settin
 
 ## Access Through API
 
-The content setting app has built-in views you can use to provide access to your variables through the API.
+The content settings app provides built-in views for accessing your variables through APIs.
 
-Below you can find an example of how you can use it in your `urls.py`:
+Below is an example of how to use it in your `urls.py`:
 
 ```python
 from django.urls import path
 from content_settings.views import FetchSettingsView
 
 urlpatterns = [
- path("fetch/main/", FetchSettingsView.as_view(names=[
+    path("fetch/main/", FetchSettingsView.as_view(names=[
         "TITLE",
         "DESCRIPTION",
- ]), name="fetch_main"),
+    ]), name="fetch_main"),
 ]
 ```
 
-In such a way, you define API that provides access to two variables, TITLE and DESCRIPTION. Read more about APIs [here](api.md).
+This defines an API that provides access to two variables, `TITLE` and `DESCRIPTION`. [Read more about APIs here](api.md).
 
-The next step is to define permissions for the setting, in other words - who is allowed to read it. `fetch_permission` attribute is responsible for that:
+Next, define permissions for the setting (i.e., who is allowed to read it). Use the `fetch_permission` attribute:
 
 ```python
 from content_settings.types.basic import SimpleText
 
 DESCRIPTION = SimpleText(
     "The best book store in the world",
- fetch_permission="any", # <-- update
+    fetch_permission="any",  # <-- update
 )
 ```
 
-More about permissions, you can read [here](permissions.md).
+[Learn more about permissions here](permissions.md).
 
 ## Usage in Python Code
 
@@ -68,7 +68,7 @@ from decimal import Decimal
 from content_settings.conf import content_settings
 
 def update_price(request):
- new_price = Decimal(request.POST["price"])
+    new_price = Decimal(request.POST["price"])
     if new_price > content_settings.MAX_PRICE:
         raise ValueError("Price is too high")
     
@@ -77,7 +77,7 @@ def update_price(request):
 
 ## Prefix
 
-The `content_settings` object has a system of prefixes, which can be read as "function under the setting". Prefix is always lowercased with the following double-underscore `__`
+The `content_settings` object has a system of prefixes that allow you to apply specific functions to settings. A prefix is always lowercased and followed by a double underscore `__`.
 
 ```python
 content_settings.prefix_name__SETTINGS_NAME
@@ -85,46 +85,46 @@ content_settings.prefix_name__SETTINGS_NAME
 
 ### `type__` - Accessing Variable Type
 
-The most simple one to access the settings type object. For example:
+This prefix allows you to access the type object of a setting. For example:
 
 ```python
 content_settings.type__MAX_PRICE.help
 ```
 
-Returns the value of the help attribute of the setting.
+This returns the value of the `help` attribute of the setting.
 
-### `lazy__` - get a lazy/proxy object of the setting
+### `lazy__` - Get a Lazy/Proxy Object of the Setting
 
-In cases where a variable is used in class or function attributes, you should use a lazy object with a `lazy__` prefix:
+When a variable is used in class or function attributes, use a lazy object with the `lazy__` prefix:
 
 ```python
 from decimal import Decimal
 from content_settings.conf import content_settings
 
 def update_price(request, max_price=content_settings.lazy__MAX_PRICE):
- new_price = Decimal(request.POST["price"])
+    new_price = Decimal(request.POST["price"])
     if new_price > max_price:
         raise ValueError("Price is too high")
     
     # ...
 ```
 
-**Why is that?**
+**Why use `lazy__`?**
 
-Let's not use `lazy__` prefix and just use the variable as it is:
+Without the `lazy__` prefix:
 
 ```python
 def update_price(request, max_price=content_settings.MAX_PRICE):
- ...
+    ...
 ```
 
-everything would work as with lazy-prefix, until you decide to change value of the variable in Django Admin panel. In the example above (without lazy), the value of `max_price` will remain unchanged, which is bad and unexpected. In the lazy-prefix example the value would be changed together with changing variable in django admin.
+This works fine until you change the value of the variable in the Django Admin panel. Without `lazy__`, the value of `max_price` remains unchanged, which is unexpected. With `lazy__`, the value updates dynamically when the variable changes in the admin panel.
 
-Lazy-prefix returns not the value but the proxy object that returns the value every time you access it.
+The `lazy__` prefix returns a proxy object that fetches the value each time it's accessed.
 
-### `withtag__` - dict with all settings with the specific tag
+### `withtag__` - Dictionary of Settings with a Specific Tag
 
-*for this prefix, instead of SETTING_NAME use TAG_NAME*
+For this prefix, replace `SETTING_NAME` with `TAG_NAME`.
 
 Example:
 
@@ -132,40 +132,33 @@ Example:
 all_main = content_settings.withtag__MAIN
 ```
 
-`all_main` is a dict with setting name as a key and setting value as a value
+`all_main` is a dictionary where keys are setting names, and values are setting values.
 
-### `startswith__` - dict with all settings starts with specific value
+### `startswith__` - Dictionary of Settings Starting with a Specific Value
 
-*work in the same way as withtag-prefix*
+Works similarly to the `withtag__` prefix:
 
 ```python
 all_main = content_settings.startswith__MAIN
 ```
 
-`all_main` contains all of the settings with name starts with "MAIN" as a dict with setting name as a key and setting value as a value.
+`all_main` contains all settings whose names start with "MAIN" as a dictionary.
 
-### Own prefix
+### Custom Prefixes
 
-You can register your own prefix using the `conf.register_prefix` decorator. Read more about it in [article about Possible Extensions](extends.md).
+You can register your own prefix using the `conf.register_prefix` decorator. [Learn more in the article about Possible Extensions](extends.md).
 
 ## Assign Values
 
-You can assign value right in the code (not only in Admin Panel)
+You can assign values directly in the code (not just in the Admin Panel):
 
 ```python
 content_settings.IS_OPEN = "-"
 assert content_settings.IS_OPEN is False
 ```
 
-This is not how CS was intended to use, so keep in mind:
+**Note**:
 
-* assign value is always string (raw_value), but returned value has a type of the setting
-* the assigning process includes value validation process, so changing takes time
-* by assigning the value updates the DB value as well as cache for trigger
-* for user defined values you can also define creation attributes that would be used in case type setting is not created
-
-```python
-content_settings.IS_OPEN = ("-", "bool")
-```
-
-[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
+- Assigned values are always strings (`raw_value`), but the returned value matches the type of the setting.
+- The assignment process validates the value, which may take time.
+- Assigning a

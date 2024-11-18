@@ -15,7 +15,7 @@ from content_settings.types.basic import SimpleString
 
 TITLE = SimpleString(
     "Book Store",
- help="The title of the book store",
+    help="The title of the book store",
 )
 ```
 
@@ -39,9 +39,9 @@ Note: Validators are not used when converting text from the database to the vari
 
 - **update_permission**, **fetch_permission**, **view_permission** and **view_history_permission**: Access rights for the variable (detailed in a [separate article](permissions.md)).
 - **admin_preview_as** (default: PREVIEW.TEXT): when you change values in Django Admin text field, you see a preview of the converted object. This attribute shows how the preview will look like. It has the following options and all of them can be found in constants `content_settings.PREVIEW_*`:
-    - `PREVIEW.TEXT` - the value will be shown as plain text inside of the HTML element
-    - `PREVIEW.HTML` - the value will be shown as it is without escaping
-    - `PREVIEW.PYTHON` - the value will be shown as Python object using `pformat` from `pprint`
+  - `PREVIEW.TEXT` - the value will be shown as plain text inside of the HTML element
+  - `PREVIEW.HTML` - the value will be shown as it is without escaping
+  - `PREVIEW.PYTHON` - the value will be shown as Python object using `pformat` from `pprint`
 - **on_change** (default: empty tuple): list of functions to call when the setting is changed
 - **on_change_commited** (default: empty tuple): list of functions to call when the setting is changed and committed
 
@@ -54,7 +54,7 @@ Note: Validators are not used when converting text from the database to the vari
 - **EmailString**: A SimpleString that validates the input as an Email.
 - **SimpleInt**: A SimpleString that converts to an integer.
 - **SimpleDecimal**: A SimpleString that converts to a Decimal.
-- **SimpleBool**: A SimpleString that converts to a boolean. The set of available values for True and False you can change in tuples `yeses` (by default: `("yes", "true", "1", "+", "ok")`) and `noes` (by default: `("no", "not", "false", "0", "-", "")`) _case insensetive_
+- **SimpleBool**: A SimpleString that converts to a boolean. The set of available values for True and False you can change in tuples `yeses` (by default: `("yes", "true", "1", "+", "ok")`) and `noes` (by default: `("no", "not", "false", "0", "-", "")`) _case insensitive_
 
 ## List Types (`content_settings.types.array`) *([source](source.md#typesarray))*
 
@@ -78,11 +78,11 @@ from content_settings.types.array import TypedStringsList
 NUMBERS = TypedStringsList(line_type=SimpleInt())
 ```
 
-another way for `NUMBERS` definition:
+Another way for `NUMBERS` definition:
 
 ```python
 class IntList(TypedStringsList):
- line_type=SimpleInt()
+    line_type = SimpleInt()
 
 NUMBERS = IntList()
 ```
@@ -90,7 +90,7 @@ NUMBERS = IntList()
 ## Date and Time Types (`content_settings.types.datetime`) *([source](source.md#typesdatetime))*
 
 - **DateTimeString**: Converts a string to a datetime object.
-    - **input_formats**: List of accepted formats (default: Django's `DATETIME_INPUT_FORMATS`).
+  - **input_formats**: List of accepted formats (default: Django's `DATETIME_INPUT_FORMATS`).
 - **DateString**: Only converts to a date.
 - **TimeString**: Only converts to a time.
 - **SimpleTimedelta**: Converts a string like "1d 3h" to a timedelta object.
@@ -100,17 +100,17 @@ NUMBERS = IntList()
 - **SimpleYAML**: YAML text format to object (requires [pyyaml](https://pypi.org/project/PyYAML/) to be installed).
 - **SimpleJSON**: JSON text format to object.
 - **SimpleCSV**: CSV text format to object.
-    - **csv_dialect** (default: unix): read more about dialects in the [python doc](https://docs.python.org/3/library/csv.html#csv.Dialect)
-    - **csv_fields (required)** - a list of fieldnames, or dict name->type. The default value for types will be used. There is also an option to use `required` and `optional` for the default argument
-    - **csv_fields_list_type** (default: `SimpleString(optional)`) - what will be default type for csv_fields is list of columns
+  - **csv_dialect** (default: unix): Read more about dialects in the [Python documentation](https://docs.python.org/3/library/csv.html#csv.Dialect).
+  - **csv_fields** (required): A list of field names, or a dict name->type. The default value for types will be used. There is also an option to use `required` and `optional` for the default argument.
+  - **csv_fields_list_type** (default: `SimpleString(optional)`): Specifies the default type for CSV fields when the field list is not explicitly defined.
 
 ```python
 var = SimpleCSV(
- csv_fields={
-        "name": SimpleString(required), # required to be
-        "balance": SimpleDecimal("0"), # 0 by default
+    csv_fields={
+        "name": SimpleString(required), # required field
+        "balance": SimpleDecimal("0"), # default balance is 0
         "price": SimpleDecimal(optional), # price key does not exist in case of two columns row
- },
+    },
 )
 ```
 
@@ -130,10 +130,10 @@ MAX_PRICE = mix(PositiveValidationMixin, SimpleDecimal)("9.99", help="maximum al
 
 ### Available Mixins
 
-- **MinMaxValidationMixin** - adds a validator that the result value is bigger or/and lower. It adds attributes `min_value` and `max_value`
-- **EmptyNoneMixin** - set value to None it is an empty value
-- **PositiveValidationMixin** - shortcut to for `MinMaxValidationMixin` to make sure the value is positive
-- **ProcessorsMixin** - to post-process generated py-object value. It adds an additional attribute to your type `processors: Iterable[TCallableStr, ...] = ()`. Here is a small example that can make a truncate text using function [shorten function](https://docs.python.org/3/library/textwrap.html#textwrap.shorten)
+- **MinMaxValidationMixin** - Adds a validator that ensures the result value is greater or/and lower than the specified limits. It adds attributes `min_value` and `max_value`.
+- **EmptyNoneMixin** - Sets the value to None if it is empty.
+- **PositiveValidationMixin** - Shortcut for `MinMaxValidationMixin` to ensure the value is positive.
+- **ProcessorsMixin** - Used to post-process the generated Python object value. It adds an additional attribute to your type: `processors: Iterable[TCallableStr, ...] = ()`. Here is a small example that truncates text using the [shorten function](https://docs.python.org/3/library/textwrap.html#textwrap.shorten).
 
 ```python
 import textwrap
@@ -144,7 +144,7 @@ def shorten(value):
 SHORT_STR = mix(ProcessorsMixin, SimpleString)("This is string", processors=(shorten,))
 ```
 
-- **GiveProcessorsMixin** - to post-process setting value. The main difference with `ProcessorsMixin` - the value will be processed every time when you request the setting attribute. Additional attribute is `give_processors: Iterable[Union[TCallableStr, Tuple[Optional[str], TCallableStr]], ...] = ()`. In the same way as for `ProcessorsMixin.processors` you can add functions in the `give_processors`, but you can also add tuple with two arguments suffix as a string and function. Here are some of the examples:
+- **GiveProcessorsMixin** - Used to post-process the setting value. The main difference with `ProcessorsMixin` is that the value will be processed every time the setting attribute is requested. The additional attribute is `give_processors: Iterable[Union[TCallableStr, Tuple[Optional[str], TCallableStr]], ...] = ()`. Similar to `ProcessorsMixin.processors`, you can add functions to `give_processors`, or add tuples with two arguments: a suffix as a string and a function.
 
 ```python
 import textwrap
@@ -154,11 +154,12 @@ def shorten(value):
 
 SHORT_STR = mix(GiveProcessorsMixin, SimpleString)("This is string", give_processors=(shorten,))
 
-# is the same as 
+# is the same as
 SHORT_STR = mix(GiveProcessorsMixin, SimpleString)("This is string", give_processors=((None, shorten),))
 
-# you can define suffix and define give processor for the suffix only
+# you can define suffix and define a give processor for that suffix only
 SHORT_STR = mix(GiveProcessorsMixin, SimpleString)("This is string", suffixes={"copy": lambda x: x}, give_processors=(("copy", shorten),))
 ```
 
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
+
