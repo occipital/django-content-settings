@@ -175,15 +175,13 @@ class VersionChecksum(BaseCacheTrigger):
         if value is None:
             value = DATA.ALL_VALUES_CHECKSUM
 
-        self.cache_backend.set(
-            self.key_prefix + self.cache_key, value, self.cache_timeout
-        )
+        self.cache_backend.set(self.cache_key, value, self.cache_timeout)
 
     def get_checksum_from_cache(self) -> Optional[str]:
         """
         get the checksum from the cache backend
         """
-        return self.cache_backend.get(self.key_prefix + self.cache_key)
+        return self.cache_backend.get(self.cache_key)
 
     def check(self):
         self.last_checksum_from_cache = self.get_checksum_from_cache()
