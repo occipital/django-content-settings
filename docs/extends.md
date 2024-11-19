@@ -1,64 +1,78 @@
 # Possible Extensions
 
-*the article is still in WIP*
+The aim of this article is to showcase the various ways you can extend the basic functionality of `django-content-settings`.
 
-The aim of the article is to show all of the ways how you can extend the basic content settings functionality.
+---
 
-## Create your own classes
+## Create Your Own Classes
 
-The most basic and the most common way to extend the functionality is to create your own class based on those that `content_settings.types` already have.
+The most basic and common way to extend functionality is by creating your own classes based on the ones in `content_settings.types`.
 
-Check how the other types are created, and check the extension points for [`content_settings.types.basic.SimpleString](source.md#class-simplestringbasesettingsource)
+- Check how other types are created.
+- Review the extension points for [`content_settings.types.basic.SimpleString`](source.md#class-simplestringbasesettingsource).
 
-## Generating tags
+---
 
-Using Django Setting [`CONTENT_SETTINGS_TAGS`](settings.md#content_settings_tags) you can use some of the builtin tags, such as `content_settings.tags.changed`, but also you can create your own function own function and for generating tags for your settings based of the content of the setting. Check the [source code](source.md#tags) of the tags already created.
+## Generating Tags
 
-## Redefine default attributes for all settings
+Using the Django setting [`CONTENT_SETTINGS_TAGS`](settings.md#content_settings_tags), you can leverage built-in tags, such as `content_settings.tags.changed`. 
 
-Using Django Setting [`CONTENT_SETTINGS_DEFAULTS`](settings.md#content_settings_defaults) you can change how the default values for all (or for some) settings will look like.
+Additionally, you can create custom functions to generate tags for your settings based on their content. For inspiration, review the [source code](source.md#tags) for existing tags.
 
-Check the [collections module](source.md#defaultscollections) - it includes defaults for codemirror support. The same kind of configuration you can do to support other code editors.
+---
 
-## Custom access rules
+## Redefine Default Attributes for All Settings
 
-Every setting has access rules you can define not only by assign specific functions to specific attributes (see [permissions](permissions.md)), but you can define your own function that defines access rule.
+Using the Django setting [`CONTENT_SETTINGS_DEFAULTS`](settings.md#content_settings_defaults), you can customize how default attributes are applied to all (or specific) settings.
 
-## Custom prefix for settings
+- Refer to the [collections module](source.md#defaultscollections), which includes defaults for CodeMirror support.
+- Similarly, configure defaults to support other code editors or UI components.
 
-Currently we have several builtin prefixes `withtag__`, `lazy__` and [so on](access.md#prefix), but you can register own prefix using `conf.register_prefix` decorator.
+---
 
-For example:
+## Custom Access Rules
+
+Access rules for settings can be defined by assigning specific functions to attributes. For more information, see [permissions](permissions.md).
+
+To go beyond predefined functions, you can create your own custom access rule functions to implement unique logic.
+
+---
+
+## Custom Prefix for Settings
+
+Several built-in prefixes, such as `withtag__` and `lazy__`, are available ([see full list here](access.md#prefix)). However, you can register your own prefixes using the `conf.register_prefix` decorator.
+
+#### Example:
 
 ```python
 from content_settings.conf import register_prefix
 from content_settings.caching import get_value
-
 
 @register_prefix("endswith")
 def endswith_prefix(name: str, suffix: str):
     return {
         k: get_value(k, suffix) for k in dir(content_settings) if k.endswith(name)
     }
-
 ```
 
-register a new prefix, so now, in code you can use it
+#### Usage:
 
 ```python
-
-for name, value in content_settngs.endswith__BETA:
+for name, value in content_settings.endswith__BETA:
     ...
 ```
 
-## Integration with task management system
+---
 
-There are a couple of built in integrations with task manager, such as celery and huey, the integration is very simple, so you can add your own your self.
+## Integration with Task Management Systems
 
-The example for celery (you can find it in [signals.py](https://github.com/occipital/django-content-settings/blob/master/content_settings/signals.py) in the end of the file):
+There are built-in integrations for task managers like Celery and Huey. These integrations are simple, and you can create your own.
+
+#### Example: Celery Integration
+
+This example ensures that all settings are updated before a task begins. It can be found in [signals.py](https://github.com/occipital/django-content-settings/blob/master/content_settings/signals.py):
 
 ```python
-
 try:
     from celery.signals import task_prerun
 except ImportError:
@@ -68,21 +82,34 @@ else:
     @task_prerun.connect
     def check_update_for_celery(*args, **kwargs):
         check_update()
-
 ```
 
-The idea of integration is to make sure before starting every task the system shcould make sure all of the settings are updated.
+The idea is to verify that all settings are up-to-date before starting a task.
 
-## Middleware for preview
+---
 
-If you want to use preview of your settings you need to add middleware `content_settings.middleware.preivew_on_site` in your project settings.
+## Middleware for Preview
 
-The middleware is very simple, it checks if the user has a preview objects and process the response under the new settings context. [Here](https://github.com/occipital/django-content-settings/blob/master/content_settings/middlewares.py) is the source of the middleware.
+To enable the preview functionality for settings, add the middleware `content_settings.middleware.preview_on_site` to your project’s settings.
 
-You might want to create and use your own middleware, and one of the reason for that might be use within [django-impersonate](https://pypi.org/project/django-impersonate/)
+The middleware:
+- Checks if the user has preview objects.
+- Processes the response under the updated settings context.
 
-[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
+You can review the middleware’s [source code here](https://github.com/occipital/django-content-settings/blob/master/content_settings/middlewares.py).
+
+### Custom Middleware
+
+You may create custom middleware for specialized use cases, such as integrating with [django-impersonate](https://pypi.org/project/django-impersonate/).
+
+---
 
 ## Cache Triggers
 
-Is [part](caching.md) of caching functionality. That allows you to configure how and when to update py objects. See also [`content_settings.cache_triggers`](source.md#cache_triggers)
+Cache triggers are part of the [caching functionality](caching.md). They allow you to configure when to update py objects related to settings.
+
+- See the source code for [`content_settings.cache_triggers`](source.md#cache_triggers) for more information.
+
+---
+
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)

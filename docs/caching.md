@@ -1,40 +1,58 @@
 # Caching
 
-Local thread contains py values for all of the settings in the system. Py value is a parsed raw value (one than in the DB).
+The local thread contains Py values for all settings in the system. A Py value is a parsed version of the raw value (stored in the database). 
 
-So every time when you use setting in code, you do not get raw value from the DB, parse it and return it. You already have a parsed value in the local thread.
+When you use a setting in your code, you do not fetch the raw value from the database, parse it, and then return it. Instead, a parsed value is already stored in the local thread, ensuring efficient access.
 
-And the cache trigger class is responsable for updating py values when those are updated in the DB.
+The cache trigger class is responsible for updating Py values when corresponding database values are updated. 
 
-The default trigger class is `content_settings.cache_triggers.VersionChecksum` (name is stored in [`CONTENT_SETTINGS_CACHE_TRIGGER`](settings.md#content_settings_cache_trigger)).
+The default trigger class is `content_settings.cache_triggers.VersionChecksum`, and its name is stored in [`CONTENT_SETTINGS_CACHE_TRIGGER`](settings.md#content_settings_cache_trigger).
 
-The way it works:
+### How It Works:
 
-* during the first run, the checksum is calculated for all the values from the DB and saved to the cache backend
-* the cache key is calculated based on the current versions of all of the settings.
-* if the DB values are changed it saves the new checksum under the same cache key (so only instances with the same configuration will see the change)
-* if the checksum is changed comparing to the checksum in the local storage
+1. During the first run, a checksum is calculated for all the values in the database and saved to the cache backend.
+2. A cache key is calculated based on the current versions of all settings.
+3. If database values are changed, a new checksum is saved under the same cache key. Only instances with the same configuration will notice the change.
+4. If the checksum differs from the one stored in the local cache, Py values are updated accordingly.
 
-See also [`content_settings.cache_triggers`](source.md#cache_triggers)
+See also [`content_settings.cache_triggers`](source.md#cache_triggers).
+
+---
 
 ## Raw to Py to Value
 
-A way from the value from DB (raw value) to the setting value (returned be `settings` attribute) consists of two stages:
+The journey from a database raw value to the setting's final returned value (`settings` attribute) consists of two stages:
 
-* creating a Py object from raw value - the process of receiving updated value also includes converting this value into a Py object.
-* function `give` of the type class is used for getting the attribute of the value by converting py object into the result of the attribute call.
+1. **Creating a Py Object from the Raw Value**:
+   - The process of retrieving an updated value includes converting the raw value into a Py object.
+   
+2. **Using the `give` Function**:
+   - The `give` function of the type class converts the Py object into the attribute's final value.
 
-For simple types `give` function simply returns a py object, but for moving complex types you can:
+### Behavior for Different Types:
+- **Simple Types**: 
+   - The `give` function directly returns the Py object.
+   
+- **Complex Types**:
+   - The `give` function can:
+     - Utilize the context in which the attribute is used.
+     - Apply suffixes of the attribute to modify the returned value.
 
-* use the context of where the attribute was used
-* use suffixes of the attribute
+---
 
-## Calls or when we check the checksum
+## When Is the Checksum Validated?
 
-* at the beginning of request `signals.check_update_for_request`
-* before the celery task (if the celery import is possible) `signals.check_update_for_celery`
-* before the huey task (if the huey import is possible) `signals.check_update_for_huey`
+The checksum is checked in the following scenarios:
 
-See also [`content_setting.caching`](source.md#caching)
+- **At the Beginning of a Request**:
+  - Triggered by `signals.check_update_for_request`.
+  
+- **Before a Celery Task (if Celery is available)**:
+  - Triggered by `signals.check_update_for_celery`.
+  
+- **Before a Huey Task (if Huey is available)**:
+  - Triggered by `signals.check_update_for_huey`.
+
+See also [`content_settings.caching`](source.md#caching).
 
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)

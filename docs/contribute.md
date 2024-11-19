@@ -1,41 +1,84 @@
-# How to contribute to the project
+# How to Contribute to the Project
 
-## What can I do
+## What Can I Do?
 
-* [List of opened tickets](https://github.com/occipital/django-content-settings/issues).
-* testing and writing tests. Increasing test coverage. `make test-cov`
+- Review the [List of Open Tickets](https://github.com/occipital/django-content-settings/issues) to find tasks or issues to work on.
+- Test the project and write tests to increase test coverage. Use the command `make test-cov` to check coverage.
 
-## How to setup env
+---
 
-```
+## How to Set Up the Environment
+
+Follow these steps to set up your development environment:
+
+```bash
 pre-commit install
 make init
 make test
-
 ```
 
-## How to setup cs_test project
+---
 
-For testing and checking front-end part of the project we have cs_test project/folder
+## How to Set Up the `cs_test` Project
 
-After setting up the env you need `make cs-test-migrate` to create a db for the project, then you can `make cs-test` to start local runserver with content settings configured or `make cs-test-shell` to access to shell of the content settings.
+The `cs_test` project/folder is used for testing and verifying the front-end portion of the project.
 
-### Docker container to test different backends
+1. After setting up the environment, run:
+   ```bash
+   make cs-test-migrate
+   ```
+   This creates a database for the project.
 
-To test and adjusts MySQL backend we have docker compose file for current cs_test project. To built it use `make cs-test-docker-build` and `make cs-test-docker-up` to start. Feel free to adjust docker for your needs and tests.
+2. To start a local runserver with content settings configured:
+   ```bash
+   make cs-test
+   ```
 
-## When you update documentation
+3. To access the content settings shell:
+   ```bash
+   make cs-test-shell
+   ```
 
-Creating good documentation is hard, and there is always room for making it better. I would really appreciate you help here, but don't forget a couple of things:
+---
 
-* make sure using terms from our [Glossary](glossary.md), as the system itself introduce a lot of new terms
-* when you update doc strings (documentation inside py-files), do `make mdsource` to collect it in [source.md](source.md)
+### Docker Container for Testing Different Backends
+
+To test and adjust the MySQL backend, a Docker Compose file is included for the current `cs_test` project.
+
+- Build the Docker container:
+  ```bash
+  make cs-test-docker-build
+  ```
+
+- Start the container:
+  ```bash
+  make cs-test-docker-up
+  ```
+
+Feel free to modify the Docker setup to suit your testing needs.
+
+---
+
+## When Updating Documentation
+
+Creating high-quality documentation is challenging, and improvements are always welcome! If you’re contributing to documentation, please keep the following in mind:
+
+- Use terms consistently from the [Glossary](glossary.md), as the system introduces many new concepts.
+- If you update docstrings (documentation inside Python files), run:
+  ```bash
+  make mdsource
+  ```
+  This collects the updated docstrings into [source.md](source.md).
+
+---
 
 ## Tests
 
-It is important not only creating test for new functionality or new code, but also improve tests for already written functionality. So it is good to have just new tests in a pull-request.
+It's essential to create tests for new functionality and improve tests for existing functionality. Submitting a pull request with additional tests is highly encouraged.
 
-For creating tests we use the following modules:
+### Testing Tools
+
+We use the following modules for testing:
 
 ```
 pytest = "^7.4.3"
@@ -46,15 +89,18 @@ pytest-cov = "^4.1.0"
 nox = "^2023.4.22"
 ```
 
-Some of the make-commands that we have already can make your testing process more confortable:
+### Testing Commands
 
-* `make test` just run all of the tests in current poetry env
-* `make test-full` run tests with extended settings
-* `make test-min` run tests with settings that limits functionality
-* `make test-cov` to check the corrent test covarage
-* `make test-cov-xml` generate test covarage in `cov.xml` which can me later used for seing places with no tests
-* `make test-nox` (will be long) - running tests under all supported python versions and Django versions
-* `make test-nox-oldest` - just run all of the tests under the oldes combination
+The following `make` commands can help streamline your testing process:
 
+- `make test`: Runs all tests in the current Poetry environment.
+- `make test-full`: Runs tests with extended settings.
+- `make test-min`: Runs tests with minimal settings to limit functionality.
+- `make test-cov`: Checks the current test coverage.
+- `make test-cov-xml`: Generates test coverage in `cov.xml`, which can help identify untested areas.
+- `make test-nox`: (Takes longer) Runs tests under all supported Python and Django versions.
+- `make test-nox-oldest`: Runs tests under the oldest supported combination of Python and Django versions.
+
+---
 
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)

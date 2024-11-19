@@ -1,38 +1,59 @@
 # Frequently Asked Questions
 
-a lot of cases have been covered in [Cookbook](cookbook.md), but here I just want to cover some of the questions I've been asked from the other users
+Many common use cases are covered in the [Cookbook](cookbook.md) and [Possible Extensions](extends.md), but here I want to address some frequently asked questions from other users.
 
-### Can I create variable in Django admin before one was created in content_settings.py?
+---
 
-Yes. Check [User Defined Variables](uservar.md)
+### Can I create a variable in the Django admin before it’s defined in `content_settings.py`?
 
-### Why are there two functions, give and to_python, when most of the time the first one just returns what it receives as input?
+Yes, you can. Check out the [User Defined Variables](uservar.md) section for more information.
 
-The function give is designed to adapt data specifically for use in the project's code, while to_python converts a string value into a Python object. The key difference between these two functions is that the conversion to a Python object occurs when there are changes in the string value or at the project's startup. In contrast, adaptation happens when this data is requested (from attribute or from ).
+---
 
-### Why it is still version 0?
+### Why are there two functions, `give` and `to_python`, when `give` often just returns its input?
 
-I'm still working on design of the module, the name of the types might be changes soon. Version 1 - will have a much more stable design.
+The `give` function is designed to adapt data specifically for use in the project’s code, whereas `to_python` converts a string value into a Python object.
 
-### Can I see the changes on site before applying those to all users
+The key difference:
+- **`to_python`**: Converts a string value to a Python object when the string value changes or at project startup.
+- **`give`**: Adapts the Python object for use in the project, and this happens whenever the data is requested (e.g., from an attribute or another source).
 
-Yes. You can use preview settings functionality, read more about it in [UI artitle](ui.md#preview-functionality)
+---
 
-### I need to change multiple variables at once to get a desirable effect. If I change variables one by one the user has a chance to see a half working project
+### Why is the version still 0?
 
-Yes, this can be done in multiple ways
+The module is still in active development. The design, including the naming conventions for types, may change. Version 1.0 will include a more stable and finalized design.
 
-* In change list form you can edit multiple values and submit those at once. You can use "mark" functionality to put all the values you need on the same page. Read more about it in [UI artitle](ui.md#apply-multiple-settings-at-once)
-* Using preview settings functionality you can add multiple changes in preview and then apply those changes in one click. Read more about it in [UI artitle](ui.md#preview-functionality)
+---
 
-### The guide didn't help
+### Can I see the changes on the site before applying them to all users?
 
-That happens, the documentation is still work in progress, so not everything is covered.
+Yes. The preview functionality allows you to see changes before applying them globally. Learn more about it in the [UI article](ui.md#preview-functionality).
 
-If you have a specific question, please use [Discussions in github.com](https://github.com/occipital/django-content-settings/discussions).
+---
 
-If you find a bug, or unexpected behaviour use [Issues in github.com](https://github.com/occipital/django-content-settings/issues).
+### I need to change multiple variables at once for a desired effect. How can I avoid users seeing an incomplete configuration?
 
-And, of course, you are very welcome to contribute changes in documentation. You can find markdown sources of the documentation in [docs folder](https://github.com/occipital/django-content-settings/tree/master/docs).
+This can be handled in several ways:
+
+1. **Edit Multiple Values in the Change List**: 
+   - Use the "mark" functionality to edit multiple settings on the same page and submit them together. Read more in the [UI article](ui.md#apply-multiple-settings-at-once).
+   
+2. **Use Preview Settings**: 
+   - Add multiple changes to the preview and apply them all in one click. Read more in the [UI article](ui.md#preview-functionality).
+
+---
+
+### The guide didn’t help. What should I do?
+
+This happens, as the documentation is still a work in progress and not all scenarios are covered yet.
+
+Here’s how you can get additional support:
+
+- **Have a specific question?** Use [Discussions on GitHub](https://github.com/occipital/django-content-settings/discussions).
+- **Found a bug or unexpected behavior?** Report it on [Issues in GitHub](https://github.com/occipital/django-content-settings/issues).
+- **Want to improve the documentation?** Contributions are welcome! You can find the Markdown sources in the [docs folder](https://github.com/occipital/django-content-settings/tree/master/docs).
+
+---
 
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
