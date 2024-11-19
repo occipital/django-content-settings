@@ -1,6 +1,6 @@
 # Frequently Asked Questions
 
-Many common use cases are covered in the [Cookbook](cookbook.md), but here I want to address some frequently asked questions from other users.
+Many common use cases are covered in the [Cookbook](cookbook.md) and [Possible Extensions](extends.md), but here I want to address some frequently asked questions from other users.
 
 ---
 

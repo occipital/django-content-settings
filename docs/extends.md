@@ -106,7 +106,7 @@ You may create custom middleware for specialized use cases, such as integrating 
 
 ## Cache Triggers
 
-Cache triggers are part of the [caching functionality](caching.md). They allow you to configure how and when to update Python objects related to settings.
+Cache triggers are part of the [caching functionality](caching.md). They allow you to configure when to update py objects related to settings.
 
 - See the source code for [`content_settings.cache_triggers`](source.md#cache_triggers) for more information.
 

@@ -37,11 +37,11 @@ Additional keys (besides `"backend"`) vary depending on the backend. [Read more 
 
 ## Admin Panel
 
-For more details on admin panel functionalities, refer to the [dedicated section](admin.md).
+For more details on admin panel functionalities, refer to the [dedicated section](ui.md).
 
 ### `CONTENT_SETTINGS_USER_TAGS`
 
-Allows users to assign custom tags to variables. This is a dictionary where keys are tag names, and values are tuples of two elements: the display for the tag when added, and its display when it can be added.
+Allows admins to assign custom tags to variables through the Django Admin. This is a dictionary where keys are tag names, and values are tuples of two elements: the display for the tag when added, and its display when it can be added.
 
 #### Default:
 
@@ -54,22 +54,26 @@ Allows users to assign custom tags to variables. This is a dictionary where keys
 
 ### `CONTENT_SETTINGS_ADMIN_CHECKSUM_CHECK_BEFORE_SAVE`
 
-**Default**: `False`  
+**Default**: `False`
+
 Checks the current checksum before saving data in Django Admin. If the page has been open too long and settings are changed by another user, the changes will not be applied.
 
 ### `CONTENT_SETTINGS_CHAIN_VALIDATE`
 
-**Default**: `True`  
+**Default**: `True`
+
 Validates settings that depend on each other (e.g., through template types or validations) before applying a new value.
 
 ### `CONTENT_SETTINGS_UI_DOC_URL`
 
-**Default**: `"https://django-content-settings.readthedocs.io/en/0.19/ui/"`  
+**Default**: `"https://django-content-settings.readthedocs.io/en/0.25/ui/"`
+
 Specifies the link to the UI documentation for Django Content Settings, shown in the Django Admin panel. If set to `None`, the link will not appear.
 
 ### `CONTENT_SETTINGS_USER_DEFINED_TYPES`
 
-**Default**: `[]`  
+**Default**: `[]`
+
 An empty list prevents users from creating custom user-defined settings. To enable this functionality, provide a list of tuples:
 
 ```python
@@ -86,12 +90,14 @@ Each tuple includes:
 
 ### `CONTENT_SETTINGS_PREVIEW_ON_SITE_SHOW`
 
-**Default**: `True`  
+**Default**: `True`
+
 Enables the preview-on-site functionality. If set to `False`, the middleware `content_settings.middlewares.preview_on_site` is ignored, and preview checkboxes are hidden.
 
 ### `CONTENT_SETTINGS_PREVIEW_ON_SITE_HREF`
 
-**Default**: `"/"`  
+**Default**: `"/"`
+
 Specifies the href attribute for the "View On Site" link in the preview panel.
 
 ---
@@ -100,12 +106,14 @@ Specifies the href attribute for the "View On Site" link in the preview panel.
 
 ### `CONTENT_SETTINGS_CHECK_UPDATE_CELERY`
 
-**Default**: `True`  
+**Default**: `True`
+
 If Celery is available, the system checks for updates before every `task_prerun`.
 
 ### `CONTENT_SETTINGS_CHECK_UPDATE_HUEY`
 
-**Default**: `True`  
+**Default**: `True`
+
 If Huey is available, the system checks for updates before every `pre_execute`.
 
 ---
@@ -114,17 +122,20 @@ If Huey is available, the system checks for updates before every `pre_execute`.
 
 ### `CONTENT_SETTINGS_VALUES_ONLY_FROM_DB`
 
-**Default**: `False`  
-Restricts values to be sourced only from the database. If a value is missing in the database, an `AssertionError` will be raised.
+**Default**: `False`
+
+Restricts values to be sourced only from the database. If a value is missing in the database, an `AssertionError` will be raised. If `DEBUG=True` the setting is ignored and always `False`
 
 ### `CONTENT_SETTINGS_VALIDATE_DEFAULT_VALUE`
 
-**Default**: `settings.DEFAULT`  
+**Default**: `settings.DEBUG`
+
 Validates both database values and default values during app launch or reload.
 
 ### `CONTENT_SETTINGS_DEFAULTS`
 
-**Default**: `[]`  
+**Default**: `[]`
+
 Defines global default contexts for specific types. Each tuple in the list contains:
 1. **Filter**: Determines which settings types are eligible for the global context. (Available filters are in `content_settings.filters`.)
 2. **Modifiers**: Change default arguments. (Available modifiers are in `content_settings.defaults.modifiers`.)
@@ -149,10 +160,11 @@ CONTENT_SETTINGS_DEFAULTS = [
 
 ### `CONTENT_SETTINGS_TAGS`
 
-**Default**: `[]`  
+**Default**: `[]`
+
 Defines automatically generated tags for all settings. This is a list of functions (or their import paths) that take three arguments: the setting name, setting object, and new value.
 
-#### Built-in Types:
+#### Built-in Generated Tags:
 
 - `"content_settings.tags.changed"`: Adds a "changed" tag to filter settings that have been modified (customizable via `CONTENT_SETTINGS_TAG_CHANGED`).
 - `"content_settings.tags.app_name"`: Adds a tag for the app name where the setting is defined.

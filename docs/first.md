@@ -55,7 +55,7 @@ TEMPLATES = [
 ]
 ```
 
-Now you can access settings in templates like this:
+Now you can access content settings in templates like this:
 
 ```html
 <b>{{ CONTENT_SETTINGS.MY_VAR }}</b>
@@ -147,6 +147,15 @@ TITLE = SimpleString(
 
 ---
 
+#### Understanding the Code
+
+- **`TITLE`**: The setting name, used in code and the admin panel.
+- **`SimpleString`**: The setting type (a simple string in this case).
+- **`"Book Store"`**: The setting’s default value.
+- **`"The title of the book store"`**: A description displayed in the admin panel.
+
+---
+
 ### Step 2: Run Migrations
 
 Run migrations to add the default value to the database, enabling editing via the admin panel:
@@ -154,15 +163,6 @@ Run migrations to add the default value to the database, enabling editing via th
 ```bash
 $ python manage.py migrate
 ```
-
----
-
-### Understanding the Code
-
-- **`TITLE`**: The setting name, used in code and the admin panel.
-- **`SimpleString`**: The setting type (a simple string in this case).
-- **`"Book Store"`**: The setting’s default value.
-- **`"The title of the book store"`**: A description displayed in the admin panel.
 
 ---
 

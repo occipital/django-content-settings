@@ -22,28 +22,28 @@ TITLE = SimpleString(
 #### Attributes
 
 - **default**: The first argument and the only one that can be passed without naming. It sets the default text value. *the default value for any type should always be string*
-- **help** (default: None): Description of the variable displayed in the admin panel. (**help_text** can be used alternatively)
-- **cls_field** (default: django.forms.CharField): The field class in the admin panel.
-- **widget** (default: django.forms.TextInput): The widget for the field.
-- **widget_attrs** (default: None): Dictionary of attributes used when creating the widget.
+- **help** (default: `None`): Description of the variable displayed in the admin panel. (**help_text** can be used alternatively)
+- **cls_field** (default: `django.forms.CharField`): The field class in the admin panel.
+- **widget** (default: `django.forms.TextInput`): The widget for the field.
+- **widget_attrs** (default: `None`): Dictionary of attributes used when creating the widget.
 
 You can learn more about fields and widgets in [official Django Forms documentation](https://docs.djangoproject.com/en/dev/topics/forms/)
 
-- **value_required** (default: False): Whether the field must be filled.
-- **tags** (default: None): Array of tags associated with the variable for easier navigation in admin.
-- **validators** (default: empty tuple): Additional validation functions for the python object.
-- **validators_raw** (default: empty tuple): Additional validation functions for the raw text value.
-- **version** (default: ""): we will talk more about this attribute in [caching](caching.md). Updating this value triggers updating the db value to the default value after db migration (`python manage.py migrate`).
+- **value_required** (default: `False`): Whether the field must be filled.
+- **tags** (default: `None`): Array of tags associated with the variable for easier navigation in admin.
+- **validators** (default: `()` *empty tuple*): Additional validation functions for the python object.
+- **validators_raw** (default: `()` *empty tuple*): Additional validation functions for the raw text value.
+- **version** (default: `""`): we will talk more about this attribute in [caching](caching.md). Updating this value triggers updating the db value to the default value after db migration (`python manage.py migrate`).
 
 Note: Validators are not used when converting text from the database to the variable object.
 
 - **update_permission**, **fetch_permission**, **view_permission** and **view_history_permission**: Access rights for the variable (detailed in a [separate article](permissions.md)).
-- **admin_preview_as** (default: PREVIEW.TEXT): when you change values in Django Admin text field, you see a preview of the converted object. This attribute shows how the preview will look like. It has the following options and all of them can be found in constants `content_settings.PREVIEW_*`:
+- **admin_preview_as** (default: `PREVIEW.TEXT`): when you change values in Django Admin text field, you see a preview of the converted object. This attribute shows how the preview will look like. It has the following options and all of them can be found in constants `content_settings.PREVIEW_*`:
   - `PREVIEW.TEXT` - the value will be shown as plain text inside of the HTML element
   - `PREVIEW.HTML` - the value will be shown as it is without escaping
   - `PREVIEW.PYTHON` - the value will be shown as Python object using `pformat` from `pprint`
-- **on_change** (default: empty tuple): list of functions to call when the setting is changed
-- **on_change_commited** (default: empty tuple): list of functions to call when the setting is changed and committed
+- **on_change** (default: `()`): list of functions to call when the setting is changed
+- **on_change_commited** (default: `()`): list of functions to call when the setting is changed and committed
 
 ### Other Basic Types (`content_settings.types.base`) *([source](source.md#typesbasic))*
 
@@ -62,10 +62,10 @@ These types convert text to an array.
 
 #### SimpleStringsList
 
-- **split_lines** (default: \n): Character to split lines.
-- **filter_empty** (default: True): Whether to include empty lines.
-- **comment_starts_with** (default: `#`): Lines starting with this character are not added. Set to None to ignore.
-- **filters** (default: None): Additional filters.
+- **split_lines** (default: `"\n"`): Character to split lines.
+- **filter_empty** (default: `True`): Whether to include empty lines.
+- **comment_starts_with** (default: `"#"`): Lines starting with this character are not added. Set to None to ignore.
+- **filters** (default: `None`): Additional filters.
 
 #### TypedStringsList
 

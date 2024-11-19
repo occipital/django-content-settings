@@ -117,12 +117,6 @@ class Command(BaseCommand):
 
 ---
 
-### Ensuring Celery/Huey Tasks Have Updated Settings
-
-This is handled automatically.
-
----
-
 ### Triggering a Procedure When a Variable Changes
 
 To trigger an action, such as data synchronization, when a setting changes, add a `post_save` signal handler for `models.ContentSetting`.
