@@ -103,7 +103,7 @@ There is a dropdown list of available actions under the table of available conte
 
 ![Import JSON](img/ui/import_json.png)
 
-It has two fields. One is for submitting a JSON file, and the other is for pasting JSON content from the text field. 
+It has two fields. One is for submitting a JSON file, and the other is for pasting JSON content from the text field.
 
 Hit the "Preview" button, as the changes will be shown before applying.
 
@@ -119,7 +119,7 @@ Groups from top to bottom:
 
 * **Errors** - If the setting you want to import has errors, and it is not possible to apply
 * **Applied Changed** - the valid changes for the setting found
-* **Skiped** - valid changes that wouldn't be applied
+* **Skipped** - valid changes that wouldn't be applied
 
 Every row of applied changes has a checkbox (checked by default) that controls which changes will actually be applied. So, you might want to apply only some of the changes from the import.
 
