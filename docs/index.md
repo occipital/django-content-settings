@@ -64,14 +64,6 @@ from content_settings.conf import content_settings
 content_settings.TITLE
 ```
 
-Alternatively, use the `settings` object to unify content settings and Django settings:
-
-```python
-from content_settings.conf import settings
-
-settings.TITLE
-```
-
 In a template:
 
 ```html

@@ -1,10 +1,8 @@
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
 
-# Django Content Settings - the most advanced admin editable setting
+# Django Content Settings - The Most Advanced Admin Editable Setting
 
 ![Django Content Settings](https://github.com/occipital/django-content-settings/blob/master/docs/img/title.png)
-
-# Django Content Settings - The Most Advanced Admin Editable Setting
 
 The `django-content-settings` module is a versatile addition to the Django ecosystem, allowing users to easily create and manage editable variables directly from the Django admin panel. What sets this module apart is its capability to handle variables of any type, without limiting their complexity. Thanks to an integrated caching system, these variables can be used efficiently in code, regardless of their complexity.
 
@@ -64,14 +62,6 @@ You can use the setting in your code without running migrations, but migrations 
 from content_settings.conf import content_settings
 
 content_settings.TITLE
-```
-
-Alternatively, use the `settings` object to unify content settings and Django settings:
-
-```python
-from content_settings.conf import settings
-
-settings.TITLE
 ```
 
 In a template:
