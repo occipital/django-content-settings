@@ -9,6 +9,8 @@ def get_setting(name, default=None):
     return getattr(settings, "CONTENT_SETTINGS_" + name, default)
 
 
+PRECACHED_PY_VALUES = get_setting("PRECACHED_PY_VALUES", True)
+
 PREVIEW_ON_SITE_HREF = get_setting("PREVIEW_ON_SITE_HREF", "/")
 
 PREVIEW_ON_SITE_SHOW = get_setting("PREVIEW_ON_SITE_SHOW", True)

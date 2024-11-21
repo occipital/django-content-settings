@@ -33,6 +33,12 @@ CONTENT_SETTINGS_CACHE_TRIGGER = {
 
 Additional keys (besides `"backend"`) vary depending on the backend. [Read more in the caching section](caching.md).
 
+### `CONTENT_SETTINGS_PRECACHED_PY_VALUES`
+
+**Default**: `True`
+
+Generate Py Objects at the very beginning, before we start accepting requests. If you have too many settings like that - you might want to disable it for commands.
+
 ---
 
 ## Admin Panel

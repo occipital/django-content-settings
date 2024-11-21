@@ -2,6 +2,10 @@
 
 # Changelog
 
+### master
+
+* `CONTENT_SETTINGS_PRECACHED_PY_VALUES`
+
 ### 0.26 cache triggers and setting assign
 
 * `cache_triggers` - module that adjusts 

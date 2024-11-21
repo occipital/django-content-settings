@@ -12,7 +12,6 @@ the caching backend is working with local thread storage to store the checksum r
 from threading import local
 from typing import Any, Dict, Set, Optional, List
 
-from django.core.cache import caches
 from django.conf import settings
 
 from .utils import import_object
@@ -22,6 +21,7 @@ from .settings import (
     VALIDATE_DEFAULT_VALUE,
     CACHE_TRIGGER,
     USER_DEFINED_TYPES,
+    PRECACHED_PY_VALUES,
 )
 
 
@@ -87,7 +87,10 @@ def set_new_value(name: str, new_value: str, version: Optional[str] = None) -> s
 
     if version is None or cs_type.version == version and prev_value != new_value:
         DATA.ALL_RAW_VALUES[name] = new_value
-        DATA.ALL_VALUES[name] = cs_type.to_python(new_value)
+        if PRECACHED_PY_VALUES:
+            DATA.ALL_VALUES[name] = cs_type.to_python(new_value)
+        elif name in DATA.ALL_VALUES:
+            DATA.ALL_VALUES.pop(name)
 
     return prev_value
 
@@ -141,7 +144,8 @@ def delete_user_value(name: str) -> Optional[str]:
 
     prev_value = DATA.ALL_RAW_VALUES.get(name)
     del DATA.ALL_RAW_VALUES[name]
-    del DATA.ALL_VALUES[name]
+    if name in DATA.ALL_VALUES:
+        del DATA.ALL_VALUES[name]
     del DATA.ALL_USER_DEFINES[name]
 
     return prev_value
@@ -193,6 +197,18 @@ def get_py_value(name: str) -> Any:
     """
     assert DATA.POPULATED
 
+    if name in DATA.ALL_VALUES:
+        return DATA.ALL_VALUES[name]
+
+    assert name in DATA.ALL_RAW_VALUES, f"{name} is unknown"
+
+    assert (
+        not PRECACHED_PY_VALUES
+    ), "PRECACHED_PY_VALUES is True, but Py value does not exist"
+
+    cs_type = get_type_by_name(name)
+    DATA.ALL_VALUES[name] = cs_type.to_python(DATA.ALL_RAW_VALUES[name])
+
     return DATA.ALL_VALUES[name]
 
 
@@ -218,7 +234,7 @@ def get_all_names() -> List[str]:
     """
     if not is_populated():
         return []
-    return list(DATA.ALL_VALUES.keys()) + list(DATA.ALL_USER_DEFINES.keys())
+    return list(DATA.ALL_RAW_VALUES.keys())
 
 
 def reset_all_values() -> None:
