@@ -195,7 +195,10 @@ class VersionChecksum(BaseCacheTrigger):
         self.push_checksum()
 
     def after_update(self):
-        DATA.ALL_VALUES_CHECKSUM = self.last_checksum_from_cache
+        if self.last_checksum_from_cache is None:
+            return
+
+        self.set_local_checksum(self.last_checksum_from_cache)
 
     def db_changed(self):
         self.push_checksum(self.calc_checksum())

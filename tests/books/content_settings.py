@@ -90,7 +90,20 @@ IS_CLOSED = SimpleBool(
     fetch_permission=permissions.any,
 )
 
-BOOKS = mix(AdminPreviewSuffixesMixin, SimpleCSV)(
+
+def to_py_object(value):
+    """
+    A simple function call to test the py conversion process
+    """
+    return value
+
+
+class SimpleCSVWithAdminPreview(AdminPreviewSuffixesMixin, SimpleCSV):
+    def to_python(self, value):
+        return to_py_object(super().to_python(value))
+
+
+BOOKS = SimpleCSVWithAdminPreview(
     """
 Kateryna,1.2,1
 The Will,200,0
