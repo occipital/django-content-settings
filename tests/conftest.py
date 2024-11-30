@@ -107,9 +107,18 @@ def pytest_configure(config):
 
 @pytest.fixture(autouse=True)
 def do_reset_all_values():
-    from content_settings.caching import reset_all_values
+    from content_settings.caching import DATA as CACHE_DATA, TRIGGER
 
-    reset_all_values()
+    CACHE_DATA.POPULATED = False
+    CACHE_DATA.ALL_VALUES = None
+    CACHE_DATA.ALL_RAW_VALUES = None
+    CACHE_DATA.ALL_USER_DEFINES = None
+
+    TRIGGER.last_checksum_from_cache = None
+
+    from content_settings.cache_triggers import DATA as TRIGGER_DATA
+
+    TRIGGER_DATA.ALL_VALUES_CHECKSUM = ""
 
 
 @pytest.fixture

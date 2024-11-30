@@ -148,7 +148,7 @@ get the database objects for the settings
 
 get the names of the settings (including user defined types) from the local thread
 
-### def reset_all_values()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L175)</sup>
+### def populate()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L175)</sup>
 
 reset the local thread with the values from the database
 

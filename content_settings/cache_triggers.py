@@ -14,18 +14,17 @@ from .settings import (
     USER_DEFINED_TYPES,
 )
 
-DATA = local()
+
+class ThreadLocalData(local):
+    ALL_VALUES_CHECKSUM: str = ""
+
+
+DATA = ThreadLocalData()
 
 
 class BaseCacheTrigger:
     def __init__(self, params: dict) -> None:
         pass
-
-    @property
-    def cache_data(self):
-        from .caching import DATA
-
-        return DATA
 
     def check(self):
         """
@@ -44,14 +43,6 @@ class BaseCacheTrigger:
     def get_form_checksum(self):
         """
         returns checksum that uses for checksum validation during form submit
-        """
-        raise NotImplementedError
-
-    def after_update(self):
-        """
-        set the trigger state from the outside source (cache backend).
-
-        Called after the trigger condition is met.
         """
         raise NotImplementedError
 
@@ -91,8 +82,7 @@ class VersionChecksum(BaseCacheTrigger):
         self.cache_timeout = cache_timeout
         self.spliter = spliter
         self.key_prefix = key_prefix + __version__
-
-        DATA.ALL_VALUES_CHECKSUM = ""
+        self.last_checksum_from_cache = None
 
     def hash_value(self, value: str) -> str:
         """
@@ -191,14 +181,11 @@ class VersionChecksum(BaseCacheTrigger):
         )
 
     def reset(self):
-        self.set_local_checksum()
-        self.push_checksum()
-
-    def after_update(self):
         if self.last_checksum_from_cache is None:
-            return
-
-        self.set_local_checksum(self.last_checksum_from_cache)
+            self.set_local_checksum()
+            self.push_checksum()
+        else:
+            self.set_local_checksum(self.last_checksum_from_cache)
 
     def db_changed(self):
         self.push_checksum(self.calc_checksum())

@@ -9,7 +9,7 @@ the caching backend is working with local thread storage to store the checksum r
 * `POPULATED: bool` - the flag that indicates that all values were populated from the database
 """
 
-from threading import local
+import threading
 from typing import Any, Dict, Set, Optional, List
 
 from django.conf import settings
@@ -21,7 +21,6 @@ from .settings import (
     VALIDATE_DEFAULT_VALUE,
     CACHE_TRIGGER,
     USER_DEFINED_TYPES,
-    PRECACHED_PY_VALUES,
 )
 
 
@@ -29,10 +28,20 @@ TRIGGER = import_object(CACHE_TRIGGER["backend"])(
     **{k: v for k, v in CACHE_TRIGGER.items() if k != "backend"}
 )
 
-DATA = local()
+
+class ThreadLocalData(threading.local):
+    POPULATED: bool = False
+    ALL_RAW_VALUES: Optional[Dict[str, str]] = None
+    ALL_VALUES: Optional[Dict[str, Any]] = None
+    ALL_USER_DEFINES: Optional[Dict[str, BaseSetting]] = None
+
+
+DATA = ThreadLocalData()
 
 
 def get_form_checksum():
+    if not is_populated():
+        populate()
     return TRIGGER.get_form_checksum()
 
 
@@ -81,15 +90,14 @@ def set_new_value(name: str, new_value: str, version: Optional[str] = None) -> s
     """
     cs_type = get_type_by_name(name)
     if cs_type is None:
+        raise ValueError("NONE")
         return None
 
-    prev_value = DATA.ALL_RAW_VALUES.get(name)
+    prev_value = get_raw_value(name)
 
     if version is None or cs_type.version == version and prev_value != new_value:
         DATA.ALL_RAW_VALUES[name] = new_value
-        if PRECACHED_PY_VALUES:
-            DATA.ALL_VALUES[name] = cs_type.to_python(new_value)
-        elif name in DATA.ALL_VALUES:
+        if name in DATA.ALL_VALUES:
             DATA.ALL_VALUES.pop(name)
 
     return prev_value
@@ -139,10 +147,10 @@ def delete_user_value(name: str) -> Optional[str]:
     """
     delete user defined setting from the local thread and returns its raw value
     """
-    if name not in DATA.ALL_RAW_VALUES:
+    if get_raw_value(name) is None:
         return None
 
-    prev_value = DATA.ALL_RAW_VALUES.get(name)
+    prev_value = get_raw_value(name)
     del DATA.ALL_RAW_VALUES[name]
     if name in DATA.ALL_VALUES:
         del DATA.ALL_VALUES[name]
@@ -160,6 +168,9 @@ def get_type_by_name(name: str) -> Optional[BaseSetting]:
     if name in ALL:
         return ALL[name]
 
+    if not USER_DEFINED_TYPES:
+        return None
+
     return get_userdefined_type_by_name(name)
 
 
@@ -167,6 +178,9 @@ def get_userdefined_type_by_name(name: str) -> Optional[BaseSetting]:
     """
     get the user defined type by its name
     """
+    if not is_populated():
+        populate()
+
     return DATA.ALL_USER_DEFINES.get(name)
 
 
@@ -174,7 +188,7 @@ def get_value(name: str, suffix: Optional[str] = None) -> Any:
     """
     get the value of the setting by its name and optional suffix
     """
-    assert DATA.POPULATED
+
     cs_type = get_type_by_name(name)
     if cs_type is None:
         raise AttributeError(f"{name} is not defined in any content_settings.py file")
@@ -186,7 +200,8 @@ def get_raw_value(name: str) -> Optional[str]:
     """
     get the raw value of the setting by its name
     """
-    assert DATA.POPULATED
+    if not is_populated():
+        populate()
 
     return DATA.ALL_RAW_VALUES.get(name)
 
@@ -195,28 +210,27 @@ def get_py_value(name: str) -> Any:
     """
     get the python object of the setting by its name
     """
-    assert DATA.POPULATED
+    if not is_populated():
+        populate()
 
     if name in DATA.ALL_VALUES:
         return DATA.ALL_VALUES[name]
 
     assert name in DATA.ALL_RAW_VALUES, f"{name} is unknown"
 
-    assert (
-        not PRECACHED_PY_VALUES
-    ), "PRECACHED_PY_VALUES is True, but Py value does not exist"
-
     cs_type = get_type_by_name(name)
-    DATA.ALL_VALUES[name] = cs_type.to_python(DATA.ALL_RAW_VALUES[name])
+
+    DATA.ALL_VALUES[name] = cs_type.to_python(get_raw_value(name))
 
     return DATA.ALL_VALUES[name]
 
 
 def is_populated() -> bool:
-    """
-    check if the local thread is populated with the values from the database
-    """
     return getattr(DATA, "POPULATED", False)
+
+
+def set_populated(value: bool = True) -> None:
+    DATA.POPULATED = value
 
 
 def get_db_objects() -> Dict[str, Any]:
@@ -233,19 +247,23 @@ def get_all_names() -> List[str]:
     get the names of the settings (including user defined types) from the local thread
     """
     if not is_populated():
-        return []
+        populate()
+
     return list(DATA.ALL_RAW_VALUES.keys())
 
 
-def reset_all_values() -> None:
+def populate() -> None:
     """
     reset the local thread with the values from the database
     """
-    if not is_populated():
+    if is_populated():
+        return
+
+    set_populated(True)
+    if DATA.ALL_VALUES is None:
         DATA.ALL_VALUES = {}
         DATA.ALL_RAW_VALUES = {}
         DATA.ALL_USER_DEFINES = {}
-        DATA.POPULATED = False
 
     # test DB access
     try:
@@ -253,21 +271,10 @@ def reset_all_values() -> None:
 
         ContentSetting.objects.all().first()
     except Exception:
-        DATA.POPULATED = False
         return
 
     reset_values()
     TRIGGER.reset()
-
-    DATA.POPULATED = True
-
-    from .conf import ALL
-
-    for name, cs_type in ALL.items():
-        try:
-            cs_type.validate(get_py_value(name))
-        except Exception as e:
-            raise AssertionError(f"Error validating {name}: {e}")
 
 
 def validate_default_values():
@@ -372,13 +379,10 @@ def check_update() -> None:
     if not, the values from the database will be loaded
     """
     if not is_populated():
-        reset_all_values()
         return
 
     if TRIGGER.check():
-        reset_values()
-
-        TRIGGER.after_update()
+        set_populated(False)
 
 
 def recalc_checksums():

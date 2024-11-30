@@ -19,9 +19,9 @@ from django.dispatch import receiver
 
 from .caching import (
     check_update,
-    reset_all_values,
     recalc_checksums,
     validate_default_values,
+    populate,
 )
 from .conf import set_initial_values_for_db, get_type_by_name, get_str_tags
 from .models import ContentSetting, HistoryContentSetting
@@ -140,12 +140,6 @@ if UPDATE_DB_VALUES_BY_MIGRATE:
 
         for l in log:
             print(" ".join(l))
-
-
-@receiver(connection_created)
-def db_connection_done(*args, **kwargs):
-    reset_all_values()
-    validate_default_values()
 
 
 # INTEGRATIONS
