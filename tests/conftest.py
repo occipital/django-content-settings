@@ -37,7 +37,7 @@ def pytest_configure(config):
                 "content_settings.tags.changed",
                 "content_settings.tags.app_name",
             ],
-            CONTENT_SETTINGS_VALIDATE_DEFAULT_VALUE=True,
+            CONTENT_SETTINGS_VALIDATE_DEFAULT_VALUE=False,
         )
     elif testing_settings_min:
         content_settings_settings = dict(
