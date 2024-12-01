@@ -66,6 +66,15 @@ urlpatterns = [
         name="fetch_home_detail",
     ),
     path(
+        "fetch/constants/",
+        FetchSettingsView.as_view(
+            names=[
+                "AUTHOR",
+            ]
+        ),
+        name="fetch_home_detail",
+    ),
+    path(
         "fetch/is/",
         FetchSettingsView.as_view(names=gen_startswith("IS_")),
         name="fetch_is",

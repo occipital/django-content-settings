@@ -4,14 +4,18 @@ the module is used for collecting information.
 the `APP_NAME_STORE` a dict `setting_name: app_name` is used to store the name of the app that uses the setting. Which later on can be used in `tags.app_name` to generate a tag with the name of the app.
 """
 
+from typing import Callable, Dict, List
+
 from .types import BaseSetting
 
-APP_NAME_STORE = {}  # setting_name: app_name
+APP_NAME_STORE: Dict[str, str] = {}  # setting_name: app_name
 
-ADMIN_HEAD_CSS = []
-ADMIN_HEAD_JS = []
-ADMIN_HEAD_CSS_RAW = []
-ADMIN_HEAD_JS_RAW = []
+ADMIN_HEAD_CSS: List[str] = []
+ADMIN_HEAD_JS: List[str] = []
+ADMIN_HEAD_CSS_RAW: List[str] = []
+ADMIN_HEAD_JS_RAW: List[str] = []
+
+PREFIXSES: Dict[str, Callable] = {}
 
 
 def add_app_name(cs_name: str, app_name: str) -> None:
@@ -107,3 +111,16 @@ def get_admin_raw_js() -> str:
             yield f"(function($){{{code}}})(django.jQuery);"
 
     return "".join(gen())
+
+
+def register_prefix(name: str) -> Callable:
+    """
+    decorator for registration a new prefix
+    """
+
+    def _cover(func: Callable) -> Callable:
+        assert name not in PREFIXSES
+        PREFIXSES[name] = func
+        return func
+
+    return _cover

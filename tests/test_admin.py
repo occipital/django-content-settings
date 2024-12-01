@@ -119,10 +119,13 @@ The Night of Taras,12,1
 
 
 def test_admin_change_from_different_version(webtest_admin):
+    resp = webtest_admin.get("/books/fetch/all/")
+    assert resp.status_int == 200
+    assert resp.json["TITLE"] == "Book Store"
+    initial_value = resp.json["TITLE"]
+
+    ContentSetting.objects.filter(name="TITLE").update(version="NEW")
     cs = ContentSetting.objects.get(name="TITLE")
-    cs.version = "NEW"
-    cs.save(update_fields=["version"])
-    initial_value = cs.value
 
     resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/change/")
     assert resp.status_int == 200

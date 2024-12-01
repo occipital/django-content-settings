@@ -6,14 +6,14 @@ pytestmark = [
 ]
 
 from content_settings.conf import content_settings, ALL
-from content_settings.caching import reset_all_values
+from content_settings.caching import populate
 
 
 @pytest.mark.parametrize(
     "name", [name for name in ALL.keys() if not ALL[name].constant]
 )
 def test_admin_fields(name):
-    reset_all_values()
+    populate()
     value = getattr(content_settings, name)
     setting = ALL[name]
     raw_value = setting.default
@@ -23,7 +23,7 @@ def test_admin_fields(name):
 
 @pytest.mark.parametrize("name", ALL.keys())
 def test_validate_default(name):
-    reset_all_values()
+    populate()
     setting = ALL[name]
     raw_value = setting.default
     setting.validate_value(raw_value)

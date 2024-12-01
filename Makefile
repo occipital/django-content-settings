@@ -4,17 +4,8 @@ init:
 test-min:
 	TESTING_SETTINGS=min poetry run pytest
 
-test-cache:
-	TESTING_DISABLE_PRECACHED_PY_VALUES=1 poetry run pytest
-
 test-full:
 	TESTING_SETTINGS=full poetry run pytest
-
-test-cache-full:
-	TESTING_DISABLE_PRECACHED_PY_VALUES=1 TESTING_SETTINGS=full poetry run pytest
-
-test-cache-min:
-	TESTING_DISABLE_PRECACHED_PY_VALUES=1 TESTING_SETTINGS=min poetry run pytest
 
 test:
 	poetry run pytest

@@ -6,7 +6,6 @@ from django.contrib.auth import get_user_model
 from tests import (
     testing_settings_full,
     testing_settings_min,
-    testing_disable_precached_py_values,
 )
 
 
@@ -38,7 +37,7 @@ def pytest_configure(config):
                 "content_settings.tags.changed",
                 "content_settings.tags.app_name",
             ],
-            CONTENT_SETTINGS_VALIDATE_DEFAULT_VALUE=True,
+            CONTENT_SETTINGS_VALIDATE_DEFAULT_VALUE=False,
         )
     elif testing_settings_min:
         content_settings_settings = dict(
@@ -98,7 +97,6 @@ def pytest_configure(config):
             "tests.books",
         ),
         PASSWORD_HASHERS=("django.contrib.auth.hashers.MD5PasswordHasher",),
-        CONTENT_SETTINGS_PRECACHED_PY_VALUES=not testing_disable_precached_py_values,
         **content_settings_settings,
     )
 
@@ -107,9 +105,18 @@ def pytest_configure(config):
 
 @pytest.fixture(autouse=True)
 def do_reset_all_values():
-    from content_settings.caching import reset_all_values
+    from content_settings.caching import DATA as CACHE_DATA, TRIGGER
 
-    reset_all_values()
+    CACHE_DATA.POPULATED = False
+    CACHE_DATA.ALL_VALUES = None
+    CACHE_DATA.ALL_RAW_VALUES = None
+    CACHE_DATA.ALL_USER_DEFINES = None
+
+    TRIGGER.last_checksum_from_cache = None
+
+    from content_settings.cache_triggers import DATA as TRIGGER_DATA
+
+    TRIGGER_DATA.ALL_VALUES_CHECKSUM = ""
 
 
 @pytest.fixture

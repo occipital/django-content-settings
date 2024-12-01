@@ -4,7 +4,7 @@ from content_settings.types.basic import ValidationError
 
 from content_settings.conf import content_settings
 from content_settings.models import ContentSetting
-from content_settings.caching import reset_all_values, get_raw_value
+from content_settings.caching import get_raw_value, set_populated
 
 pytestmark = [pytest.mark.django_db(transaction=True)]
 
@@ -23,11 +23,13 @@ def test_setting_simple_text():
 
 
 def test_update_simple_text():
+    assert content_settings.TITLE == "Book Store"
+
     setting = ContentSetting.objects.get(name="TITLE")
     setting.value = "New Title"
     setting.save()
 
-    reset_all_values()
+    set_populated(False)
 
     assert content_settings.TITLE == "New Title"
 

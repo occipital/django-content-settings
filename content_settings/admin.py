@@ -157,8 +157,22 @@ class ContentSettingForm(ModelForm):
 class ContentSettingFormWithChainValidation(ContentSettingForm):
     def clean(self):
         ret = super().clean()
+        # import ipdb; ipdb.set_trace()
         if self.instance and not self.errors:
-            validate_all_with_context({self.instance.name: self.cleaned_data["value"]})
+            validate_all_with_context(
+                {
+                    (self.cleaned_data.get("name") or self.instance.name): (
+                        (
+                            self.cleaned_data["value"],
+                            self.cleaned_data.get("user_defined_type"),
+                            self.cleaned_data.get("tags"),
+                            self.cleaned_data.get("help"),
+                        )
+                        if "user_defined_type" in self.cleaned_data
+                        else self.cleaned_data["value"]
+                    )
+                }
+            )
         return ret
 
 

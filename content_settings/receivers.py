@@ -19,7 +19,6 @@ from django.dispatch import receiver
 
 from .caching import (
     check_update,
-    reset_all_values,
     recalc_checksums,
     validate_default_values,
 )
@@ -120,6 +119,11 @@ def create_history_settings_delete(sender, instance, **kwargs):
     )
 
 
+@receiver(connection_created)
+def validate_default_values_for_connection(*args, **kwargs):
+    validate_default_values()
+
+
 @receiver(request_started)
 def check_update_for_request(*args, **kwargs):
     check_update()
@@ -140,12 +144,6 @@ if UPDATE_DB_VALUES_BY_MIGRATE:
 
         for l in log:
             print(" ".join(l))
-
-
-@receiver(connection_created)
-def db_connection_done(*args, **kwargs):
-    reset_all_values()
-    validate_default_values()
 
 
 # INTEGRATIONS
