@@ -888,7 +888,7 @@ def test_userdeined_added(webtest_admin):
         },
     )
 
-    assert resp.status_int == 302
+    assert resp.status_int == 302, resp.content.decode()
     assert resp.location.endswith("/admin/content_settings/contentsetting/")
 
     cs = ContentSetting.objects.get(name="GIG")
@@ -927,7 +927,7 @@ def test_userdeined_added_updated(webtest_admin):
         },
     )
 
-    assert resp.status_int == 302
+    assert resp.status_int == 302, resp.content.decode()
     assert resp.location.endswith("/admin/content_settings/contentsetting/")
 
     cs.refresh_from_db()
@@ -1007,7 +1007,7 @@ def test_userdeined_added_update_to_preview(webtest_admin, testadmin):
         },
     )
 
-    assert resp.status_int == 302
+    assert resp.status_int == 302, resp.content.decode()
     assert resp.location.endswith("/admin/content_settings/contentsetting/")
 
     up.refresh_from_db()

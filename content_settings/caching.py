@@ -59,6 +59,9 @@ def set_new_type(
 
     from .conf import USER_DEFINED_TYPES_INSTANCE
 
+    if not is_populated():
+        populate()
+
     prev_cs_type = cs_type = DATA.ALL_USER_DEFINES.get(name)
 
     if not cs_type or cs_type.tags != tags_set or cs_type.help != help:
@@ -75,6 +78,9 @@ def replace_user_type(name: str, cs_type: BaseSetting) -> Optional[BaseSetting]:
     """
     replace the user defined type with the new one. The previous type is returned.
     """
+    if not is_populated():
+        populate()
+
     prev_cs_type = DATA.ALL_USER_DEFINES.get(name)
     DATA.ALL_USER_DEFINES[name] = cs_type
     return prev_cs_type
@@ -89,9 +95,7 @@ def set_new_value(name: str, new_value: str, version: Optional[str] = None) -> s
     if version is not None - it will be verified against the version of the type
     """
     cs_type = get_type_by_name(name)
-    if cs_type is None:
-        raise ValueError("NONE")
-        return None
+    assert cs_type is not None, f"Can't find type for {name}"
 
     prev_value = get_raw_value(name)
 

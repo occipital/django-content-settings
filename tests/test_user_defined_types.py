@@ -181,8 +181,7 @@ def test_reset_unknown_type():
         value="Some Title Prefix",
         user_defined_type="line",
     )
-    cs.user_defined_type = "unknown"
-    cs.save()
+    ContentSetting.objects.filter(name="PREFIX").update(user_defined_type="unknown")
 
     assert set_initial_values_for_db(apply=True) == [("PREFIX", "delete")]
 
