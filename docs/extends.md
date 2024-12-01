@@ -40,12 +40,12 @@ To go beyond predefined functions, you can create your own custom access rule fu
 
 ## Custom Prefix for Settings
 
-Several built-in prefixes, such as `withtag__` and `lazy__`, are available ([see full list here](access.md#prefix)). However, you can register your own prefixes using the `conf.register_prefix` decorator.
+Several built-in prefixes, such as `withtag__` and `lazy__`, are available ([see full list here](access.md#prefix)). However, you can register your own prefixes using the `store.register_prefix` decorator.
 
 #### Example:
 
 ```python
-from content_settings.conf import register_prefix
+from content_settings.store import register_prefix
 from content_settings.caching import get_value
 
 @register_prefix("endswith")

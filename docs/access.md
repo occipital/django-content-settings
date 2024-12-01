@@ -146,7 +146,7 @@ all_main = content_settings.startswith__MAIN
 
 ### Custom Prefix
 
-You can register your own prefix using the `conf.register_prefix` decorator. Read more about it in the [article about Possible Extensions](extends.md).
+You can register your own prefix using the `store.register_prefix` decorator. Read more about it in the [article about Possible Extensions](extends.md).
 
 ## Assigning Values
 

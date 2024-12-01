@@ -7,8 +7,8 @@ It has the following global variables:
 * `USER_DEFINED_TYPES_INITIAL: Dict[str, BaseSetting]` - key is a slug of the user defined type, value is a type without tags and help text
 * `USER_DEFINED_TYPES_NAME: Dict[str, str]` - the name of the user defined types
 * `ALL: Dict[str, BaseSetting]` - the all registereg settings types
-* `PREFIXSES: Dict[str, Callable]` - all registereg prefixes (using `register_prefix` decorator)
 * `CALL_TAGS: Optional[List[Callable]]` - the list of function that is taken from `CONTENT_SETTINGS_TAGS` setting and used to generate tags for settings.
+* `CONSTANTS: Set[str]` - a set of names of content settings that are constants. Those are not stored in DB.
 """
 
 from importlib import import_module
@@ -28,7 +28,14 @@ from .caching import (
     get_form_checksum,
 )
 from .settings import USER_DEFINED_TYPES, TAGS, CHAIN_VALIDATE
-from .store import add_app_name, get_admin_head, add_admin_head, get_admin_raw_js
+from .store import (
+    add_app_name,
+    get_admin_head,
+    add_admin_head,
+    get_admin_raw_js,
+    register_prefix,
+    PREFIXSES,
+)
 from .context_managers import content_settings_context
 from .utils import import_object
 
@@ -36,7 +43,6 @@ USER_DEFINED_TYPES_INSTANCE: Dict[str, Callable] = {}
 USER_DEFINED_TYPES_INITIAL: Dict[str, BaseSetting] = {}
 USER_DEFINED_TYPES_NAME: Dict[str, str] = {}
 ALL: Dict[str, BaseSetting] = {}
-PREFIXSES: Dict[str, Callable] = {}
 CALL_TAGS: Optional[List[Callable]] = None
 CONSTANTS: Set[str] = set()
 
@@ -80,19 +86,6 @@ def gen_tags(name: str, cs_type: BaseSetting, value: Any) -> Set[str]:
     for func_tag in get_call_tags():
         tags |= func_tag(name, cs_type, value)
     return tags
-
-
-def register_prefix(name: str) -> Callable:
-    """
-    decorator for registration a new prefix
-    """
-
-    def _cover(func: Callable) -> Callable:
-        assert name not in PREFIXSES
-        PREFIXSES[name] = func
-        return func
-
-    return _cover
 
 
 @register_prefix("lazy")
