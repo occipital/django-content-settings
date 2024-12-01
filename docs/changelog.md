@@ -2,7 +2,11 @@
 
 # Changelog
 
-### master
+### 0.27 cacheing alrorithm and speed optimization
+
+* No precached py objects
+* speed optimization of working with constantants
+* `register_prefix` moved to `store` module
 
 * `CONTENT_SETTINGS_PRECACHED_PY_VALUES`
 

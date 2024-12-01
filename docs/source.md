@@ -201,43 +201,39 @@ It has the following global variables:
 * `USER_DEFINED_TYPES_INITIAL: Dict[str, BaseSetting]` - key is a slug of the user defined type, value is a type without tags and help text
 * `USER_DEFINED_TYPES_NAME: Dict[str, str]` - the name of the user defined types
 * `ALL: Dict[str, BaseSetting]` - the all registereg settings types
-* `PREFIXSES: Dict[str, Callable]` - all registereg prefixes (using `register_prefix` decorator)
 * `CALL_TAGS: Optional[List[Callable]]` - the list of function that is taken from `CONTENT_SETTINGS_TAGS` setting and used to generate tags for settings.
+* `CONSTANTS: Set[str]` - a set of names of content settings that are constants. Those are not stored in DB.
 
-### def is_constant(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L44)</sup>
+### def is_constant(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L50)</sup>
 
 check if the setting is constant
 
-### def get_call_tags()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L51)</sup>
+### def get_call_tags()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L57)</sup>
 
 returns list of functions from `CONTENT_SETTINGS_TAGS` setting that are used to generate tags for settings.
 the result is cached in `CALL_TAGS` variable.
 
-### def gen_tags(name: str, cs_type: BaseSetting, value: Any)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L75)</sup>
+### def gen_tags(name: str, cs_type: BaseSetting, value: Any)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L81)</sup>
 
 generate tags based on `CONTENT_SETTINGS_TAGS` setting.
 
-### def register_prefix(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L85)</sup>
-
-decorator for registration a new prefix
-
-### def lazy_prefix(name: str, suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L99)</sup>
+### def lazy_prefix(name: str, suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L92)</sup>
 
 lazy__ prefix that gives a lazy proxy object by the name of the setting.
 
-### def type_prefix(name: str, suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L107)</sup>
+### def type_prefix(name: str, suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L100)</sup>
 
 type__ prefix that return setting type by the name of the setting.
 
-### def startswith_prefix(name: str, suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L117)</sup>
+### def startswith_prefix(name: str, suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L110)</sup>
 
 startswith__ prefix that returns all settings as a dict (setting name: setting value) that start with the given name.
 
-### def withtag_prefix(name: str, suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L127)</sup>
+### def withtag_prefix(name: str, suffix: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L120)</sup>
 
 withtag__ prefix that returns all settings as a dict (setting name: setting value) that have the given tag.
 
-### def split_attr(value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L139)</sup>
+### def split_attr(value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L132)</sup>
 
 splits the name of the attr on 3 parts: prefix, name, suffix
 
@@ -245,13 +241,13 @@ splits the name of the attr on 3 parts: prefix, name, suffix
 * name should be uppercase
 * suffix can be any string, but not uppercase
 
-### def validate_all_with_context(context: Dict[str, Any])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L170)</sup>
+### def validate_all_with_context(context: Dict[str, Any])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L163)</sup>
 
 validate all settings with the given context to make sure all of them are valid.
 
 Do not perform if `CONTENT_SETTINGS_CHAIN_VALIDATE = False`
 
-### def get_str_tags(cs_name: str, cs_type: BaseSetting, value: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L190)</sup>
+### def get_str_tags(cs_name: str, cs_type: BaseSetting, value: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L183)</sup>
 
     get tags as a text (joined by `
 `) for specific setting type. name and value are used to generate content tags.
@@ -259,7 +255,7 @@ Do not perform if `CONTENT_SETTINGS_CHAIN_VALIDATE = False`
     from saving in DB.
     
 
-### def set_initial_values_for_db(apply: bool = False)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L206)</sup>
+### def set_initial_values_for_db(apply: bool = False)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L199)</sup>
 
 sync settings with DB.
     * creates settings that are not in DB
@@ -268,25 +264,25 @@ sync settings with DB.
 
 attribute `apply` is used to apply changes in DB immediately. Can be used in tests.
 
-### class _Settings()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L365)</sup>
+### class _Settings()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L358)</sup>
 
 the main object that uses for getting settings for cache.
 
-#### def __dir__(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L395)</sup>
+#### def __dir__(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L388)</sup>
 
 dir() returns all settings names
 
-#### def form_checksum(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L407)</sup>
+#### def form_checksum(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L400)</sup>
 
 the current checksum of the settings.
 
 used for validation of settings weren't changed over time.
 
-#### def admin_head(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L416)</sup>
+#### def admin_head(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L409)</sup>
 
 the admin head.
 
-#### def admin_raw_js(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L423)</sup>
+#### def admin_raw_js(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L416)</sup>
 
 the admin raw js.
 
@@ -577,45 +573,49 @@ the module is used for collecting information.
 
 the `APP_NAME_STORE` a dict `setting_name: app_name` is used to store the name of the app that uses the setting. Which later on can be used in `tags.app_name` to generate a tag with the name of the app.
 
-### def add_app_name(cs_name: str, app_name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L17)</sup>
+### def add_app_name(cs_name: str, app_name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L21)</sup>
 
 add the name of the app that uses the setting.
 
-### def cs_has_app(cs_name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L24)</sup>
+### def cs_has_app(cs_name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L28)</sup>
 
 check if the setting has an app name.
 
-### def get_app_name(cs_name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L31)</sup>
+### def get_app_name(cs_name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L35)</sup>
 
 get the name of the app that uses the setting.
 
-### def add_admin_head_css(css_url: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L38)</sup>
+### def add_admin_head_css(css_url: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L42)</sup>
 
 add a css url to the admin head.
 
-### def add_admin_head_js(js_url: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L46)</sup>
+### def add_admin_head_js(js_url: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L50)</sup>
 
 add a js url to the admin head.
 
-### def add_admin_head_css_raw(css: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L54)</sup>
+### def add_admin_head_css_raw(css: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L58)</sup>
 
 add a css code to the admin head.
 
-### def add_admin_head_js_raw(js: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L62)</sup>
+### def add_admin_head_js_raw(js: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L66)</sup>
 
 add a js code to the admin head.
 
-### def add_admin_head(setting: BaseSetting)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L70)</sup>
+### def add_admin_head(setting: BaseSetting)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L74)</sup>
 
 add a setting to the admin head.
 
-### def get_admin_head()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L84)</sup>
+### def get_admin_head()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L88)</sup>
 
 get the admin head.
 
-### def get_admin_raw_js()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L100)</sup>
+### def get_admin_raw_js()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L104)</sup>
 
 get the admin raw js.
+
+### def register_prefix(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/store.py#L116)</sup>
+
+decorator for registration a new prefix
 
 
 ## tags
