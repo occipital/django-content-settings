@@ -200,16 +200,43 @@ def get_raw_value(name: str) -> Optional[str]:
     """
     get the raw value of the setting by its name
     """
+    from .conf import is_constant
+
+    if is_constant(name):
+        return get_type_by_name(name).default
+
     if not is_populated():
         populate()
 
     return DATA.ALL_RAW_VALUES.get(name)
 
 
+def get_constant_py_value(name: str) -> Any:
+    """
+    get the python object of the constant setting by its name
+    """
+    # constant can work without populated data
+    if DATA.ALL_VALUES and name in DATA.ALL_VALUES:
+        return DATA.ALL_VALUES[name]
+
+    cs_type = get_type_by_name(name)
+
+    if DATA.ALL_VALUES is None:
+        DATA.ALL_VALUES = {}
+    DATA.ALL_VALUES[name] = cs_type.to_python(cs_type.default)
+
+    return DATA.ALL_VALUES[name]
+
+
 def get_py_value(name: str) -> Any:
     """
     get the python object of the setting by its name
     """
+    from .conf import is_constant
+
+    if is_constant(name):
+        return get_constant_py_value(name)
+
     if not is_populated():
         populate()
 
@@ -226,6 +253,9 @@ def get_py_value(name: str) -> Any:
 
 
 def is_populated() -> bool:
+    """
+    check if the local thread is populated with the values from the database and it is actual
+    """
     return getattr(DATA, "POPULATED", False)
 
 
@@ -260,7 +290,7 @@ def populate() -> None:
         return
 
     set_populated(True)
-    if DATA.ALL_VALUES is None:
+    if DATA.ALL_RAW_VALUES is None:
         DATA.ALL_VALUES = {}
         DATA.ALL_RAW_VALUES = {}
         DATA.ALL_USER_DEFINES = {}

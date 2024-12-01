@@ -38,18 +38,14 @@ USER_DEFINED_TYPES_NAME: Dict[str, str] = {}
 ALL: Dict[str, BaseSetting] = {}
 PREFIXSES: Dict[str, Callable] = {}
 CALL_TAGS: Optional[List[Callable]] = None
+CONSTANTS: Set[str] = set()
 
 
-if USER_DEFINED_TYPES:
-    for slug, imp_line, name in USER_DEFINED_TYPES:
-        type_class = import_object(imp_line)
-        USER_DEFINED_TYPES_INSTANCE[slug] = partial(
-            type_class, user_defined_slug=slug, version=type_class.version
-        )
-        initial_val = USER_DEFINED_TYPES_INSTANCE[slug]()
-        USER_DEFINED_TYPES_INITIAL[slug] = initial_val
-        add_admin_head(initial_val)
-        USER_DEFINED_TYPES_NAME[slug] = name
+def is_constant(name: str) -> bool:
+    """
+    check if the setting is constant
+    """
+    return name in CONSTANTS
 
 
 def get_call_tags() -> List[Callable]:
@@ -138,37 +134,6 @@ def withtag_prefix(name: str, suffix: str) -> Dict[str, Any]:
         if name in get_type_by_name(k).get_tags()
         or name.lower() in get_type_by_name(k).get_tags()
     }
-
-
-for app_config in apps.app_configs.values():
-    app = app_config.name
-    try:
-        content_settings = import_module(app + ".content_settings")
-    except ImportError as e:
-        if e.name != app + ".content_settings":
-            raise
-        continue
-    for attr in dir(content_settings):
-        if not attr.isupper():
-            continue
-
-        val = getattr(content_settings, attr)
-
-        if not isinstance(val, BaseSetting):
-            continue
-
-        assert attr not in ALL, "Content Setting {} defined twice".format(attr)
-
-        if attr in ALL and not ALL[attr].user_defined_slug:
-            raise AssertionError("Overwriting content setting {}".format(attr))
-
-        assert (
-            not val.user_defined_slug
-        ), "Do not set user_defined_slug in content_settings.py"
-
-        ALL[attr] = val
-        add_admin_head(val)
-        add_app_name(attr, app)
 
 
 def split_attr(value: str) -> Tuple[Optional[str], str, Optional[str]]:
@@ -340,6 +305,61 @@ def set_initial_values_for_db(apply: bool = False) -> List[Tuple[str, str]]:
                 execute(cs.name, "delete", lambda: cs.delete())
 
     return changes
+
+
+#################################################
+# Loop for defining ALL types and other globals #
+#################################################
+
+if USER_DEFINED_TYPES:
+    for slug, imp_line, name in USER_DEFINED_TYPES:
+        type_class = import_object(imp_line)
+        USER_DEFINED_TYPES_INSTANCE[slug] = partial(
+            type_class, user_defined_slug=slug, version=type_class.version
+        )
+        initial_val = USER_DEFINED_TYPES_INSTANCE[slug]()
+        USER_DEFINED_TYPES_INITIAL[slug] = initial_val
+        add_admin_head(initial_val)
+        USER_DEFINED_TYPES_NAME[slug] = name
+
+
+for app_config in apps.app_configs.values():
+    app = app_config.name
+    try:
+        content_settings = import_module(app + ".content_settings")
+    except ImportError as e:
+        if e.name != app + ".content_settings":
+            raise
+        continue
+    for attr in dir(content_settings):
+        if not attr.isupper():
+            continue
+
+        val = getattr(content_settings, attr)
+
+        if not isinstance(val, BaseSetting):
+            continue
+
+        assert attr not in ALL, "Content Setting {} defined twice".format(attr)
+
+        if attr in ALL and not ALL[attr].user_defined_slug:
+            raise AssertionError("Overwriting content setting {}".format(attr))
+
+        assert (
+            not val.user_defined_slug
+        ), "Do not set user_defined_slug in content_settings.py"
+
+        if val.constant:
+            CONSTANTS.add(attr)
+
+        ALL[attr] = val
+        add_admin_head(val)
+        add_app_name(attr, app)
+
+
+##############################################
+# The Main Content Settings Class and object #
+##############################################
 
 
 class _Settings:

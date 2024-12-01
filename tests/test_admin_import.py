@@ -254,7 +254,7 @@ def test_value_imported_not_applied(webtest_admin):
         },
     )
 
-    assert resp.status_int == 302
+    assert resp.status_int == 302, resp.content
     assert resp.location.endswith("/admin/content_settings/contentsetting/")
     assert ContentSetting.objects.get(name="XARCHER_DEVIDER").value == "10"
 
