@@ -243,9 +243,15 @@ class DjangoModelTemplateMixin:
     template_model_queryset: Optional[Union[QuerySet, Callable]] = None
     template_object_name: str = "object"
 
+    def get_template_model_queryset(self):
+        return self.template_model_queryset
+
+    def get_template_object_name(self):
+        return self.template_object_name
+
     def get_template_args_default(self):
         return {
-            self.template_object_name: required,
+            self.get_template_object_name(): required,
             **super().get_template_args_default(),
         }
 
@@ -253,13 +259,14 @@ class DjangoModelTemplateMixin:
         """
         generates the first validator based of template_model_queryset, which will be used for validation and for preview.
         """
-        if self.template_model_queryset is not None:
-            if isinstance(self.template_model_queryset, QuerySet):
-                first = self.template_model_queryset.first()
+        template_model_queryset = self.get_template_model_queryset()
+        if template_model_queryset is not None:
+            if isinstance(template_model_queryset, QuerySet):
+                first = template_model_queryset.first()
                 if first is not None:
                     return call_validator(first)
-            elif callable(self.template_model_queryset):
-                return gen_signle_arg_call_validator(self.template_model_queryset)
+            elif callable(template_model_queryset):
+                return gen_signle_arg_call_validator(template_model_queryset)
             else:
                 raise ValueError(
                     _("template_model_queryset must be a QuerySet or a callable")
