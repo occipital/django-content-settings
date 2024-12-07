@@ -2,13 +2,16 @@
 
 # Changelog
 
+### master
+
+* `CONTENT_SETTINGS_PRECACHED_PY_VALUES` is `False` byt default. And become experimental feature.
+* update `DjangoModelTemplateMixin`
+
 ### 0.27 cacheing alrorithm and speed optimization
 
 * No precached py objects
 * speed optimization of working with constantants
 * `register_prefix` moved to `store` module
-
-* `CONTENT_SETTINGS_PRECACHED_PY_VALUES`
 
 ### 0.26 cache triggers and setting assign
 
