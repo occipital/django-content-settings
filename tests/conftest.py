@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from tests import (
     testing_settings_full,
     testing_settings_min,
+    testing_precached_py_values,
 )
 
 
@@ -98,6 +99,7 @@ def pytest_configure(config):
         ),
         PASSWORD_HASHERS=("django.contrib.auth.hashers.MD5PasswordHasher",),
         **content_settings_settings,
+        CONTENT_SETTINGS_PRECACHED_PY_VALUES=testing_precached_py_values,
     )
 
     django.setup()

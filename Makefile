@@ -10,6 +10,15 @@ test-full:
 test:
 	poetry run pytest
 
+test-cache:
+	TESTING_PRECACHED_PY_VALUES=1 poetry run pytest
+
+test-cache-full:
+	TESTING_PRECACHED_PY_VALUES=1 TESTING_SETTINGS=full poetry run pytest
+
+test-cache-min:
+	TESTING_PRECACHED_PY_VALUES=1 TESTING_SETTINGS=min poetry run pytest
+
 test-v:
 	poetry run pytest -vv -s
 

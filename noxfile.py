@@ -21,9 +21,11 @@ def tests(session, django, pyyaml):
     session.install("django-webtest~=1.9.11")
     session.install("-e", ".")
     for testing_settings in ["min", "full", "normal"]:
-        session.run(
-            "pytest",
-            env={
-                "TESTING_SETTINGS": testing_settings,
-            },
-        )
+        for precache in (True, False):
+            session.run(
+                "pytest",
+                env={
+                    "TESTING_SETTINGS": testing_settings,
+                    **({"TESTING_PRECACHED_PY_VALUES": "1"} if precache else {}),
+                },
+            )

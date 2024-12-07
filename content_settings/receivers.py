@@ -13,6 +13,7 @@ from .settings import (
     UPDATE_DB_VALUES_BY_MIGRATE,
     CHECK_UPDATE_CELERY,
     CHECK_UPDATE_HUEY,
+    PRECACHED_PY_VALUES,
 )
 
 from django.dispatch import receiver
@@ -21,6 +22,7 @@ from .caching import (
     check_update,
     recalc_checksums,
     validate_default_values,
+    populate,
 )
 from .conf import set_initial_values_for_db, get_type_by_name, get_str_tags
 from .models import ContentSetting, HistoryContentSetting
@@ -122,6 +124,13 @@ def create_history_settings_delete(sender, instance, **kwargs):
 @receiver(connection_created)
 def validate_default_values_for_connection(*args, **kwargs):
     validate_default_values()
+
+
+if PRECACHED_PY_VALUES:
+
+    @receiver(connection_created)
+    def reset_all_values_by_connection(*args, **kwargs):
+        populate()
 
 
 @receiver(request_started)

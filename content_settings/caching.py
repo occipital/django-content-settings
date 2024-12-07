@@ -21,6 +21,7 @@ from .settings import (
     VALIDATE_DEFAULT_VALUE,
     CACHE_TRIGGER,
     USER_DEFINED_TYPES,
+    PRECACHED_PY_VALUES,
 )
 
 
@@ -101,7 +102,9 @@ def set_new_value(name: str, new_value: str, version: Optional[str] = None) -> s
 
     if version is None or cs_type.version == version and prev_value != new_value:
         DATA.ALL_RAW_VALUES[name] = new_value
-        if name in DATA.ALL_VALUES:
+        if PRECACHED_PY_VALUES:
+            DATA.ALL_VALUES[name] = cs_type.to_python(new_value)
+        elif name in DATA.ALL_VALUES:
             DATA.ALL_VALUES.pop(name)
 
     return prev_value
@@ -414,7 +417,6 @@ def check_update() -> None:
     """
     if not is_populated():
         return
-
     if TRIGGER.check():
         set_populated(False)
 

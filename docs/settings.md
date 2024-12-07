@@ -35,9 +35,9 @@ Additional keys (besides `"backend"`) vary depending on the backend. [Read more 
 
 ### `CONTENT_SETTINGS_PRECACHED_PY_VALUES`
 
-**Default**: `True`
+**Default**: `False`
 
-Generate Py Objects at the very beginning, before we start accepting requests. If you have too many settings like that - you might want to disable it for commands.
+**Experemental Feature:** Generate Py Objects at the very beginning, before we start accepting requests.
 
 ---
 
