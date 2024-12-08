@@ -7,6 +7,8 @@ from django.core.cache import cache
 from content_settings.models import ContentSetting
 from content_settings.caching import TRIGGER
 
+from . import testing_precached_py_values
+
 pytestmark = [pytest.mark.django_db(transaction=True)]
 
 
@@ -162,7 +164,43 @@ def test_contants_do_not_fetch_from_db():
         assert mock_get_db_objects.call_count == 0
 
 
-"""
-TODO:
-- access to limited API (not fetch all) - triggers only limited amount of py objects
-"""
+TOTAL_FULL_BY_CHACHED = 3 if testing_precached_py_values else 2
+
+
+def test_full_cached():
+    """
+    processing py should not be triggered only once
+    """
+    with patch(
+        "tests.books.content_settings.to_py_processor", side_effect=lambda v: v
+    ) as mock_to_py_processor:
+        resp = Client().get("/books/fetch/by/")
+        assert resp.status_code == 200
+        assert resp.json() == {"BY_CLOSED": False, "BY_OPEN": True}
+        assert mock_to_py_processor.call_count == TOTAL_FULL_BY_CHACHED
+
+    with patch(
+        "tests.books.content_settings.to_py_processor", side_effect=lambda v: v
+    ) as mock_to_py_processor:
+        resp = Client().get("/books/fetch/by/")
+        assert resp.status_code == 200
+        assert mock_to_py_processor.call_count == 0
+
+
+def test_full_cached_updated_only_when_changed():
+    with patch(
+        "tests.books.content_settings.to_py_processor", side_effect=lambda v: v
+    ) as mock_to_py_processor:
+        resp = Client().get("/books/fetch/by/")
+        assert resp.status_code == 200
+        assert mock_to_py_processor.call_count == TOTAL_FULL_BY_CHACHED
+
+    ContentSetting.objects.filter(name="BY_OPEN").update(value="0")
+    cache.set(TRIGGER.cache_key, "123")
+
+    with patch(
+        "tests.books.content_settings.to_py_processor", side_effect=lambda v: v
+    ) as mock_to_py_processor:
+        resp = Client().get("/books/fetch/by/")
+        assert resp.status_code == 200
+        assert mock_to_py_processor.call_count == 1

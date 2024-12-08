@@ -14,6 +14,7 @@ from content_settings.types.mixins import (
     mix,
     PositiveValidationMixin,
     AdminPreviewSuffixesMixin,
+    ProcessorsMixin,
 )
 from content_settings.types.markup import SimpleCSV
 from content_settings.types.template import (
@@ -74,6 +75,11 @@ BOOKS_ON_HOME_PAGE = mix(PositiveValidationMixin, SimpleInt)(
     "3", help="The number of books to show on the home page"
 )
 
+
+def to_py_processor(value):
+    return value
+
+
 OPEN_DATE = DateString(
     "2023-01-01",
     fetch_permission=permissions.staff,
@@ -85,8 +91,29 @@ IS_OPEN = SimpleBool(
 )
 
 
-IS_CLOSED = SimpleBool(
+IS_CLOSED = mix(ProcessorsMixin, SimpleBool)(
     "0",
+    processors=[
+        lambda a: to_py_processor(a),
+    ],
+    fetch_permission=permissions.any,
+)
+
+
+BY_CLOSED = mix(ProcessorsMixin, SimpleBool)(
+    "0",
+    processors=[
+        lambda a: to_py_processor(a),
+    ],
+    fetch_permission=permissions.any,
+)
+
+
+BY_OPEN = mix(ProcessorsMixin, SimpleBool)(
+    "1",
+    processors=[
+        lambda a: to_py_processor(a),
+    ],
     fetch_permission=permissions.any,
 )
 

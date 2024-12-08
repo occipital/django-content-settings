@@ -80,6 +80,11 @@ urlpatterns = [
         name="fetch_is",
     ),
     path(
+        "fetch/by/",
+        FetchSettingsView.as_view(names=gen_startswith("BY_")),
+        name="fetch_by",
+    ),
+    path(
         "fetch/is-and-title/",
         FetchSettingsView.as_view(names=(gen_startswith("IS_"), "TITLE")),
         name="fetch_is_and_title",
@@ -87,7 +92,7 @@ urlpatterns = [
     path(
         "fetch/general/",
         FetchSettingsView.as_view(names=gen_hastag("general")),
-        name="fetch_is",
+        name="fetch_general",
     ),
     path(
         "fetch/all/",
