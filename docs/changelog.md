@@ -2,7 +2,7 @@
 
 # Changelog
 
-### master
+### 0.28 precached Py values and to_raw
 
 * `CONTENT_SETTINGS_PRECACHED_PY_VALUES` is `False` byt default. And become experimental feature.
 * update `DjangoModelTemplateMixin`
