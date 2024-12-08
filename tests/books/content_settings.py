@@ -87,6 +87,9 @@ OPEN_DATE = mix(ToRawProcessorsMixin, DateString)(
     "2023-01-01",
     fetch_permission=permissions.staff,
     to_raw_processor=lambda a: str(a),
+    to_raw_processor_suffixes={
+        "tuple": lambda a: str(date(*a)),
+    },
     help="The date the book store will open",
 )
 

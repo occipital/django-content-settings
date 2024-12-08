@@ -95,3 +95,10 @@ def test_to_raw_processor():
     assert content_settings.OPEN_DATE == date(2023, 1, 1)
 
     assert ContentSetting.objects.get(name="OPEN_DATE").value == "2023-01-01"
+
+
+def test_to_raw_processor_suffixes():
+    content_settings.OPEN_DATE__tuple = (2023, 1, 1)
+    assert content_settings.OPEN_DATE == date(2023, 1, 1)
+
+    assert ContentSetting.objects.get(name="OPEN_DATE").value == "2023-01-01"
