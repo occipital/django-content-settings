@@ -1,38 +1,38 @@
 # Caching
 
-There are two storages of raw data - DB and thread data. The cache is using to signal that it is time for local cache to be updated.
+There are two storage mechanisms for raw data: the database (DB) and thread-local storage. The cache is used to signal when the local cache needs to be updated.
 
-During the first run, a checksum is calculated for all registered variables. The checksum will be used as a cash key that signalise that value is is updated and need to be updated from DB.
+During the first run, a checksum is calculated for all registered variables. This checksum acts as a cache key that signals when a value has been updated and needs to be refreshed from the DB.
 
-The value from DB is taken only when at least one setting in the thread was requested. In that case we request data from the DB only when it is requred.
+Values from the DB are retrieved only when at least one setting in the thread is requested. In this case, data is fetched from the DB only when required.
 
-When at least one setting was requested - all of the raw values are fetched as saved in the thread. In that case all of the settings are consistent.
+Once at least one setting is requested, all raw values are fetched and saved in the thread-local storage. This ensures that all settings remain consistent.
 
-Raw data of a setting converts to py object of teh setting only when the setting was requested. In that case system do not spend too much time to convert all of the raw data. And since raw data can only be converted to on py object - it is ok to be converted any time.
+Raw data for a setting is converted to a Python object only when the setting is requested. This avoids unnecessary processing of all raw data. Since raw data can be converted to a Python object at any time, this approach is efficient.
 
-Every request system checks the cache to check is the checksum value was changed. And if it is changed - system marks the thread data as not populated.
+For every request, the system checks the cache to verify if the checksum value has changed. If it has, the thread-local data is marked as unpopulated.
 
-When the system repopulates (the setting is requested again after being unpopulated) - it updates all of the raw values but py object will be invalidated only in case of raw value was changed.
+When the system repopulates (i.e., a setting is requested again after being marked unpopulated), it updates all raw values. However, Python objects are invalidated only if the corresponding raw value has changed.
 
-The cache trigger class is responsible for updating Py values when corresponding database values are updated. 
+The cache trigger class is responsible for updating Python objects when the corresponding database values are updated.
 
 The default trigger class is `content_settings.cache_triggers.VersionChecksum`, and its name is stored in [`CONTENT_SETTINGS_CACHE_TRIGGER`](settings.md#content_settings_cache_trigger).
 
 ---
 
-## Raw to Py to Value
+## Raw to Python to Value
 
 The journey from a database raw value to the setting's final returned value (`settings` attribute) consists of two stages:
 
-1. **Creating a Py Object from the Raw Value**:
-   - The process of retrieving an updated value includes converting the raw value into a Py object.
+1. **Creating a Python Object from the Raw Value**:
+   - Retrieving an updated value involves converting the raw value into a Python object.
    
 2. **Using the `give` Function**:
-   - The `give` function of the type class converts the Py object into the attribute's final value.
+   - The `give` function of the type class converts the Python object into the attribute's final value.
 
 ### Behavior for Different Types:
 - **Simple Types**: 
-   - The `give` function directly returns the Py object.
+   - The `give` function directly returns the Python object.
    
 - **Complex Types**:
    - The `give` function can:
@@ -43,7 +43,7 @@ The journey from a database raw value to the setting's final returned value (`se
 
 ## When Is the Checksum Validated?
 
-The checksum is checked in the following scenarios:
+The checksum is validated in the following scenarios:
 
 - **At the Beginning of a Request**:
   - Triggered by `signals.check_update_for_request`.
@@ -53,6 +53,18 @@ The checksum is checked in the following scenarios:
   
 - **Before a Huey Task (if Huey is available)**:
   - Triggered by `signals.check_update_for_huey`.
+
+---
+
+## Precached Python Values
+
+*Experimental Feature*
+
+The system allows all Python objects to be precached for each thread at the time the thread starts (e.g., when the DB connection is initialized).
+
+To activate this feature, set: `CONTENT_SETTINGS_PRECACHED_PY_VALUES = True`
+
+Note: This feature might cause issues if a new thread is started for every request.
 
 See also [`content_settings.caching`](source.md#caching).
 
