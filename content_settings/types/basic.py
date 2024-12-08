@@ -496,6 +496,12 @@ class SimpleString(BaseSetting):
 
         return call_base_str(self.get_suffixes(value)[suffix], value)
 
+    def to_raw(self, value: Any, suffix: Optional[str] = None) -> str:
+        """
+        Converts value that was given by the setting attribute into the raw value
+        """
+        return value
+
     def give_python(self, value: str, suffix=None) -> Any:
         return self.give(self.to_python(value), suffix)
 

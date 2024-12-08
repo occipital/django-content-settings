@@ -1,4 +1,4 @@
-from typing import Any, Mapping, Optional, Union, Dict, Tuple, Iterable
+from typing import Any, Optional, Union, Dict, Tuple, Iterable, Callable
 from pprint import pformat
 from decimal import Decimal
 
@@ -68,6 +68,27 @@ class GiveProcessorsMixin:
                 ret = call_base_str(processor_func, ret)
 
         return ret
+
+
+class ToRawProcessorsMixin:
+    """
+    Mixin that adds to_raw processor to the type.
+    """
+
+    to_raw_processor: Optional[Callable] = None
+    to_raw_processor_suffixes: Optional[Dict[str, Callable]] = None
+
+    def to_raw(self, value: Any, suffix: Optional[str] = None) -> str:
+        if suffix is None:
+            if self.to_raw_processor is None:
+                return super().to_raw(value, suffix)
+            else:
+                return self.to_raw_processor(value)
+        else:
+            if self.to_raw_processor_suffixes is None:
+                return super().to_raw(value, suffix)
+            else:
+                return self.to_raw_processor_suffixes[suffix](value)
 
 
 class MinMaxValidationMixin:

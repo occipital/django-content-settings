@@ -1,3 +1,5 @@
+from datetime import date
+
 from content_settings.types.basic import (
     SimpleString,
     SimpleText,
@@ -15,6 +17,7 @@ from content_settings.types.mixins import (
     PositiveValidationMixin,
     AdminPreviewSuffixesMixin,
     ProcessorsMixin,
+    ToRawProcessorsMixin,
 )
 from content_settings.types.markup import SimpleCSV
 from content_settings.types.template import (
@@ -80,9 +83,10 @@ def to_py_processor(value):
     return value
 
 
-OPEN_DATE = DateString(
+OPEN_DATE = mix(ToRawProcessorsMixin, DateString)(
     "2023-01-01",
     fetch_permission=permissions.staff,
+    to_raw_processor=lambda a: str(a),
     help="The date the book store will open",
 )
 

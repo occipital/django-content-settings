@@ -1,6 +1,14 @@
 init:
 	poetry install
 
+test-all:
+	make test-min
+	make test-full
+	make test
+	make test-cache
+	make test-cache-full
+	make test-cache-min
+
 test-min:
 	TESTING_SETTINGS=min poetry run pytest
 

@@ -372,18 +372,11 @@ class _Settings:
     def __setattr__(self, name: str, value: Union[str, Tuple]) -> None:
         prefix, name, suffix = split_attr(name)
         assert not prefix, "Can not set attribute with prefix"
-        assert not suffix, "Can not set attribute with suffix"
-        assert isinstance(value, str) or (
-            isinstance(value, tuple) and USER_DEFINED_TYPES
-        ), "You can set only raw value or user defined type"
 
         from .caching import set_new_db_value
 
-        if isinstance(value, str):
-            set_new_db_value(name, value)
-        else:
-            assert USER_DEFINED_TYPES, "User defined types are not enabled"
-            set_new_db_value(name, *value)
+        cs_type = get_type_by_name(name)
+        set_new_db_value(name, cs_type.to_raw(value, suffix))
 
     def __dir__(self):
         """

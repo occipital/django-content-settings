@@ -6,6 +6,8 @@
 
 * `CONTENT_SETTINGS_PRECACHED_PY_VALUES` is `False` byt default. And become experimental feature.
 * update `DjangoModelTemplateMixin`
+* `SimpleString.to_raw` - converts value that was given by the setting attribute into the raw value
+* allow to use suffixes for setting
 
 ### 0.27 cacheing alrorithm and speed optimization
 

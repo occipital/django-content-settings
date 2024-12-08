@@ -1,3 +1,4 @@
+from datetime import date
 import pytest
 
 from content_settings.types.basic import ValidationError
@@ -79,11 +80,6 @@ def test_assert_prefix_error():
         content_settings.startswith__TITLE = "1"
 
 
-def test_assert_suffix_error():
-    with pytest.raises(AssertionError):
-        content_settings.TITLE__suffix = "1"
-
-
 def test_assign_bool_value():
     content_settings.IS_OPEN = "+"
     assert content_settings.IS_OPEN is True
@@ -92,3 +88,10 @@ def test_assign_bool_value():
 def test_assign_non_valid_value():
     with pytest.raises(ValidationError):
         content_settings.IS_OPEN = "123"
+
+
+def test_to_raw_processor():
+    content_settings.OPEN_DATE = date(2023, 1, 1)
+    assert content_settings.OPEN_DATE == date(2023, 1, 1)
+
+    assert ContentSetting.objects.get(name="OPEN_DATE").value == "2023-01-01"

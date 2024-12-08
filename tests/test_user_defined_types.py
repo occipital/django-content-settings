@@ -113,21 +113,6 @@ def test_simple_update_version():
     assert resp.json()["PREFIX"] == "Some Title Prefix"
 
 
-def test_assign_user_defined_setting():
-    from content_settings.conf import content_settings
-
-    content_settings.PREFIX = ("New Prefix", "line")
-
-    assert ContentSetting.objects.get(name="PREFIX").value == "New Prefix"
-    assert ContentSetting.objects.get(name="PREFIX").user_defined_type == "line"
-    assert content_settings.PREFIX == "New Prefix"
-
-    content_settings.PREFIX = "Updated Prefix"
-
-    assert ContentSetting.objects.get(name="PREFIX").value == "Updated Prefix"
-    assert content_settings.PREFIX == "Updated Prefix"
-
-
 def test_simple_in_other_var():
     cs = create_content_settings(
         name="PREFIX",

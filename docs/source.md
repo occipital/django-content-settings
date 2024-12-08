@@ -268,21 +268,21 @@ attribute `apply` is used to apply changes in DB immediately. Can be used in tes
 
 the main object that uses for getting settings for cache.
 
-#### def __dir__(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L388)</sup>
+#### def __dir__(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L381)</sup>
 
 dir() returns all settings names
 
-#### def form_checksum(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L400)</sup>
+#### def form_checksum(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L393)</sup>
 
 the current checksum of the settings.
 
 used for validation of settings weren't changed over time.
 
-#### def admin_head(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L409)</sup>
+#### def admin_head(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L402)</sup>
 
 the admin head.
 
-#### def admin_raw_js(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L416)</sup>
+#### def admin_raw_js(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L409)</sup>
 
 the admin raw js.
 
@@ -1040,31 +1040,35 @@ The will be returned as the content_settings attribute using python value of the
 
 Suffix can be used.
 
-### class SimpleText(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L503)</sup>
+#### def to_raw(self, value: Any, suffix: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L499)</sup>
+
+Converts value that was given by the setting attribute into the raw value
+
+### class SimpleText(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L509)</sup>
 
 Multiline text setting type.
 
-### class SimpleTextPreview(SimpleText)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L511)</sup>
+### class SimpleTextPreview(SimpleText)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L517)</sup>
 
 Multiline text setting type with preview. By default SimpleText and SimpleString don't have preview, but for showing preview in EachMixin, we need to have preview for each type.
 
-### class SimpleHTML(HTMLMixin, SimpleText)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L519)</sup>
+### class SimpleHTML(HTMLMixin, SimpleText)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L525)</sup>
 
 Multiline HTML setting type.
 
-### class URLString(EmptyNoneMixin, SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L527)</sup>
+### class URLString(EmptyNoneMixin, SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L533)</sup>
 
 URL setting type.
 
-### class EmailString(EmptyNoneMixin, SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L540)</sup>
+### class EmailString(EmptyNoneMixin, SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L546)</sup>
 
 Email setting type.
 
-### class SimpleInt(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L553)</sup>
+### class SimpleInt(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L559)</sup>
 
 Integer setting type.
 
-### class SimpleBool(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L567)</sup>
+### class SimpleBool(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L573)</sup>
 
 Boolean setting type.
 
@@ -1072,14 +1076,14 @@ Attributes:
 - yeses (Tuple[str]): Accepted values for True.
 - noes (Tuple[str]): Accepted values for False.
 
-### class SimpleDecimal(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L607)</sup>
+### class SimpleDecimal(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L613)</sup>
 
 Decimal setting type.
 
 Attributes:
 - decimal_json_as_string (bool): set False if you want to return the decimal as a float in the JSON view.
 
-### class SimplePassword(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L625)</sup>
+### class SimplePassword(SimpleString)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/basic.py#L631)</sup>
 
 Password setting type. It is not possible to fetch the value using API. In the admin panel, the value is hidden.
 
@@ -1235,7 +1239,11 @@ The processors is a pipeline of functions that are applied to the py object.
 
 Mixin that adds processors to the type.
 
-### class MinMaxValidationMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L73)</sup>
+### class ToRawProcessorsMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L73)</sup>
+
+Mixin that adds to_raw processor to the type.
+
+### class MinMaxValidationMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L94)</sup>
 
 Mixin that validates that value is between min_value and max_value.
 
@@ -1243,46 +1251,46 @@ Attributes:
 min_value: Minimum value. If None, then no minimum value.
 max_value: Maximum value. If None, then no maximum value.
 
-### class EmptyNoneMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L114)</sup>
+### class EmptyNoneMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L135)</sup>
 
 Mixin for types that returns None if value is empty string.
 
 Works only for `value_required=False`
 
-### class HTMLMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L132)</sup>
+### class HTMLMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L153)</sup>
 
 Mixin for types that should be displayed in HTML format.
 And also returned content should be marked as safe.
 
-### class PositiveValidationMixin(MinMaxValidationMixin)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L149)</sup>
+### class PositiveValidationMixin(MinMaxValidationMixin)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L170)</sup>
 
 Mixin that validates that value is positive.
 
-### class CallToPythonMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L157)</sup>
+### class CallToPythonMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L178)</sup>
 
 Mixin for callable types, or types that should be called to get the value.
 
-### class GiveCallMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L264)</sup>
+### class GiveCallMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L285)</sup>
 
 Mixin for callable types, but result of the call without artuments should be returned.
 
 If suffix is "call" then callable should be returned.
 
-### class MakeCallMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L291)</sup>
+### class MakeCallMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L312)</sup>
 
 Mixin for non-callable python objects will be returned as callable given.
 
 Can be usefull when you change callable types to a simple type but don't want to change the code that uses that type.
 
-### class AdminPreviewMenuMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L308)</sup>
+### class AdminPreviewMenuMixin()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L329)</sup>
 
 Mixin that adds a menu to the admin preview.
 
-### class AdminPreviewSuffixesMixin(AdminSuffixesMixinPreview, AdminPreviewMenuMixin)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L379)</sup>
+### class AdminPreviewSuffixesMixin(AdminSuffixesMixinPreview, AdminPreviewMenuMixin)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L400)</sup>
 
 Mixin shows links to preview different suffixes of the value in the admin preview.
 
-### class AdminActionsMixinPreview()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L409)</sup>
+### class AdminActionsMixinPreview()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/mixins.py#L430)</sup>
 
 Mixin that adds actions to the admin preview.
 
