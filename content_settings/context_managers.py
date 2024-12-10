@@ -45,6 +45,7 @@ class content_settings_context(ContextDecorator):
             set_new_value,
             replace_user_type,
             delete_user_value,
+            delete_value,
         )
 
         for name, new_value in self.prev_values.items():
@@ -53,4 +54,7 @@ class content_settings_context(ContextDecorator):
                     delete_user_value(name)
                     continue
                 replace_user_type(name, self.prev_types[name])
-            set_new_value(name, new_value)
+            if new_value is None:
+                delete_value(name)
+            else:
+                set_new_value(name, new_value)

@@ -597,6 +597,7 @@ class SimpleBool(SimpleString):
         return [f"'{v}'" if v else "empty" for v in self.yeses + self.noes]
 
     def validate(self, value):
+        super().validate(value)
         if value is None:
             raise ValidationError(
                 f"Value cannot be {', '.join(self.explained_accepted_values)} only"

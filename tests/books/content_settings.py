@@ -98,6 +98,18 @@ IS_OPEN = SimpleBool(
 )
 
 
+def validate_is_open(value):
+    from content_settings.conf import content_settings
+
+    assert content_settings.IS_OPEN == value
+
+
+IS_OPEN_VALIDATED = SimpleBool(
+    "1",
+    validators=(validate_is_open,),
+)
+
+
 IS_CLOSED = mix(ProcessorsMixin, SimpleBool)(
     "0",
     processors=[

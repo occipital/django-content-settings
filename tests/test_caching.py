@@ -5,7 +5,7 @@ from django.test import Client
 from django.core.cache import cache
 
 from content_settings.models import ContentSetting
-from content_settings.caching import TRIGGER
+from content_settings.caching import TRIGGER, validate_default_values
 
 from . import testing_precached_py_values
 
@@ -204,3 +204,12 @@ def test_full_cached_updated_only_when_changed():
         resp = Client().get("/books/fetch/by/")
         assert resp.status_code == 200
         assert mock_to_py_processor.call_count == 1
+
+
+def test_validate_default_values_do_not_trigger_db_access():
+    """
+    validate_default_values do not trigger the DB access
+    """
+    with patch("content_settings.caching.get_db_objects") as mock_get_db_objects:
+        validate_default_values()
+        assert mock_get_db_objects.call_count == 0

@@ -14,6 +14,7 @@ from .settings import (
     CHECK_UPDATE_CELERY,
     CHECK_UPDATE_HUEY,
     PRECACHED_PY_VALUES,
+    VALIDATE_DEFAULT_VALUE,
 )
 
 from django.dispatch import receiver
@@ -121,9 +122,11 @@ def create_history_settings_delete(sender, instance, **kwargs):
     )
 
 
-@receiver(connection_created)
-def validate_default_values_for_connection(*args, **kwargs):
-    validate_default_values()
+if VALIDATE_DEFAULT_VALUE:
+
+    @receiver(connection_created)
+    def validate_default_values_for_connection(*args, **kwargs):
+        validate_default_values()
 
 
 if PRECACHED_PY_VALUES:

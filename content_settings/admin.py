@@ -157,7 +157,6 @@ class ContentSettingForm(ModelForm):
 class ContentSettingFormWithChainValidation(ContentSettingForm):
     def clean(self):
         ret = super().clean()
-        # import ipdb; ipdb.set_trace()
         if self.instance and not self.errors:
             validate_all_with_context(
                 {

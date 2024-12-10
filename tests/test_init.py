@@ -36,7 +36,11 @@ def test_update_simple_text():
 
 
 def test_startswith():
-    assert content_settings.startswith__IS_ == {"IS_OPEN": True, "IS_CLOSED": False}
+    assert content_settings.startswith__IS_ == {
+        "IS_OPEN": True,
+        "IS_CLOSED": False,
+        "IS_OPEN_VALIDATED": True,
+    }
 
 
 def test_withtag():

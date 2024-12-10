@@ -111,6 +111,12 @@ def set_new_value(name: str, new_value: str, version: Optional[str] = None) -> s
     return prev_value
 
 
+def delete_value(name: str) -> Optional[str]:
+    if name in DATA.ALL_VALUES:
+        del DATA.ALL_VALUES[name]
+    return DATA.ALL_RAW_VALUES.pop(name, None)
+
+
 def set_new_db_value(name: str, value: str, *type_define) -> str:
     """
     set the new value for the setting in DB
@@ -270,6 +276,11 @@ def is_populated() -> bool:
 def set_populated(value: bool = True) -> None:
     DATA.POPULATED = value
 
+    if value and DATA.ALL_RAW_VALUES is None:
+        DATA.ALL_VALUES = {}
+        DATA.ALL_RAW_VALUES = {}
+        DATA.ALL_USER_DEFINES = {}
+
 
 def get_db_objects() -> Dict[str, Any]:
     """
@@ -298,10 +309,6 @@ def populate() -> None:
         return
 
     set_populated(True)
-    if DATA.ALL_RAW_VALUES is None:
-        DATA.ALL_VALUES = {}
-        DATA.ALL_RAW_VALUES = {}
-        DATA.ALL_USER_DEFINES = {}
 
     # test DB access
     try:
@@ -318,25 +325,25 @@ def populate() -> None:
 def validate_default_values():
     """
     validate default values for all of the registered settings.
-
-    Only is VALIDATE_DEFAULT_VALUE is True.
     """
-
-    if not VALIDATE_DEFAULT_VALUE:
-        return
-
     from .conf import ALL
 
-    with content_settings_context(
-        **{name: cs_type.default for name, cs_type in ALL.items()}
-    ):
-        for name, cs_type in ALL.items():
-            if not isinstance(cs_type.default, str):
-                continue
-            try:
-                cs_type.validate_value(cs_type.default)
-            except Exception as e:
-                raise AssertionError(f"Error validating {name}: {e}")
+    populated = is_populated()
+    set_populated(True)
+
+    try:
+        with content_settings_context(
+            **{name: cs_type.default for name, cs_type in ALL.items()}
+        ):
+            for name, cs_type in ALL.items():
+                if not isinstance(cs_type.default, str):
+                    continue
+                try:
+                    cs_type.validate_value(cs_type.default)
+                except Exception as e:
+                    raise AssertionError(f"Error validating {name}: {e}")
+    finally:
+        set_populated(populated)
 
 
 def reset_user_values(db: Optional[Dict[str, Any]] = None) -> None:
