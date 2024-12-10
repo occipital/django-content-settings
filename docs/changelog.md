@@ -2,6 +2,11 @@
 
 # Changelog
 
+### master
+
+* fix `validate_default_values` - it now validates with in context of defaults
+* new func `utils.remove_same_ident` and apply it for SimpleYAML
+
 ### 0.28 precached Py values and to_raw
 
 * `CONTENT_SETTINGS_PRECACHED_PY_VALUES` is `False` byt default. And become experimental feature.

@@ -10,6 +10,33 @@ from importlib import import_module
 from content_settings.types import BaseSetting, TCallableStr
 
 
+def remove_same_ident(value: str) -> str:
+    """
+    remove same ident from all lines of the string
+    Ignore a single line string
+    Ignore lines with only spaces
+    """
+    lines = value.splitlines()
+    if len(lines) <= 1:
+        return value
+
+    # Find the minimum indentation level
+    min_indent = None
+    for line in lines:
+        stripped_line = line.lstrip()
+        if stripped_line:
+            indent = len(line) - len(stripped_line)
+            if min_indent is None or indent < min_indent:
+                min_indent = indent
+
+    if min_indent is None:
+        return value
+
+    # Remove the minimum indentation level from each line
+    newline = "\r\n" if "\r\n" in value else "\n"
+    return newline.join(line[min_indent:] for line in lines)
+
+
 def classes(setting_cls: Type[BaseSetting]) -> Iterator[Type[BaseSetting]]:
     """
     Returns an iterator of classes that are subclasses of the given class.

@@ -7,10 +7,11 @@ from django.utils.translation import gettext as _
 
 from typing import List, Optional, Tuple, Dict, Union
 
+from content_settings.utils import remove_same_ident
 from .basic import SimpleText, PREVIEW, SimpleString
 from .each import EachMixin, Keys, Item
 from .mixins import EmptyNoneMixin
-from . import optional, BaseSetting
+from . import optional, BaseSetting, required
 
 
 # TODO: should have Empty None as well as JSON
@@ -21,6 +22,13 @@ class SimpleYAML(SimpleText):
 
     admin_preview_as = PREVIEW.PYTHON
     yaml_loader = None
+
+    def __init__(
+        self, default: Optional[Union[str, required, optional]] = None, *args, **kwargs
+    ):
+        if isinstance(default, str):
+            default = remove_same_ident(default)
+        super().__init__(default, *args, **kwargs)
 
     def get_help_format(self):
         return _(
