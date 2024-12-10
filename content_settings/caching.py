@@ -112,6 +112,9 @@ def set_new_value(name: str, new_value: str, version: Optional[str] = None) -> s
 
 
 def delete_value(name: str) -> Optional[str]:
+    """
+    delete the value from the local thread
+    """
     if name in DATA.ALL_VALUES:
         del DATA.ALL_VALUES[name]
     return DATA.ALL_RAW_VALUES.pop(name, None)
