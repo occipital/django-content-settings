@@ -2,7 +2,7 @@
 
 # Changelog
 
-### master
+#### 0.28.1 validate_default_values
 
 * fix `validate_default_values` - it now validates with in context of defaults
 * new func `utils.remove_same_ident` and apply it for SimpleYAML
