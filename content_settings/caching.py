@@ -23,6 +23,7 @@ from .settings import (
     USER_DEFINED_TYPES,
     PRECACHED_PY_VALUES,
 )
+from .context_managers import content_settings_context
 
 
 TRIGGER = import_object(CACHE_TRIGGER["backend"])(
@@ -326,13 +327,16 @@ def validate_default_values():
 
     from .conf import ALL
 
-    for name, cs_type in ALL.items():
-        if not isinstance(cs_type.default, str):
-            continue
-        try:
-            cs_type.validate_value(cs_type.default)
-        except Exception as e:
-            raise AssertionError(f"Error validating {name}: {e}")
+    with content_settings_context(
+        **{name: cs_type.default for name, cs_type in ALL.items()}
+    ):
+        for name, cs_type in ALL.items():
+            if not isinstance(cs_type.default, str):
+                continue
+            try:
+                cs_type.validate_value(cs_type.default)
+            except Exception as e:
+                raise AssertionError(f"Error validating {name}: {e}")
 
 
 def reset_user_values(db: Optional[Dict[str, Any]] = None) -> None:
