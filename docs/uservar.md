@@ -16,13 +16,8 @@ To enable the creation of such variables, you need to set up a specific setting 
 
 ```python
 CONTENT_SETTINGS_USER_DEFINED_TYPES=[
- (
-        "line",
-        "books.content_settings.PublicSimpleString",
-        "Line (Public)",
- ),
- ("text", "content_settings.types.basic.SimpleText", "Text"),
- ("html", "content_settings.types.basic.SimpleHTML", "HTML"),
+    ("text", "content_settings.types.basic.SimpleText", "Text"),
+    ("html", "content_settings.types.basic.SimpleHTML", "HTML"),
 ]
 ```
 
