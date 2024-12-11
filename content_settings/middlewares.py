@@ -9,7 +9,7 @@ from .models import UserPreview
 from .settings import PREVIEW_ON_SITE_SHOW
 
 
-def preivew_on_site(get_response):
+def preview_on_site(get_response):
     """
     the middleware required for previewing the content settings on the site.
 

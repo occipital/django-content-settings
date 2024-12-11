@@ -83,7 +83,7 @@ def pytest_configure(config):
             "django.contrib.sessions.middleware.SessionMiddleware",
             "django.middleware.locale.LocaleMiddleware",
             "django.contrib.auth.middleware.AuthenticationMiddleware",
-            "content_settings.middlewares.preivew_on_site",
+            "content_settings.middlewares.preview_on_site",
             "django.contrib.messages.middleware.MessageMiddleware",
         ),
         INSTALLED_APPS=(

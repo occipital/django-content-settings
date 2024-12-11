@@ -382,7 +382,7 @@ Returns a function that performs a 'not' operation on a function.
 
 Available middlewares for the content settings.
 
-### def preivew_on_site(get_response)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/middlewares.py#L12)</sup>
+### def preview_on_site(get_response)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/middlewares.py#L12)</sup>
 
 the middleware required for previewing the content settings on the site.
 

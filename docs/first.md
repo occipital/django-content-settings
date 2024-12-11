@@ -80,6 +80,12 @@ MIDDLEWARE = [
 ]
 ```
 
+And activate preview in the settings of your project by setting.
+
+```python
+CONTENT_SETTINGS_PREVIEW_ON_SITE_SHOW = True
+```
+
 This enables saving settings in a preview object to see the effect online for a single user. Check the [UI page](ui.md#preview-functionality) for details.
 
 ---
