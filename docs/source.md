@@ -1458,7 +1458,7 @@ The reason of having one is when you are not able to get possible args at the ti
 
 Same as gen_call_validator, but only generates the list for args.
 
-### class gen_signle_arg_call_validator(gen_call_validator)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/validators.py#L147)</sup>
+### class gen_single_arg_call_validator(gen_call_validator)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/types/validators.py#L147)</sup>
 
 Same as gen_call_validator, but only generates one arg.
 

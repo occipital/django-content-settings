@@ -144,7 +144,7 @@ class gen_args_call_validator(gen_call_validator):
         return self.gen_args_kwargs_func(), {}
 
 
-class gen_signle_arg_call_validator(gen_call_validator):
+class gen_single_arg_call_validator(gen_call_validator):
     """
     Same as gen_call_validator, but only generates one arg.
     """

@@ -20,7 +20,7 @@ from django.utils.translation import gettext as _
 from content_settings.utils import obj_base_str
 from .basic import SimpleText
 from .mixins import CallToPythonMixin, GiveCallMixin, HTMLMixin
-from .validators import call_validator, gen_signle_arg_call_validator
+from .validators import call_validator, gen_single_arg_call_validator
 from . import PREVIEW, required
 
 
@@ -266,7 +266,7 @@ class DjangoModelTemplateMixin:
                 if first is not None:
                     return call_validator(first)
             elif callable(template_model_queryset):
-                return gen_signle_arg_call_validator(template_model_queryset)
+                return gen_single_arg_call_validator(template_model_queryset)
             else:
                 raise ValueError(
                     _("template_model_queryset must be a QuerySet or a callable")
