@@ -39,6 +39,7 @@ def pytest_configure(config):
                 "content_settings.tags.app_name",
             ],
             CONTENT_SETTINGS_VALIDATE_DEFAULT_VALUE=False,
+            CONTENT_SETTINGS_PREVIEW_ON_SITE_SHOW=True,
         )
     elif testing_settings_min:
         content_settings_settings = dict(
@@ -46,7 +47,7 @@ def pytest_configure(config):
             CONTENT_SETTINGS_PREVIEW_ON_SITE_SHOW=False,
         )
     else:
-        content_settings_settings = {}
+        content_settings_settings = {"CONTENT_SETTINGS_PREVIEW_ON_SITE_SHOW": True}
 
     settings.configure(
         DEBUG_PROPAGATE_EXCEPTIONS=True,
