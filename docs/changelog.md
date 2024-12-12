@@ -7,6 +7,7 @@
 * values are not stripped by default
 * new module `content_settings.fields` that has fields that can be used as string for `cls_field`
 * `"NoStripCharField"` is a default value for `cls_field`
+* Django Admin for hisotry was improved and simplified
 
 #### 0.28.2 preview on side fixes
 
