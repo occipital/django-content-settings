@@ -148,7 +148,9 @@ The history page of the particular setting has one link in the last column "Batc
 
 ![Django History, actions](img/ui/history_export.png)
 
-The django page of the history has only one action in the list "Export selected history records as JSON". The action converts the selected records into JSON and show into Import page we have highlighted before. In such a way we have an option to rollback changes.
+The django page of the history has only one action in the list "Export selected history records as JSON". The action converts the selected records into JSON and show into Import page we have highlighted before. 
+
+"Revert selected history records as JSON" does the same as previous action, but for previous records of the selected. In such a way you can revert the changes of the specific batch.
 
 ## Notes for Developer
 

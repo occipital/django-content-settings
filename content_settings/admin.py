@@ -1072,7 +1072,9 @@ class HistoryContentSettingAdmin(admin.ModelAdmin):
             + f'?history_ids={",".join(previous_ids)}'
         )
 
-    export_previous_as_json.short_description = _("Revert selected history records")
+    export_previous_as_json.short_description = _(
+        "Revert selected history records as JSON"
+    )
 
     def previous_value(self, obj):
         if obj.previous:
