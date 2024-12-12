@@ -207,7 +207,6 @@ AWESOME_PASS = SimplePassword(
 
 REFFERAL_URL = URLString(
     "https://checkio.org",
-    view_history_permission=permissions.superuser,
     help="url",
 )
 

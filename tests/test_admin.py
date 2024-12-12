@@ -181,36 +181,6 @@ def test_admin_update(webtest_admin, webtest_user):
     assert resp.html.find("title").text == "New Title"
 
 
-def test_admin_update_history(webtest_admin):
-    cs = ContentSetting.objects.get(name="TITLE")
-    resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/history/")
-    assert resp.status_int == 200
-    assert len(resp.html.find("table", {"id": "change-history"}).find_all("tr")) == 2
-
-    resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/change/")
-    assert resp.status_int == 200
-
-    resp.forms["contentsetting_form"]["value"] = "New Title"
-    resp = resp.forms["contentsetting_form"].submit()
-    assert resp.status_int == 302
-
-    resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/history/")
-    assert resp.status_int == 200
-
-    assert len(resp.html.find("table", {"id": "change-history"}).find_all("tr")) == 3
-    assert (
-        re.sub(
-            r"\s+",
-            " ",
-            resp.html.find("table", {"id": "change-history"})
-            .find_all("tr")[1]
-            .find_all("td")[0]
-            .text.replace("\n", " "),
-        ).strip()
-        == "Changed by user testadmin"
-    )
-
-
 def test_preview_simple(webtest_admin):
     resp = webtest_admin.post(
         "/admin/content_settings/contentsetting/preview/",
@@ -448,22 +418,6 @@ def test_view_permission_superuser_for_awesome_staff_abs_url(webtest_admin):
 
     resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/change/")
     assert resp.status_int == 200
-
-
-def test_view_history_permission_superuser(webtest_admin):
-    cs = ContentSetting.objects.get(name="REFFERAL_URL")
-
-    resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/history/")
-    assert resp.status_int == 200
-
-
-def test_view_history_permission_staff(webtest_staff):
-    cs = ContentSetting.objects.get(name="REFFERAL_URL")
-
-    resp = webtest_staff.get(
-        f"/admin/content_settings/contentsetting/{cs.id}/history/", expect_errors=True
-    )
-    assert resp.status_int == 403
 
 
 @pytest.mark.skipif(

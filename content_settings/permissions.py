@@ -1,5 +1,5 @@
 """
-A list of functions that are used as values for type attributes such as `fetch_permission`, `view_permission`, `update_permission`, and `view_history_permission`.
+A list of functions that are used as values for type attributes such as `fetch_permission`, `view_permission`, and `update_permission`.
 """
 
 

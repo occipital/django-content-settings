@@ -24,7 +24,7 @@ from django.shortcuts import resolve_url
 from django.shortcuts import get_object_or_404
 from django.utils.html import escape
 from django.core.exceptions import ValidationError
-
+from django.shortcuts import redirect
 from .models import (
     ContentSetting,
     HistoryContentSetting,
@@ -462,34 +462,9 @@ class ContentSettingAdmin(admin.ModelAdmin):
                 request, model._meta, object_id
             )
 
-        cs_type = get_type_by_name(obj.name)
-        if (
-            not self.has_view_or_change_permission(request, obj)
-            or not cs_type
-            or not cs_type.can_view_history(request.user)
-            or cs_type.constant
-        ):
-            raise PermissionDenied
-
-        opts = model._meta
-        app_label = opts.app_label
-
-        context = {
-            **self.admin_site.each_context(request),
-            "title": f"Change history: {obj}",
-            "subtitle": None,
-            "module_name": str(capfirst(opts.verbose_name_plural)),
-            "object": obj,
-            "opts": opts,
-            "preserved_filters": self.get_preserved_filters(request),
-            "action_list": HistoryContentSetting.gen_unique_records(obj.name),
-            **(extra_context or {}),
-        }
-
-        request.current_app = self.admin_site.name
-
-        return TemplateResponse(
-            request, f"admin/{app_label}/{opts.model_name}/object_history.html", context
+        return redirect(
+            reverse("admin:content_settings_historycontentsetting_changelist")
+            + f"?name={obj.name}"
         )
 
     def get_changelist_form(self, request, **kwargs):
@@ -1041,24 +1016,40 @@ class ContentSettingAdmin(admin.ModelAdmin):
 
 
 class HistoryContentSettingAdmin(admin.ModelAdmin):
-    list_display = [
-        "created_on",
-        "user_defined_type",
-        "name",
-        "value",
-        "version",
-        "tags",
-        "help",
-        "was_changed",
-        "user",
-    ]
+    if USER_DEFINED_TYPES:
+        list_display = [
+            "created_on",
+            "user_defined_type",
+            "name_link",
+            "value",
+            "previous_value",
+            "version",
+            "tags",
+            "help",
+            "was_changed",
+            "user",
+            "history_actions",
+        ]
+    else:
+        list_display = [
+            "created_on",
+            "name_link",
+            "value",
+            "previous_value",
+            "version",
+            "tags",
+            "was_changed",
+            "user",
+            "history_actions",
+        ]
     list_filter = [
         "was_changed",
         "name",
     ]
-    search_fields = ["name", "value", "tags", "help"]
+    search_fields = ["name", "value", "tags", "help", "user__username"]
     actions = [
         "export_as_json",
+        "export_previous_as_json",
     ]
 
     def export_as_json(self, request, queryset):
@@ -1069,6 +1060,38 @@ class HistoryContentSettingAdmin(admin.ModelAdmin):
         )
 
     export_as_json.short_description = _("Export selected history records as JSON")
+
+    def export_previous_as_json(self, request, queryset):
+        ids = dict(queryset.order_by("-id").values_list("name", "id"))
+        previous_ids = [
+            str(csh.previous.id)
+            for csh in HistoryContentSetting.objects.filter(id__in=ids.values())
+            if csh.previous
+        ]
+        return HttpResponseRedirect(
+            reverse("admin:content_settings_import_json")
+            + f'?history_ids={",".join(previous_ids)}'
+        )
+
+    export_previous_as_json.short_description = _("Revert selected history records")
+
+    def previous_value(self, obj):
+        if obj.previous:
+            return obj.previous.value
+        return ""
+
+    def name_link(self, obj):
+        name = obj.name
+        try:
+            cs = ContentSetting.objects.get(name=name)
+        except ContentSetting.DoesNotExist:
+            return name
+        return mark_safe(
+            f'<a href="{reverse("admin:content_settings_contentsetting_change", args=[cs.id])}">{name}</a>'
+        )
+
+    def history_actions(self, obj):
+        return mark_safe(f'<a href="{obj.admin_url_batch_changes}">Batch changes</a>')
 
     def has_delete_permission(self, request, obj=None):
         return False

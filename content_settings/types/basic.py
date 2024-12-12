@@ -44,7 +44,6 @@ class SimpleString(BaseSetting):
     - `fetch_permission: TCallableStr = "none"`: Permission required to fetch the setting in API. For str value function from content_settings.permissions is used
     - `update_permission: TCallableStr = "staff"`: Optional permission required to update  the setting in Django Admin. For str value function from content_settings.permissions is used
     - `view_permission: TCallableStr = "staff"`: Optional permission required to view the setting in Django Admin. For str value function from content_settings.permissions is used
-    - `view_history_permission: Optional[TCallableStr]`: Optional permission required to see the hisotry of changes. `None` means the permission is taken from `view_permission`. For str value function from content_settings.permissions is used
     - `help: Optional[str] = ""`: Optional help text for the setting.
     - `value_required: bool = False`: Whether a value is required for the setting.
     - `version: str = ""`: The version of the setting (using for caching).
@@ -76,7 +75,6 @@ class SimpleString(BaseSetting):
     fetch_permission: TCallableStr = "none"
     update_permission: TCallableStr = "staff"
     view_permission: TCallableStr = "staff"
-    view_history_permission: Optional[TCallableStr] = None
     help_format: str = "string"
     help: str = ""
     value_required: bool = False
@@ -190,22 +188,6 @@ class SimpleString(BaseSetting):
         """
         return call_base_str(
             self.view_permission, user, call_base="content_settings.permissions"
-        )
-
-    def can_view_history(self, user: User) -> bool:
-        """
-        Return True if the user has permission to view the setting changing history in the django admin panel.
-
-        Use view_history_permission attribute, but if it is None, use can_view
-        """
-        return (
-            self.can_view(user)
-            if self.view_history_permission is None
-            else call_base_str(
-                self.view_history_permission,
-                user,
-                call_base="content_settings.permissions",
-            )
         )
 
     def can_update(self, user: User) -> bool:

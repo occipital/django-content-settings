@@ -7,7 +7,6 @@ The `content_settings.permissions` *([source](source.md#permissions))* module in
 - `fetch_permission`: Controls API access to variables through `views.FetchSettingsView`.
 - `update_permission`: Restricts the ability to change a variable in the admin panel.
 - `view_permission`: Determines who can see the variable in the admin panel (it will not be listed for unauthorized users).
-- `view_history_permission`: Governs access to the history of changes for a variable. This is the only permission where `None` is allowed; in such cases, the permission defaults to `view_permission`.
 
 ---
 

@@ -37,7 +37,7 @@ You can learn more about fields and widgets in [official Django Forms documentat
 
 Note: Validators are not used when converting text from the database to the variable object.
 
-- **update_permission**, **fetch_permission**, **view_permission** and **view_history_permission**: Access rights for the variable (detailed in a [separate article](permissions.md)).
+- **update_permission**, **fetch_permission**, and **view_permission**: Access rights for the variable (detailed in a [separate article](permissions.md)).
 - **admin_preview_as** (default: `PREVIEW.TEXT`): when you change values in Django Admin text field, you see a preview of the converted object. This attribute shows how the preview will look like. It has the following options and all of them can be found in constants `content_settings.PREVIEW_*`:
   - `PREVIEW.TEXT` - the value will be shown as plain text inside of the HTML element
   - `PREVIEW.HTML` - the value will be shown as it is without escaping

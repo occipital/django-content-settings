@@ -3,7 +3,7 @@ Django Models for the content settings.
 """
 
 from collections import defaultdict
-
+from functools import cached_property
 from django.db import models
 from django.core.validators import RegexValidator
 from django.utils import timezone
@@ -115,6 +115,17 @@ class HistoryContentSetting(models.Model):
     user_defined_type = models.CharField(
         max_length=50, null=True, default=None, verbose_name=_("User Defined Type")
     )
+
+    @cached_property
+    def previous(self):
+        """
+        The previous record for the same name.
+        """
+        return (
+            HistoryContentSetting.objects.filter(name=self.name, id__lt=self.id)
+            .order_by("-id")
+            .first()
+        )
 
     @property
     def user_defined_type_display(self):

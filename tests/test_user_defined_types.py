@@ -235,32 +235,6 @@ def test_admin_add_preview(webtest_admin, testadmin):
     assert resp.json["CUSTOM_TITLE"] == "My Way"
 
 
-def test_admin_update_history(webtest_admin):
-    resp = webtest_admin.get("/admin/content_settings/contentsetting/add/")
-    assert resp.status_int == 200
-    resp.forms["contentsetting_form"]["name"] = "CUSTOM_TITLE"
-    resp.forms["contentsetting_form"]["value"] = "My Way"
-    resp.forms["contentsetting_form"]["user_defined_type"] = "line"
-    resp = resp.forms["contentsetting_form"].submit()
-
-    cs = ContentSetting.objects.get(name="CUSTOM_TITLE")
-    resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/history/")
-    assert resp.status_int == 200
-    assert len(resp.html.find("table", {"id": "change-history"}).find_all("tr")) == 2
-
-    assert (
-        re.sub(
-            r"\s+",
-            " ",
-            resp.html.find("table", {"id": "change-history"})
-            .find_all("tr")[1]
-            .find_all("td")[0]
-            .text.replace("\n", " "),
-        ).strip()
-        == "Added by user testadmin"
-    )
-
-
 def test_fetch_tags():
     client = Client()
     resp = client.get("/books/fetch/general/")
