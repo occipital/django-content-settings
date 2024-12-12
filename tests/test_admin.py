@@ -1078,3 +1078,16 @@ def test_admin_preview_appliy_fail_chained(webtest_admin, testadmin):
     assert extract_messages(resp) == [
         "[\"Error validating XSHOT_CALCULATION: ['division by zero']\"]"
     ]
+
+
+def test_admin_space_in_the_beginning_of_value(webtest_admin):
+    cs = ContentSetting.objects.get(name="TITLE")
+    resp = webtest_admin.get(f"/admin/content_settings/contentsetting/{cs.id}/change/")
+    assert resp.status_int == 200
+
+    resp.forms["contentsetting_form"]["value"] = " New Title"
+    resp = resp.forms["contentsetting_form"].submit()
+    assert resp.status_int == 302
+
+    cs.refresh_from_db()
+    assert cs.value == " New Title"

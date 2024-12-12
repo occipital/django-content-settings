@@ -251,9 +251,9 @@ def test_csv_default_value():
     "in_data, out_data",
     [
         ("Alex", [{"name": "Alex"}]),
-        ("Alex, 20", [{"name": "Alex", "age": "20"}]),
-        ("Alex, 20, fail", [{"name": "Alex", "age": "20"}]),
-        ("Alex, 20\nBob", [{"name": "Alex", "age": "20"}, {"name": "Bob"}]),
+        ("Alex,20", [{"name": "Alex", "age": "20"}]),
+        ("Alex,20,fail", [{"name": "Alex", "age": "20"}]),
+        ("Alex,20\nBob", [{"name": "Alex", "age": "20"}, {"name": "Bob"}]),
     ],
 )
 def test_csv_list_fields(in_data, out_data):
@@ -277,15 +277,15 @@ def test_csv_list_fields(in_data, out_data):
             "[<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Alex'</pre></div>}</div>,<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Bob'</pre></div>}</div>]",
         ),
         (
-            "Alex, 20\nBob",
+            "Alex,20\nBob",
             "[<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Alex'</pre></div>,<div class='subitem'><i>age</i>: <pre>'20'</pre></div>}</div>,<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Bob'</pre></div>}</div>]",
         ),
         (
-            "Alex, 20, ignore\nBob",
+            "Alex,20, ignore\nBob",
             "[<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Alex'</pre></div>,<div class='subitem'><i>age</i>: <pre>'20'</pre></div>}</div>,<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Bob'</pre></div>}</div>]",
         ),
         (
-            "Alex, 20, ignore\nBob\nMike,",
+            "Alex,20, ignore\nBob\nMike,",
             "[<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Alex'</pre></div>,<div class='subitem'><i>age</i>: <pre>'20'</pre></div>}</div>,<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Bob'</pre></div>}</div>,<div class='subitem'>{<div class='subitem'><i>name</i>: <pre>'Mike'</pre></div>,<div class='subitem'><i>age</i>: <pre>''</pre></div>}</div>]",
         ),
     ],

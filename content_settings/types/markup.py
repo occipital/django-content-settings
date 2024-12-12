@@ -20,23 +20,19 @@ class SimpleYAML(SimpleText):
     YAML content settings type. Requires yaml module.
     """
 
-    admin_preview_as = PREVIEW.PYTHON
+    admin_preview_as: PREVIEW = PREVIEW.PYTHON
     yaml_loader = None
-
-    def __init__(
-        self, default: Optional[Union[str, required, optional]] = None, *args, **kwargs
-    ):
-        if isinstance(default, str):
-            default = remove_same_ident(default)
-        super().__init__(default, *args, **kwargs)
 
     def get_help_format(self):
         return _(
             "Simple <a href='https://en.wikipedia.org/wiki/YAML' target='_blank'>YAML format</a>"
         )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, default=None, *args, **kwargs):
+        if isinstance(default, str):
+            default = remove_same_ident(default)
+
+        super().__init__(default, *args, **kwargs)
 
         try:
             import yaml
@@ -70,7 +66,7 @@ class SimpleJSON(EmptyNoneMixin, SimpleText):
     JSON content settings type.
     """
 
-    admin_preview_as = PREVIEW.PYTHON
+    admin_preview_as: PREVIEW = PREVIEW.PYTHON
     decoder_cls = None
 
     def get_help_format(self):
@@ -98,7 +94,7 @@ class SimpleRawCSV(SimpleText):
     Type that converts simple CSV to list of lists.
     """
 
-    admin_preview_as = PREVIEW.PYTHON
+    admin_preview_as: PREVIEW = PREVIEW.PYTHON
 
     csv_dialect = "unix"
 
@@ -159,6 +155,7 @@ class SimpleCSV(EachMixin, SimpleRawCSV):
     ```
     """
 
+    cls_field: str = "StripCharField"
     csv_fields: Optional[Union[List, Tuple, Dict]] = None
     csv_fields_list_type: BaseSetting = SimpleString(optional)
 

@@ -69,7 +69,8 @@ class SimpleString(BaseSetting):
     """
 
     constant: bool = False
-    cls_field: TCallableStr = "CharField"
+    cls_field: TCallableStr = "NoStripCharField"
+    field_attrs: Optional[dict] = None
     widget: TCallableStr = "LongTextInput"
     widget_attrs: Optional[dict] = None
     fetch_permission: TCallableStr = "none"
@@ -337,17 +338,32 @@ class SimpleString(BaseSetting):
             + (("not_empty",) if self.value_required else ())
         )
 
+    def get_field_attrs(self) -> dict:
+        """
+        Return the attributes for the field.
+        """
+        return self.field_attrs or {}
+
     def get_field(self) -> forms.Field:
         """
         Generate the form field for the setting. Which will be used in the django admin panel.
         """
         return call_base_str(
             self.cls_field,
-            call_base="django.forms.fields",
-            widget=self.get_widget(),
-            validators=(self.validate_value,),
-            required=self.value_required,
+            call_base="content_settings.fields",
+            **{
+                "widget": self.get_widget(),
+                "validators": (self.validate_value,),
+                "required": self.value_required,
+                **self.get_field_attrs(),
+            },
         )
+
+    def get_widget_attrs(self) -> Optional[dict]:
+        """
+        Return the attributes for the widget.
+        """
+        return self.widget_attrs
 
     def get_widget(self) -> forms.Widget:
         """
@@ -358,7 +374,7 @@ class SimpleString(BaseSetting):
         return call_base_str(
             self.widget,
             call_base="content_settings.widgets",
-            attrs=self.widget_attrs,
+            attrs=self.get_widget_attrs(),
         )
 
     def validate_raw_value(self, value: str) -> None:
