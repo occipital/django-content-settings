@@ -13,7 +13,6 @@ from django.urls import path
 from django.http import JsonResponse, HttpResponse
 from django.contrib.admin.utils import unquote
 from django.core.exceptions import PermissionDenied
-from django.utils.text import capfirst
 from django.template.response import TemplateResponse
 from django.contrib.messages import add_message, ERROR
 from django.utils.translation import gettext_lazy as _
