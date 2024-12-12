@@ -18,7 +18,6 @@ from .utils import import_object
 from .types import BaseSetting
 from .settings import (
     VALUES_ONLY_FROM_DB,
-    VALIDATE_DEFAULT_VALUE,
     CACHE_TRIGGER,
     USER_DEFINED_TYPES,
     PRECACHED_PY_VALUES,

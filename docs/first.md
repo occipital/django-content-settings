@@ -14,7 +14,7 @@ $ pip install django-content-settings
 
 ---
 
-### Step 2: Update `settings.py` in Your Django Project
+### Step 2: Update `INSTALLED_APPS`
 
 Add `content_settings` to the `INSTALLED_APPS` list in your Django project’s `settings.py` file:
 
@@ -61,9 +61,21 @@ Now you can access content settings in templates like this:
 <b>{{ CONTENT_SETTINGS.MY_VAR }}</b>
 ```
 
+### Step 4: Make sure you have cache configured
+
+It is important to have caching backend configured. Read more about [Django’s cache framework](https://docs.djangoproject.com/en/dev/topics/cache/).
+
+The caching is used for truggering all threads to update the values from DBs. Read more about [Caching](caching.md)
+
+if you have multiple caching backends, "default" will be used. If you want to change it. Update your settings to
+
+```python
+CONTENT_SETTINGS_CACHE_TRIGGER = {"cache_backend": "not_default"}
+```
+
 ---
 
-### Step 4 (Optional): Configure Preview on Site
+### Step 5 (Optional): Configure Preview on Site
 
 To preview changes before applying them to all users, add the `"content_settings.middlewares.preview_on_site"` middleware to your `settings.py`:
 
@@ -90,7 +102,7 @@ This enables saving settings in a preview object to see the effect online for a 
 
 ---
 
-### Step 5 (Optional): API Access Configuration
+### Step 6 (Optional): API Access Configuration
 
 To access variables via API, update `urls.py`:
 
@@ -116,7 +128,7 @@ This example exposes all variables at one endpoint. For more control, you can cr
 
 ---
 
-### Step 6 (Optional and Experimental): Code Highlight Configuration
+### Step 7 (Optional and Experimental): Code Highlight Configuration
 
 To enable code highlighting for JSON, YAML, or Python code using [CodeMirror](https://codemirror.net/5/), update `settings.py`:
 
