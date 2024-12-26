@@ -2,6 +2,10 @@
 
 # Changelog
 
+#### master
+
+* fixing hasattr [#128](https://github.com/occipital/django-content-settings/issues/128)
+
 ### 0.29 NoStripCharField and history improvement
 
 * values are not stripped by default

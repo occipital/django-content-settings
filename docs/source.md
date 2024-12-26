@@ -97,15 +97,15 @@ the caching backend is working with local thread storage to store the checksum r
 * `ALL_USER_DEFINES: Dict[str, BaseSetting]` - key is the setting name, value is the user defined type (with tags and help text)
 * `POPULATED: bool` - the flag that indicates that all values were populated from the database
 
-### def set_new_type(name: str, user_defined_type: str, tags_set: Optional[Set[str]] = None, help: str = '')<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L50)</sup>
+### def set_new_type(name: str, user_defined_type: str, tags_set: Optional[Set[str]] = None, help: str = '')<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L49)</sup>
 
 create a new user defined type and saves it to the local thread. The previous type is returned.
 
-### def replace_user_type(name: str, cs_type: BaseSetting)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L79)</sup>
+### def replace_user_type(name: str, cs_type: BaseSetting)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L78)</sup>
 
 replace the user defined type with the new one. The previous type is returned.
 
-### def set_new_value(name: str, new_value: str, version: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L91)</sup>
+### def set_new_value(name: str, new_value: str, version: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L90)</sup>
 
 takes name, raw value and saves it to the local thread if the value was changed. The previous value is returned.
 
@@ -113,81 +113,81 @@ raw value converts to the python object and saves to the local thread.
 
 if version is not None - it will be verified against the version of the type
 
-### def delete_value(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L114)</sup>
+### def delete_value(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L113)</sup>
 
 delete the value from the local thread
 
-### def set_new_db_value(name: str, value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L123)</sup>
+### def set_new_db_value(name: str, value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L122)</sup>
 
 set the new value for the setting in DB
 
-### def delete_user_value(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L163)</sup>
+### def delete_user_value(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L162)</sup>
 
 delete user defined setting from the local thread and returns its raw value
 
-### def get_type_by_name(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L179)</sup>
+### def get_type_by_name(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L178)</sup>
 
 get the type of the setting (inluding user defined types) by its name
 
-### def get_userdefined_type_by_name(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L194)</sup>
+### def get_userdefined_type_by_name(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L193)</sup>
 
 get the user defined type by its name
 
-### def get_value(name: str, suffix: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L204)</sup>
+### def get_value(name: str, suffix: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L203)</sup>
 
 get the value of the setting by its name and optional suffix
 
-### def get_raw_value(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L216)</sup>
+### def get_raw_value(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L215)</sup>
 
 get the raw value of the setting by its name
 
-### def get_constant_py_value(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L231)</sup>
+### def get_constant_py_value(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L230)</sup>
 
 get the python object of the constant setting by its name
 
-### def get_py_value(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L248)</sup>
+### def get_py_value(name: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L247)</sup>
 
 get the python object of the setting by its name
 
-### def is_populated()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L272)</sup>
+### def is_populated()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L271)</sup>
 
 check if the local thread is populated with the values from the database and it is actual
 
-### def get_db_objects()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L288)</sup>
+### def get_db_objects()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L287)</sup>
 
 get the database objects for the settings
 
-### def get_all_names()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L297)</sup>
+### def get_all_names()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L296)</sup>
 
 get the names of the settings (including user defined types) from the local thread
 
-### def populate()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L307)</sup>
+### def populate()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L306)</sup>
 
 reset the local thread with the values from the database
 
-### def validate_default_values()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L328)</sup>
+### def validate_default_values()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L327)</sup>
 
 validate default values for all of the registered settings.
 
-### def reset_user_values(db: Optional[Dict[str, Any]] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L352)</sup>
+### def reset_user_values(db: Optional[Dict[str, Any]] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L351)</sup>
 
 reset the local thread with the values from the database for user defined types
 
 if trigger_checksum is not the same as the checksum in the local thread, the checksum in the cache backend will be updated
 
-### def reset_values(db: Optional[Dict[str, Any]] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L388)</sup>
+### def reset_values(db: Optional[Dict[str, Any]] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L387)</sup>
 
 reset the local thread with the values from the database for code settings
 
 if trigger_checksum is not the same as the checksum in the local thread, the checksum in the cache backend will be updated
 
-### def check_update()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L426)</sup>
+### def check_update()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L425)</sup>
 
 check if checksum in the cache backend is the same as the checksum in the local thread
 
 if not, the values from the database will be loaded
 
-### def recalc_checksums()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L438)</sup>
+### def recalc_checksums()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/caching.py#L437)</sup>
 
 recalculate the checksums in the cache backend
 
@@ -236,7 +236,11 @@ startswith__ prefix that returns all settings as a dict (setting name: setting v
 
 withtag__ prefix that returns all settings as a dict (setting name: setting value) that have the given tag.
 
-### def split_attr(value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L132)</sup>
+### class SplitFormatError(ValueError)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L132)</sup>
+
+exception that is raised when the attribute name is not valid
+
+### def split_attr(value: str)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L139)</sup>
 
 splits the name of the attr on 3 parts: prefix, name, suffix
 
@@ -244,13 +248,13 @@ splits the name of the attr on 3 parts: prefix, name, suffix
 * name should be uppercase
 * suffix can be any string, but not uppercase
 
-### def validate_all_with_context(context: Dict[str, Any])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L163)</sup>
+### def validate_all_with_context(context: Dict[str, Any])<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L176)</sup>
 
 validate all settings with the given context to make sure all of them are valid.
 
 Do not perform if `CONTENT_SETTINGS_CHAIN_VALIDATE = False`
 
-### def get_str_tags(cs_name: str, cs_type: BaseSetting, value: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L183)</sup>
+### def get_str_tags(cs_name: str, cs_type: BaseSetting, value: Optional[str] = None)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L196)</sup>
 
     get tags as a text (joined by `
 `) for specific setting type. name and value are used to generate content tags.
@@ -258,7 +262,7 @@ Do not perform if `CONTENT_SETTINGS_CHAIN_VALIDATE = False`
     from saving in DB.
     
 
-### def set_initial_values_for_db(apply: bool = False)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L199)</sup>
+### def set_initial_values_for_db(apply: bool = False)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L212)</sup>
 
 sync settings with DB.
     * creates settings that are not in DB
@@ -267,25 +271,25 @@ sync settings with DB.
 
 attribute `apply` is used to apply changes in DB immediately. Can be used in tests.
 
-### class _Settings()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L358)</sup>
+### class _Settings()<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L371)</sup>
 
 the main object that uses for getting settings for cache.
 
-#### def __dir__(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L381)</sup>
+#### def __dir__(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L394)</sup>
 
 dir() returns all settings names
 
-#### def form_checksum(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L393)</sup>
+#### def form_checksum(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L410)</sup>
 
 the current checksum of the settings.
 
 used for validation of settings weren't changed over time.
 
-#### def admin_head(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L402)</sup>
+#### def admin_head(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L419)</sup>
 
 the admin head.
 
-#### def admin_raw_js(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L409)</sup>
+#### def admin_raw_js(self)<sup>[source](https://github.com/occipital/django-content-settings/blob/master/content_settings/conf.py#L426)</sup>
 
 the admin raw js.
 

@@ -129,6 +129,14 @@ def withtag_prefix(name: str, suffix: str) -> Dict[str, Any]:
     }
 
 
+class SplitFormatError(ValueError):
+    """
+    exception that is raised when the attribute name is not valid
+    """
+
+    pass
+
+
 def split_attr(value: str) -> Tuple[Optional[str], str, Optional[str]]:
     """
     splits the name of the attr on 3 parts: prefix, name, suffix
@@ -143,10 +151,14 @@ def split_attr(value: str) -> Tuple[Optional[str], str, Optional[str]]:
     if parts[0] in PREFIXSES:
         prefix = parts.pop(0)
 
-    assert len(parts), f"Invalid attribute name: {value}; can not be only prefix"
-
     name = parts.pop(0)
-    assert name.isupper(), f"Invalid attribute name: {value}; name should be uppercase"
+    if not name.isupper():
+        raise SplitFormatError(
+            f"Invalid attribute name: {name}"
+            + ("" if name == value else f" in {value}")
+            + "; name should be uppercase"
+            + ("" if prefix or name == value else " or it is unknown prefix")
+        )
 
     while parts:
         if not parts[0].isupper():
@@ -154,10 +166,14 @@ def split_attr(value: str) -> Tuple[Optional[str], str, Optional[str]]:
 
         name += "__" + parts.pop(0)
 
-    if len(parts):
-        return prefix, name, "__".join(parts).lower()
+    suffix = "__".join(parts) if parts else None
 
-    return prefix, name, None
+    if suffix and not suffix.islower():
+        raise SplitFormatError(
+            f"Invalid attribute name: {suffix} in {value}; suffix should be lowercase"
+        )
+
+    return prefix, name, suffix
 
 
 def validate_all_with_context(context: Dict[str, Any]):
@@ -385,7 +401,11 @@ class _Settings:
         return get_all_names()
 
     def __contains__(self, value):
-        _, name, suffix = split_attr(value)
+        try:
+            _, name, suffix = split_attr(value)
+        except SplitFormatError:
+            return False
+
         cs_type = get_type_by_name(name)
         return cs_type is not None and cs_type.can_suffix(suffix)
 
