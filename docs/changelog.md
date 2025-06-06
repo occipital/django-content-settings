@@ -186,7 +186,7 @@
 ![DictSuffixesPreviewMixin](img/preview_on_site.png)
 
 * admin can now preview settings on site before applying
-* new middleware `middlewares.preivew_on_site`
+* new middleware `middlewares.preview_on_site`
 
 ### 0.10.2
 
