@@ -9,7 +9,10 @@ the caching backend is working with local thread storage to store the checksum r
 * `POPULATED: bool` - the flag that indicates that all values were populated from the database
 """
 
-import threading
+try:
+    from asgiref.local import Local
+except ImportError:  # pragma: no cover - fallback for old setups
+    from threading import local as Local
 from typing import Any, Dict, Set, Optional, List
 
 from django.conf import settings
@@ -30,7 +33,7 @@ TRIGGER = import_object(CACHE_TRIGGER["backend"])(
 )
 
 
-class ThreadLocalData(threading.local):
+class ThreadLocalData(Local):
     POPULATED: bool = False
     ALL_RAW_VALUES: Optional[Dict[str, str]] = None
     ALL_VALUES: Optional[Dict[str, Any]] = None

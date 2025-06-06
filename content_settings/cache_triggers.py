@@ -5,7 +5,10 @@
 from typing import Any, Dict, Set, Optional, List
 import hashlib
 from functools import cached_property
-from threading import local
+try:
+    from asgiref.local import Local
+except ImportError:  # pragma: no cover - fallback for very old setups
+    from threading import local as Local
 
 from django.core.cache import caches
 
@@ -15,7 +18,7 @@ from .settings import (
 )
 
 
-class ThreadLocalData(local):
+class ThreadLocalData(Local):
     ALL_VALUES_CHECKSUM: str = ""
 
 
