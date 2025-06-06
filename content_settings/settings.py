@@ -29,7 +29,9 @@ CHECKSUM_KEY_PREFIX = (
 )
 
 CHECKSUM_USER_KEY_PREFIX = (
-    get_setting("CHECKSUM_KEY_PREFIX", "CS_USER_CHECKSUM_") + __version__ + "__"
+    get_setting("CHECKSUM_USER_KEY_PREFIX", "CS_USER_CHECKSUM_")
+    + __version__
+    + "__"
 )
 
 USER_TAGS = get_setting(
