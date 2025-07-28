@@ -5,7 +5,7 @@
 from typing import Any, Dict, Set, Optional, List
 import hashlib
 from functools import cached_property
-from asgiref.local import Local
+from threading import local
 
 from django.core.cache import caches
 
@@ -15,13 +15,11 @@ from .settings import (
 )
 
 
-class ThreadLocalData(Local):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.ALL_VALUES_CHECKSUM: str = ""
+class ThreadLocalData(local):
+    ALL_VALUES_CHECKSUM: str = ""
 
 
-DATA = ThreadLocalData(thread_critical=True)
+DATA = ThreadLocalData()
 
 
 class BaseCacheTrigger:
@@ -137,7 +135,7 @@ class VersionChecksum(BaseCacheTrigger):
 
     def set_local_checksum(self, value: Optional[str] = None) -> None:
         """
-        calculate and set checksum in the context-local storage
+        calculate and set checksum in the local thread
         """
         if value is None:
             value = self.calc_checksum()
