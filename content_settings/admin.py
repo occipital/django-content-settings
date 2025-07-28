@@ -114,7 +114,7 @@ class SettingsChangeList(ChangeList):
                 combine &= Q(tags__iregex=rf"(^|\n){tag}($|\n)")
 
             q = q.filter(combine)
-        # This is terrable
+        # This is terrible
         # But I don't know how to do it better
         # I need to filter out the names user don't have permissions to see
 
