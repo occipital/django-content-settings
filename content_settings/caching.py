@@ -1,7 +1,7 @@
 """
-the caching backend is working with local thread storage to store the checksum raw and py objects.
+the caching backend is working with context-local storage to store the checksum raw and py objects.
 
-`DATA` is a local thread storage with the following attributes:
+`DATA` is a context-local storage with the following attributes:
 
 * `ALL_RAW_VALUES: Dict[str, str]` - the raw values (values from the database) of the all settings
 * `ALL_VALUES: Dict[str, Any]` - the python objects of the all settings
@@ -9,7 +9,7 @@ the caching backend is working with local thread storage to store the checksum r
 * `POPULATED: bool` - the flag that indicates that all values were populated from the database
 """
 
-import threading
+from asgiref.local import Local
 from typing import Any, Dict, Set, Optional, List
 
 from django.conf import settings
@@ -30,14 +30,16 @@ TRIGGER = import_object(CACHE_TRIGGER["backend"])(
 )
 
 
-class ThreadLocalData(threading.local):
-    POPULATED: bool = False
-    ALL_RAW_VALUES: Optional[Dict[str, str]] = None
-    ALL_VALUES: Optional[Dict[str, Any]] = None
-    ALL_USER_DEFINES: Optional[Dict[str, BaseSetting]] = None
+class ThreadLocalData(Local):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.POPULATED: bool = False
+        self.ALL_RAW_VALUES: Optional[Dict[str, str]] = None
+        self.ALL_VALUES: Optional[Dict[str, Any]] = None
+        self.ALL_USER_DEFINES: Optional[Dict[str, BaseSetting]] = None
 
 
-DATA = ThreadLocalData()
+DATA = ThreadLocalData(thread_critical=True)
 
 
 def get_form_checksum():
@@ -53,7 +55,7 @@ def set_new_type(
     help: str = "",
 ) -> Optional[BaseSetting]:
     """
-    create a new user defined type and saves it to the local thread. The previous type is returned.
+    create a new user defined type and saves it to the context-local storage. The previous type is returned.
     """
     if tags_set is None:
         tags_set = set()
@@ -89,9 +91,9 @@ def replace_user_type(name: str, cs_type: BaseSetting) -> Optional[BaseSetting]:
 
 def set_new_value(name: str, new_value: str, version: Optional[str] = None) -> str:
     """
-    takes name, raw value and saves it to the local thread if the value was changed. The previous value is returned.
+    takes name, raw value and saves it to the context-local storage if the value was changed. The previous value is returned.
 
-    raw value converts to the python object and saves to the local thread.
+    raw value converts to the python object and saves to the context-local storage.
 
     if version is not None - it will be verified against the version of the type
     """
@@ -112,7 +114,7 @@ def set_new_value(name: str, new_value: str, version: Optional[str] = None) -> s
 
 def delete_value(name: str) -> Optional[str]:
     """
-    delete the value from the local thread
+    delete the value from the context-local storage
     """
     if name in DATA.ALL_VALUES:
         del DATA.ALL_VALUES[name]
@@ -161,7 +163,7 @@ def set_new_db_value(name: str, value: str, *type_define) -> str:
 
 def delete_user_value(name: str) -> Optional[str]:
     """
-    delete user defined setting from the local thread and returns its raw value
+    delete user defined setting from the context-local storage and returns its raw value
     """
     if get_raw_value(name) is None:
         return None
@@ -270,7 +272,7 @@ def get_py_value(name: str) -> Any:
 
 def is_populated() -> bool:
     """
-    check if the local thread is populated with the values from the database and it is actual
+    check if the context-local storage is populated with the values from the database and it is actual
     """
     return getattr(DATA, "POPULATED", False)
 
@@ -295,7 +297,7 @@ def get_db_objects() -> Dict[str, Any]:
 
 def get_all_names() -> List[str]:
     """
-    get the names of the settings (including user defined types) from the local thread
+    get the names of the settings (including user defined types) from the context-local storage
     """
     if not is_populated():
         populate()
@@ -305,7 +307,7 @@ def get_all_names() -> List[str]:
 
 def populate() -> None:
     """
-    reset the local thread with the values from the database
+    reset the context-local storage with the values from the database
     """
     if is_populated():
         return
@@ -350,9 +352,9 @@ def validate_default_values():
 
 def reset_user_values(db: Optional[Dict[str, Any]] = None) -> None:
     """
-    reset the local thread with the values from the database for user defined types
+    reset the context-local storage with the values from the database for user defined types
 
-    if trigger_checksum is not the same as the checksum in the local thread, the checksum in the cache backend will be updated
+    if trigger_checksum is not the same as the checksum in the context-local storage, the checksum in the cache backend will be updated
     """
     from .conf import USER_DEFINED_TYPES_INSTANCE
 
@@ -386,9 +388,9 @@ def reset_user_values(db: Optional[Dict[str, Any]] = None) -> None:
 
 def reset_values(db: Optional[Dict[str, Any]] = None) -> None:
     """
-    reset the local thread with the values from the database for code settings
+    reset the context-local storage with the values from the database for code settings
 
-    if trigger_checksum is not the same as the checksum in the local thread, the checksum in the cache backend will be updated
+    if trigger_checksum is not the same as the checksum in the context-local storage, the checksum in the cache backend will be updated
     """
     from .conf import ALL
 
@@ -424,7 +426,7 @@ def reset_values(db: Optional[Dict[str, Any]] = None) -> None:
 
 def check_update() -> None:
     """
-    check if checksum in the cache backend is the same as the checksum in the local thread
+    check if checksum in the cache backend is the same as the checksum in the context-local storage
 
     if not, the values from the database will be loaded
     """
